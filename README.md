@@ -5,7 +5,7 @@
 [![Codecov](https://codecov.io/gh/MarketDataApp/sdk-php/graph/badge.svg?token=5W2IB9F6RU)](https://codecov.io/github/MarketDataApp/sdk-php)
 [![Total Downloads](https://img.shields.io/packagist/dt/MarketDataApp/sdk-php.svg?style=flat-square)](https://packagist.org/packages/MarketDataApp/sdk-php)
 
-This is an official PHP SDK for Market Data. It provides developers with a powerful, easy-to-use interface to obtain
+This is the official PHP SDK for [Market Data](https://marketdata.app). It provides developers with a powerful, easy-to-use interface to obtain
 real-time and historical financial data. Ideal for building financial applications, trading bots, and investment
 strategies.
 
@@ -21,7 +21,13 @@ composer require MarketDataApp/sdk-php
 
 ```php
 $client = new MarketDataApp\Client();
-$quote = $client->indices->quote('AAPL');
+$quote = $client->indices->quote('DJI');
+$candles = $this->client->indices->candles(
+    symbol: "DJI",
+    from: Carbon::parse('2022-09-01'),
+    to: Carbon::parse('2022-09-05'),
+    resolution: 'D'
+);
 ```
 
 ## Testing
