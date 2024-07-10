@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0-alpha
+
+- Completed Stocks endpoints: earnings, news.
+- Add stubs for the rest of the endpoints.
+
 ## v0.2.0-alpha
 
 - Completed Indices endpoints.

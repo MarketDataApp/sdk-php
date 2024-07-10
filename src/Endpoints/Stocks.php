@@ -8,6 +8,8 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
+use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
+use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
@@ -45,7 +47,7 @@ class Stocks
      * @param bool $adjustsplits Adjust historical data for historical splits and reverse splits. Market Data uses
      * the CRSP methodology for adjustment. Daily candles default: true.
      *
-     * @return Candles
+     * @return BulkCandles
      * @throws ApiException
      * @throws GuzzleException
      */
@@ -61,6 +63,7 @@ class Stocks
         }
 
         $symbols = implode(',', array_map('trim', $symbols));
+
         return new BulkCandles($this->client->execute(self::BASE_URL . "bulkcandles/{$resolution}/",
             compact('symbols', 'date', 'snapshot', 'adjustsplits')
         ));
@@ -182,4 +185,72 @@ class Stocks
         return new BulkQuotes($this->client->execute(self::BASE_URL . "bulkquotes",
             ['symbols' => implode(',', $symbols), 'snapshot' => $snapshot]));
     }
+
+    /**
+     * Get historical earnings per share data or a future earnings calendar for a stock.
+     *
+     * Premium subscription required.
+     *
+     * @param string $symbol The company's ticker symbol.
+     * @param Carbon|null $from The earliest earnings report to include in the output. If you use countback, from is not
+     * required.
+     *
+     * @param Carbon|null $to The latest earnings report to include in the output.
+     * @param int|null $countback Countback will fetch a specific number of earnings reports before to. If you use from,
+     * countback is not required.
+     *
+     * @param Carbon|null $date Retrieve a specific earnings report by date.
+     * @param string|null $datekey Retrieve a specific earnings report by date and quarter. Example: 2023-Q4. This
+     * allows you to retrieve a 4th quarter value without knowing the company's specific fiscal year.
+     *
+     * @return Earnings
+     * @throws ApiException
+     * @throws GuzzleException
+     */
+    public function earnings(
+        string $symbol,
+        Carbon $from = null,
+        Carbon $to = null,
+        int $countback = null,
+        Carbon $date = null,
+        string $datekey = null
+    ): Earnings {
+        if (is_null($from) && (is_null($countback) || is_null($to))) {
+            throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
+        }
+
+        return new Earnings($this->client->execute(self::BASE_URL . "earnings/{$symbol}",
+            compact('from', 'to', 'countback', 'date', 'datekey')));
+    }
+
+    /**
+     * Retrieves news articles for a given stock symbol within a specified date range.
+     *
+     * CAUTION: This endpoint is in beta.
+     *
+     * @param string $symbol The ticker symbol of the stock.
+     * @param Carbon|null $from The earliest news to include in the output. If you use countback, from is not required.
+     * @param Carbon|null $to The latest news to include in the output.
+     * @param int|null $countback Countback will fetch a specific number of news before to. If you use from, countback
+     * is not required.
+     *
+     * @param Carbon|null $date Retrieve news for a specific day.
+     * @throws \InvalidArgumentException
+     */
+    public function news(
+        string $symbol,
+        Carbon $from = null,
+        Carbon $to = null,
+        int $countback = null,
+        Carbon $date = null,
+    ): News {
+        if (is_null($from) && (is_null($countback) || is_null($to))) {
+            throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
+        }
+
+        return new News($this->client->execute(self::BASE_URL . "news/{$symbol}",
+            compact('from', 'to', 'countback', 'date')));
+    }
+
+
 }
