@@ -1,15 +1,15 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 
-class StocksBulkQuotes
+class BulkQuotes
 {
     // Will always be ok when there is data for the symbol requested.
     public string $status;
 
-    /** @var StocksBulkQuote[] $quotes */
+    /** @var BulkQuote[] $quotes */
     public array $quotes;
 
     public function __construct(object $response)
@@ -18,7 +18,7 @@ class StocksBulkQuotes
         $this->status = $response->s;
 
         for($i = 0; $i < count($response->symbol); $i++) {
-            $this->quotes[] = new StocksBulkQuote(
+            $this->quotes[] = new BulkQuote(
                 symbol: $response->symbol[$i],
                 ask: $response->ask[$i],
                 ask_size: $response->askSize[$i],

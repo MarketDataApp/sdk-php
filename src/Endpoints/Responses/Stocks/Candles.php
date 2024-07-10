@@ -1,15 +1,15 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 
-class IndicesCandles
+class Candles
 {
     // Will always be ok when there is data for the candles requested.
     public string $status;
 
-    /** @var IndicesCandle[] $candles */
+    /** @var Candle[] $candles */
     public array $candles;
 
     public function __construct(object $response)
@@ -18,11 +18,12 @@ class IndicesCandles
         $this->status = $response->s;
 
         for($i = 0; $i < count($response->o); $i++) {
-            $this->candles[] = new IndicesCandle(
+            $this->candles[] = new Candle(
                 $response->o[$i],
                 $response->h[$i],
                 $response->l[$i],
                 $response->c[$i],
+                $response->v[$i],
                 Carbon::parse($response->t[$i]),
             );
         }

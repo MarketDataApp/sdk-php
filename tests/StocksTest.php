@@ -11,10 +11,12 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
-use MarketDataApp\Endpoints\Responses\StocksBulkQuote;
-use MarketDataApp\Endpoints\Responses\StocksBulkQuotes;
-use MarketDataApp\Endpoints\Responses\StocksQuote;
-use MarketDataApp\Endpoints\Responses\StocksQuotes;
+use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
+use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
+use MarketDataApp\Endpoints\Responses\Stocks\Candle;
+use MarketDataApp\Endpoints\Responses\Stocks\Candles;
+use MarketDataApp\Endpoints\Responses\Stocks\Quote;
+use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use PHPUnit\Framework\TestCase;
 
 class StocksTest extends TestCase
@@ -59,6 +61,45 @@ class StocksTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * @throws GuzzleException
+     */
+    public function testCandles_fromTo_success()
+    {
+        $mocked_response = [
+            's' => 'ok',
+            'c' => [22.84, 23.93, 21.95, 21.44, 21.15],
+            'h' => [23.27, 24.68, 23.92, 22.66, 22.58],
+            'l' => [22.26, 22.67, 21.68, 21.44, 20.76],
+            'o' => [22.41, 24.08, 23.86, 22.06, 21.5],
+            'v' => [123123, 66959442, 66959442, 66959442, 66959442],
+            't' => [1659326400, 1659412800, 1659499200, 1659585600, 1659672000]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "DJI",
+            from: Carbon::parse('2022-09-01'),
+            to: Carbon::parse('2022-09-05'),
+            resolution: 'D'
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertCount(5, $response->candles);
+
+        // Verify each item in the response is an object of the correct type and has the correct values.
+        for($i = 0; $i < count($response->candles); $i++) {
+            $this->assertInstanceOf(Candle::class, $response->candles[$i]);
+            $this->assertEquals($mocked_response['c'][$i], $response->candles[$i]->close);
+            $this->assertEquals($mocked_response['h'][$i], $response->candles[$i]->high);
+            $this->assertEquals($mocked_response['l'][$i], $response->candles[$i]->low);
+            $this->assertEquals($mocked_response['o'][$i], $response->candles[$i]->open);
+            $this->assertEquals($mocked_response['v'][$i], $response->candles[$i]->volume);
+            $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
+        }
+    }
+
     public function testStocks_quote_success()
     {
         $mocked_response = $this->aapl_mocked_response;
@@ -67,7 +108,7 @@ class StocksTest extends TestCase
         ]);
         $quote = $this->client->stocks->quote('AAPL');
 
-        $this->assertInstanceOf(StocksQuote::class, $quote);
+        $this->assertInstanceOf(Quote::class, $quote);
         $this->assertEquals($mocked_response['s'], $quote->status);
         $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
         $this->assertEquals($mocked_response['ask'][0], $quote->ask);
@@ -96,7 +137,7 @@ class StocksTest extends TestCase
         ]);
         $quote = $this->client->stocks->quote('AAPL');
 
-        $this->assertInstanceOf(StocksQuote::class, $quote);
+        $this->assertInstanceOf(Quote::class, $quote);
         $this->assertEquals($mocked_response['s'], $quote->status);
         $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
         $this->assertEquals($mocked_response['ask'][0], $quote->ask);
@@ -139,9 +180,9 @@ class StocksTest extends TestCase
         ]);
 
         $quotes = $this->client->stocks->quotes(['AAPL', 'NFLX']);
-        $this->assertInstanceOf(StocksQuotes::class, $quotes);
+        $this->assertInstanceOf(Quotes::class, $quotes);
         foreach ($quotes->quotes as $quote) {
-            $this->assertInstanceOf(StocksQuote::class, $quote);
+            $this->assertInstanceOf(Quote::class, $quote);
             $mocked_response = $quote->symbol === "AAPL" ? $this->aapl_mocked_response : $nflx_mocked_response;
 
             $this->assertEquals($mocked_response['s'], $quote->status);
@@ -168,12 +209,12 @@ class StocksTest extends TestCase
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->stocks->bulkQuotes(['AAPL', 'NFLX']);
-        $this->assertInstanceOf(StocksBulkQuotes::class, $response);
+        $this->assertInstanceOf(BulkQuotes::class, $response);
         $this->assertEquals($response->status, $mocked_response['s']);
         $this->assertCount(2, $response->quotes);
 
         for ($i = 0; $i < count($response->quotes); $i++) {
-            $this->assertInstanceOf(StocksBulkQuote::class, $response->quotes[$i]);
+            $this->assertInstanceOf(BulkQuote::class, $response->quotes[$i]);
 
             $this->assertEquals($mocked_response['symbol'][$i], $response->quotes[$i]->symbol);
             $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);
@@ -198,12 +239,12 @@ class StocksTest extends TestCase
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->stocks->bulkQuotes(snapshot: true);
-        $this->assertInstanceOf(StocksBulkQuotes::class, $response);
+        $this->assertInstanceOf(BulkQuotes::class, $response);
         $this->assertEquals($response->status, $mocked_response['s']);
         $this->assertCount(2, $response->quotes);
 
         for ($i = 0; $i < count($response->quotes); $i++) {
-            $this->assertInstanceOf(StocksBulkQuote::class, $response->quotes[$i]);
+            $this->assertInstanceOf(BulkQuote::class, $response->quotes[$i]);
 
             $this->assertEquals($mocked_response['symbol'][$i], $response->quotes[$i]->symbol);
             $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);

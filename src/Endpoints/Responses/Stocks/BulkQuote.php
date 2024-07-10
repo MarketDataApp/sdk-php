@@ -1,10 +1,10 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 
-class StocksBulkQuote
+class BulkQuote
 {
 
     // The symbol of the stock.

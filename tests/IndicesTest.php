@@ -11,9 +11,9 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
-use MarketDataApp\Endpoints\Responses\IndicesCandle;
-use MarketDataApp\Endpoints\Responses\IndicesCandles;
-use MarketDataApp\Endpoints\Responses\IndicesQuote;
+use MarketDataApp\Endpoints\Responses\Indices\Candle;
+use MarketDataApp\Endpoints\Responses\Indices\Candles;
+use MarketDataApp\Endpoints\Responses\Indices\Quote;
 use PHPUnit\Framework\TestCase;
 
 class IndicesTest extends TestCase
@@ -28,7 +28,7 @@ class IndicesTest extends TestCase
         $this->client = $client;
     }
 
-    public function testIndices_quote_success()
+    public function testQuote_success()
     {
         $mocked_response = [
             's'          => 'ok',
@@ -43,7 +43,7 @@ class IndicesTest extends TestCase
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->indices->quote("DJI");
-        $this->assertInstanceOf(IndicesQuote::class, $response);
+        $this->assertInstanceOf(Quote::class, $response);
         $this->assertEquals($mocked_response['s'], $response->status);
         $this->assertEquals($mocked_response['symbol'][0], $response->symbol);
         $this->assertEquals($mocked_response['last'][0], $response->last);
@@ -57,7 +57,7 @@ class IndicesTest extends TestCase
     /**
      * @throws GuzzleException
      */
-    public function testIndices_candles_fromTo_success()
+    public function testCandles_fromTo_success()
     {
         $mocked_response = [
             's' => 'ok',
@@ -77,12 +77,12 @@ class IndicesTest extends TestCase
         );
 
         // Verify that the response is an object of the correct type.
-        $this->assertInstanceOf(IndicesCandles::class, $response);
+        $this->assertInstanceOf(Candles::class, $response);
         $this->assertCount(5, $response->candles);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         for($i = 0; $i < count($response->candles); $i++) {
-            $this->assertInstanceOf(IndicesCandle::class, $response->candles[$i]);
+            $this->assertInstanceOf(Candle::class, $response->candles[$i]);
             $this->assertEquals($mocked_response['c'][$i], $response->candles[$i]->close);
             $this->assertEquals($mocked_response['h'][$i], $response->candles[$i]->high);
             $this->assertEquals($mocked_response['l'][$i], $response->candles[$i]->low);

@@ -1,10 +1,10 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 
-class StocksQuote
+class Quote
 {
 
     // Will always be ok when there is data for the symbol requested.

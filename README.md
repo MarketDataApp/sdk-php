@@ -30,6 +30,11 @@ $candles = $client->indices->candles(
     to: Carbon::parse('2022-09-05'),
     resolution: 'D'
 );
+
+// Stocks
+$quote = $client->stocks->quote('AAPL');
+$quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
+$bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
 ```
 
 ## Testing
