@@ -4,6 +4,7 @@ namespace MarketDataApp;
 
 use MarketDataApp\Endpoints\Indices;
 use MarketDataApp\Endpoints\Markets;
+use MarketDataApp\Endpoints\MutualFunds;
 use MarketDataApp\Endpoints\Options;
 use MarketDataApp\Endpoints\Stocks;
 
@@ -34,6 +35,11 @@ class Client extends ClientBase
      */
     public Markets $markets;
 
+    /**
+     * The mutual funds endpoints offer access to historical pricing data for mutual funds.
+     */
+    public MutualFunds $mutual_funds;
+
     public function __construct($token)
     {
         parent::__construct($token);
@@ -42,5 +48,6 @@ class Client extends ClientBase
         $this->stocks = new Stocks($this);
         $this->options = new Options($this);
         $this->markets = new Markets($this);
+        $this->mutual_funds = new MutualFunds($this);
     }
 }
