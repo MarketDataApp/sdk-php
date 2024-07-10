@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Exceptions\ApiException;
 
 class Indices
 {
@@ -24,11 +25,11 @@ class Indices
      *
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
-     * @throws GuzzleException
+     * @throws GuzzleException|ApiException
      */
-    public function quote(string $symbol): Quote
+    public function quote(string $symbol, bool $fifty_two_week = false): Quote
     {
-        return new Quote($this->client->execute(self::BASE_URL . "quotes/{$symbol}"));
+        return new Quote($this->client->execute(self::BASE_URL . "quotes/{$symbol}", ['52week' => $fifty_two_week]));
     }
 
     /**
@@ -47,7 +48,7 @@ class Indices
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
      * @return Candles
-     * @throws GuzzleException
+     * @throws GuzzleException|ApiException
      */
     public function candles(
         string $symbol,
