@@ -37,6 +37,7 @@ class Indices
      *
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
+     *
      * @param Carbon $from The leftmost candle on a chart (inclusive). If you use countback, to is not required.
      * @param Carbon|null $to The rightmost candle on a chart (inclusive).
      * @param string $resolution The duration of each candle.
@@ -45,8 +46,10 @@ class Indices
      * Weekly Resolutions: (weekly, W, 1W, 2W, ...)
      * Monthly Resolutions: (monthly, M, 1M, 2M, ...)
      * Yearly Resolutions:(yearly, Y, 1Y, 2Y, ...)
+     *
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
+     *
      * @return Candles
      * @throws GuzzleException|ApiException
      */
