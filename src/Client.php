@@ -3,6 +3,7 @@
 namespace MarketDataApp;
 
 use MarketDataApp\Endpoints\Indices;
+use MarketDataApp\Endpoints\Markets;
 use MarketDataApp\Endpoints\Options;
 use MarketDataApp\Endpoints\Stocks;
 
@@ -28,6 +29,11 @@ class Client extends ClientBase
      */
     public Options $options;
 
+    /**
+     * The Markets endpoints provide reference and status data about the markets covered by Market Data.
+     */
+    public Markets $markets;
+
     public function __construct($token)
     {
         parent::__construct($token);
@@ -35,5 +41,6 @@ class Client extends ClientBase
         $this->indices = new Indices($this);
         $this->stocks = new Stocks($this);
         $this->options = new Options($this);
+        $this->markets = new Markets($this);
     }
 }
