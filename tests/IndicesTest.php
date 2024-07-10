@@ -4,6 +4,7 @@ namespace MarketDataApp\Tests;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -27,7 +28,7 @@ class IndicesTest extends TestCase
         $this->client = $client;
     }
 
-    public function testIndicesQuote_success()
+    public function testIndices_quote_success()
     {
         $mocked_response = [
             's'          => 'ok',
@@ -53,7 +54,10 @@ class IndicesTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
     }
 
-    public function testIndicesCandles_fromTo_success()
+    /**
+     * @throws GuzzleException
+     */
+    public function testIndices_candles_fromTo_success()
     {
         $mocked_response = [
             's' => 'ok',

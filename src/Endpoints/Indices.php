@@ -20,6 +20,8 @@ class Indices
     }
 
     /**
+     * Get a real-time quote for an index.
+     *
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
      * @throws GuzzleException
@@ -30,6 +32,8 @@ class Indices
     }
 
     /**
+     * Get historical price candles for an index.
+     *
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
      * @param Carbon $from The leftmost candle on a chart (inclusive). If you use countback, to is not required.
