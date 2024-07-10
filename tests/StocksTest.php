@@ -16,6 +16,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
+use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
@@ -210,7 +211,7 @@ class StocksTest extends TestCase
         $this->assertEmpty($response->symbols);
     }
 
-    public function testStocks_quote_success()
+    public function testQuote_success()
     {
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
@@ -237,7 +238,7 @@ class StocksTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $quote->updated);
     }
 
-    public function testStocks_quote_52week_success()
+    public function testQuote_52week_success()
     {
         $mocked_response = $this->aapl_mocked_response;
         $mocked_response['52weekHigh'] = [149.08];
@@ -268,7 +269,7 @@ class StocksTest extends TestCase
      * @throws GuzzleException
      * @throws \Throwable
      */
-    public function testStocks_quotes_success()
+    public function testQuotes_success()
     {
         $nflx_mocked_response = [
             's'         => 'ok',
@@ -313,7 +314,7 @@ class StocksTest extends TestCase
     /**
      * @throws \Throwable
      */
-    public function testStocks_bulkQuotes_success()
+    public function testBulkQuotes_success()
     {
         $mocked_response = $this->multiple_mocked_response;
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
@@ -343,7 +344,7 @@ class StocksTest extends TestCase
     /**
      * @throws GuzzleException
      */
-    public function testStocks_bulkQuotes_snapshot_success()
+    public function testBulkQuotes_snapshot_success()
     {
         $mocked_response = $this->multiple_mocked_response;
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
@@ -373,10 +374,57 @@ class StocksTest extends TestCase
     /**
      * @throws GuzzleException
      */
-    public function testStocks_bulkQuotes_noParameters_throwsException()
+    public function testBulkQuotes_noParameters_throwsException()
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->client->stocks->bulkQuotes();
+    }
+
+    public function testEarnings__success()
+    {
+        $mocked_response = [
+            's'              => 'ok',
+            'symbol'         => 'AAPL',
+            'fiscalYear'     => 2023,
+            'fiscalQuarter'  => 1,
+            'date'           => 1672462800,
+            'reportDate'     => 1675314000,
+            'reportTime'     => 'before market open',
+            'currency'       => 'USD',
+            'reportedEPS'    => 1.88,
+            'estimatedEPS'   => 1.94,
+            'surpriseEPS'    => -0.06,
+            'surpriseEPSpct' => -3.0928,
+            'updated'        => 1701690000
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $earnings = $this->client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+
+        $this->assertInstanceOf(Earnings::class, $earnings);
+        $this->assertEquals($mocked_response['s'], $earnings->status);
+        $this->assertEquals($mocked_response['symbol'], $earnings->symbol);
+        $this->assertEquals($mocked_response['fiscalYear'], $earnings->fiscal_year);
+        $this->assertEquals($mocked_response['fiscalQuarter'], $earnings->fiscal_quarter);
+        $this->assertEquals(Carbon::parse($mocked_response['date']), $earnings->date);
+        $this->assertEquals(Carbon::parse($mocked_response['reportDate']), $earnings->report_date);
+        $this->assertEquals($mocked_response['reportTime'], $earnings->report_time);
+        $this->assertEquals($mocked_response['currency'], $earnings->currency);
+        $this->assertEquals($mocked_response['reportedEPS'], $earnings->reported_eps);
+        $this->assertEquals($mocked_response['estimatedEPS'], $earnings->estimated_eps);
+        $this->assertEquals($mocked_response['surpriseEPS'], $earnings->surprise_eps);
+        $this->assertEquals($mocked_response['surpriseEPSpct'], $earnings->surprise_eps_pct);
+        $this->assertEquals(Carbon::parse($mocked_response['updated']), $earnings->updated);
+    }
+
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testEarnings_noFromOrCountback_throwsException()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->client->stocks->earnings('AAPL');
     }
 
     public function testExceptionHandling_throwsGuzzleException()
