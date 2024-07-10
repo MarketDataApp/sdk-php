@@ -38,11 +38,11 @@ class StocksBulkQuote
 
     // The 52-week high for the stock. This parameter is omitted unless the optional 52week request parameter is set to
     // true.
-    public float $fifty_two_week_high;
+    public float|null $fifty_two_week_high = null;
 
     // The 52-week low for the stock. This parameter is omitted unless the optional 52week request parameter is set to
     // true.
-    public float $fifty_two_week_low;
+    public float|null $fifty_two_week_low = null;
 
     // The number of shares traded during the current session.
     public int $volume;
@@ -60,8 +60,8 @@ class StocksBulkQuote
         float $last,
         float $change,
         float $change_percent,
-        float $fifty_two_week_high,
-        float $fifty_two_week_low,
+        float|null $fifty_two_week_high,
+        float|null $fifty_two_week_low,
         int $volume,
         Carbon $updated
     ) {
@@ -74,8 +74,12 @@ class StocksBulkQuote
         $this->last = $last;
         $this->change = $change;
         $this->change_percent = $change_percent;
-        $this->fifty_two_week_high = $fifty_two_week_high;
-        $this->fifty_two_week_low = $fifty_two_week_low;
+        if(!is_null($fifty_two_week_high)) {
+            $this->fifty_two_week_high = $fifty_two_week_high;
+        }
+        if(!is_null($fifty_two_week_low)) {
+            $this->fifty_two_week_low = $fifty_two_week_low;
+        }
         $this->volume = $volume;
         $this->updated = $updated;
     }

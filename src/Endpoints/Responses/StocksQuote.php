@@ -41,11 +41,11 @@ class StocksQuote
 
     // The 52-week high for the stock. This parameter is omitted unless the optional 52week request parameter is set to
     // true.
-    public float $fifty_two_week_high;
+    public float|null $fifty_two_week_high = null;
 
     // The 52-week low for the stock. This parameter is omitted unless the optional 52week request parameter is set to
     // true.
-    public float $fifty_two_week_low;
+    public float|null $fifty_two_week_low = null;
 
     // The number of shares traded during the current session.
     public int $volume;
@@ -66,8 +66,12 @@ class StocksQuote
         $this->last = $response->last[0];
         $this->change = $response->change[0];
         $this->change_percent = $response->changepct[0];
-        $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
-        $this->fifty_two_week_low = $response->{'52weekLow'}[0];
+        if (isset($response->{'52weekHigh'}[0])) {
+            $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
+        }
+        if (isset($response->{'52weekLow'}[0])) {
+            $this->fifty_two_week_low = $response->{'52weekLow'}[0];
+        }
         $this->volume = $response->volume[0];
         $this->updated = Carbon::parse($response->updated[0]);
     }

@@ -28,8 +28,8 @@ class StocksBulkQuotes
                 last: $response->last[$i],
                 change: $response->change[$i],
                 change_percent: $response->changepct[$i],
-                fifty_two_week_high: $response->{'52weekHigh'}[$i],
-                fifty_two_week_low: $response->{'52weekLow'}[$i],
+                fifty_two_week_high: isset($response->{'52weekHigh'}) ? $response->{'52weekHigh'}[$i] : null,
+                fifty_two_week_low: isset($response->{'52weekLow'}) ? $response->{'52weekLow'}[$i] : null,
                 volume: $response->volume[$i],
                 updated: Carbon::parse($response->updated[$i]),
             );
