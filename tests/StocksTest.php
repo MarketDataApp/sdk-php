@@ -17,6 +17,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
+use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
@@ -380,7 +381,7 @@ class StocksTest extends TestCase
         $this->client->stocks->bulkQuotes();
     }
 
-    public function testEarnings__success()
+    public function testEarnings_success()
     {
         $mocked_response = [
             's'              => 'ok',
@@ -425,6 +426,37 @@ class StocksTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->client->stocks->earnings('AAPL');
+    }
+
+
+    public function testNews_success()
+    {
+        $mocked_response = [
+            's'               => 'ok',
+            'symbol'          => 'AAPL',
+            'headline'        => 'Whoa, There! Let Apple Stock Take a Breather Before Jumping in Headfirst.',
+            'content'         => "Apple is a rock-solid company, but this doesn't mean prudent investors need to buy AAPL stock at any price.",
+            'source'          => 'https=>//investorplace.com/2023/12/whoa-there-let-apple-stock-take-a-breather-before-jumping-in-headfirst/',
+            'publicationDate' => 1703041200
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $news = $this->client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals($mocked_response['s'], $news->status);
+        $this->assertEquals($mocked_response['symbol'], $news->symbol);
+        $this->assertEquals($mocked_response['headline'], $news->headline);
+        $this->assertEquals($mocked_response['content'], $news->content);
+        $this->assertEquals($mocked_response['source'], $news->source);
+        $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
+    }
+
+    public function testNews_noFromOrCountback_throwsException()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->client->stocks->news('AAPL');
     }
 
     public function testExceptionHandling_throwsGuzzleException()

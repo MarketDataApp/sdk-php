@@ -37,6 +37,8 @@ $bulk_candles = $client->stocks->bulkCandles(['AAPL, MSFT']);
 $quote = $client->stocks->quote('AAPL');
 $quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
 $bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
+$earnings = $client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+$news = $client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 ```
 
 ## Testing
