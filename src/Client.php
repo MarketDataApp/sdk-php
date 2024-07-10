@@ -7,6 +7,7 @@ use MarketDataApp\Endpoints\Markets;
 use MarketDataApp\Endpoints\MutualFunds;
 use MarketDataApp\Endpoints\Options;
 use MarketDataApp\Endpoints\Stocks;
+use MarketDataApp\Endpoints\Utilities;
 
 class Client extends ClientBase
 {
@@ -40,6 +41,12 @@ class Client extends ClientBase
      */
     public MutualFunds $mutual_funds;
 
+    /**
+     * These endpoints are designed to assist with API-related service issues, including checking the online status and
+     * uptime.
+     */
+    public Utilities $utilities;
+
     public function __construct($token)
     {
         parent::__construct($token);
@@ -49,5 +56,6 @@ class Client extends ClientBase
         $this->options = new Options($this);
         $this->markets = new Markets($this);
         $this->mutual_funds = new MutualFunds($this);
+        $this->utilities = new Utilities($this);
     }
 }
