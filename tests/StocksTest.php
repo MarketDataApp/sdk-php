@@ -100,6 +100,53 @@ class StocksTest extends TestCase
         }
     }
 
+    /**
+     * @throws GuzzleException
+     */
+    public function testCandles_noData_success()
+    {
+        $mocked_response = [
+            's' => 'no_data',
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "DJI",
+            from: Carbon::parse('2022-09-01'),
+            to: Carbon::parse('2022-09-05'),
+            resolution: 'D'
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEmpty($response->candles);
+        $this->assertFalse(isset($response->next_time));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function testCandles_noDataNextTime_success()
+    {
+        $mocked_response = [
+            's' => 'no_data',
+            'nextTime' => 1663958094,
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "DJI",
+            from: Carbon::parse('2022-09-01'),
+            to: Carbon::parse('2022-09-05'),
+            resolution: 'D'
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response['nextTime'], $response->next_time);
+        $this->assertEmpty($response->candles);
+    }
+
     public function testStocks_quote_success()
     {
         $mocked_response = $this->aapl_mocked_response;

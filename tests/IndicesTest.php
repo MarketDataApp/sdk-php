@@ -54,6 +54,25 @@ class IndicesTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
     }
 
+    public function testQuote_noData_success()
+    {
+        $mocked_response = [
+            's' => 'no_data',
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->indices->quote("DJI");
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals($mocked_response['s'], $response->status);
+        $this->assertFalse(isset($response->symbol));
+        $this->assertFalse(isset($response->last));
+        $this->assertFalse(isset($response->change));
+        $this->assertFalse(isset($response->change_percent));
+        $this->assertFalse(isset($response->fifty_two_week_high));
+        $this->assertFalse(isset($response->fifty_two_week_low));
+        $this->assertFalse(isset($response->updated));
+    }
+
     /**
      * @throws GuzzleException
      */
@@ -81,7 +100,7 @@ class IndicesTest extends TestCase
         $this->assertCount(5, $response->candles);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
-        for($i = 0; $i < count($response->candles); $i++) {
+        for ($i = 0; $i < count($response->candles); $i++) {
             $this->assertInstanceOf(Candle::class, $response->candles[$i]);
             $this->assertEquals($mocked_response['c'][$i], $response->candles[$i]->close);
             $this->assertEquals($mocked_response['h'][$i], $response->candles[$i]->high);
@@ -111,7 +130,7 @@ class IndicesTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEquals($mocked_response['s'], $response->status);
-        $this->assertFalse(isset($response->candles));
+        $this->assertEmpty($response->candles);
         $this->assertFalse(isset($response->next_time));
     }
 
@@ -121,7 +140,7 @@ class IndicesTest extends TestCase
     public function testCandles_noDataNextTime_success()
     {
         $mocked_response = [
-            's' => 'no_data',
+            's'        => 'no_data',
             'nextTime' => 1659326400,
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
@@ -135,7 +154,7 @@ class IndicesTest extends TestCase
 
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
-        $this->assertFalse(isset($response->candles));
+        $this->assertEmpty($response->candles);
         $this->assertEquals($mocked_response['s'], $response->status);
         $this->assertEquals($mocked_response['nextTime'], $response->next_time);
     }

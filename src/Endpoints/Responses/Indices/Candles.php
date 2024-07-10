@@ -15,7 +15,7 @@ class Candles
     public string $status;
 
     /** @var Candle[] $candles */
-    public array $candles;
+    public array $candles = [];
 
     // Unix time of the next quote if there is no data in the requested period, but there is data in a subsequent
     // period.

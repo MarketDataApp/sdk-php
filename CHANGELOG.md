@@ -5,6 +5,7 @@
 - Completed Indices endpoints.
 - Completed Stocks endpoints.
 - Added stubs for remaining endpoints.
+- Added custom ApiException class to handle status = 'error' messages.
 
 ## v0.1.0-alpha
 

@@ -9,6 +9,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
+use MarketDataApp\Exceptions\ApiException;
 
 class Stocks
 {
@@ -21,7 +22,7 @@ class Stocks
         $this->client = $client;
     }
 
-        /**
+    /**
      * Get historical price candles for an index.
      *
      * @param string $symbol The company's ticker symbol.
@@ -35,18 +36,38 @@ class Stocks
      * Yearly Resolutions:(yearly, Y, 1Y, 2Y, ...)
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
+     * @param string|null $exchange Use to specify the exchange of the ticker. This is useful when you need to specify
+     *  a stock that quotes on several exchanges with the same symbol. You may specify the exchange using the EXCHANGE
+     * ACRONYM, MIC CODE, or two digit YAHOO FINANCE EXCHANGE CODE. If no exchange is specified symbols will be matched
+     * to US exchanges first.
+     * @param bool $extended Include extended hours trading sessions when returning intraday candles. Daily resolutions
+     * never return extended hours candles. The default is false.
+     * @param string|null $country Use to specify the country of the exchange (not the country of the company) in
+     * conjunction with the symbol argument. This argument is useful when you know the ticker symbol and the country of
+     * the exchange, but not the exchange code. Use the two digit ISO 3166 country code. If no country is specified, US
+     * exchanges will be assumed.
+     * @param bool $adjustsplits Adjust historical data for for historical splits and reverse splits. Market Data uses
+     * the CRSP methodology for adjustment. Daily candles default: true. Intraday candles default: false.
+     * @param bool $adjustdividends CAUTION: Adjusted dividend data is planned for the future, but not yet implemented.
+     * All data is currently returned unadjusted for dividends. Market Data uses the CRSP methodology for adjustment.
+     * Daily candles default: true. Intraday candles default: false.
      * @return Candles
-     * @throws GuzzleException
+     * @throws GuzzleException|ApiException
      */
     public function candles(
         string $symbol,
         Carbon $from,
         Carbon $to = null,
         string $resolution = 'D',
-        int $countback = null
+        int $countback = null,
+        string $exchange = null,
+        bool $extended = false,
+        string $country = null,
+        bool $adjustsplits = false,
+        bool $adjustdividends = false,
     ): Candles {
         return new Candles($this->client->execute(self::BASE_URL . "candles/{$resolution}/{$symbol}/",
-            compact('from', 'to', 'countback')
+            compact('from', 'to', 'countback', 'exchange', 'extended', 'country', 'adjustsplits', 'adjustdividends')
         ));
     }
 
