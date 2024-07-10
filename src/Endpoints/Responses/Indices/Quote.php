@@ -1,10 +1,10 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Indices;
 
 use Carbon\Carbon;
 
-class IndicesQuote
+class Quote
 {
 
     // Will always be ok when there is data for the symbol requested.
@@ -34,14 +34,15 @@ class IndicesQuote
 
     public function __construct(object $response)
     {
-        // Convert the response to this object.
         $this->status = $response->s;
-        $this->symbol = $response->symbol[0];
-        $this->last = $response->last[0];
-        $this->change = $response->change[0];
-        $this->change_percent = $response->changepct[0];
-        $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
-        $this->fifty_two_week_low = $response->{'52weekLow'}[0];
-        $this->updated = Carbon::parse($response->updated);
+        if ($this->status === "ok") {
+            $this->symbol = $response->symbol[0];
+            $this->last = $response->last[0];
+            $this->change = $response->change[0];
+            $this->change_percent = $response->changepct[0];
+            $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
+            $this->fifty_two_week_low = $response->{'52weekLow'}[0];
+            $this->updated = Carbon::parse($response->updated);
+        }
     }
 }

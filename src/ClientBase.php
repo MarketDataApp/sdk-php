@@ -6,6 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use MarketDataApp\Exceptions\ApiException;
 
 abstract class ClientBase
 {
@@ -53,6 +54,7 @@ abstract class ClientBase
 
     /**
      * @throws GuzzleException
+     * @throws ApiException
      */
     public function execute($method, array $arguments = []): object
     {
@@ -62,7 +64,13 @@ abstract class ClientBase
         ]);
         $json_response = (string)$response->getBody();
 
-        return json_decode($json_response);
+        $response = json_decode($json_response);
+
+        if($response->s === 'error') {
+            throw new ApiException(message: $response->errmsg, response: $response);
+        }
+
+        return $response;
     }
 
     protected function headers(): array

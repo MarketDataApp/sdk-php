@@ -1,10 +1,10 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses;
+namespace MarketDataApp\Endpoints\Responses\Indices;
 
 use Carbon\Carbon;
 
-class IndicesCandle
+class Candle
 {
 
     // Open price.

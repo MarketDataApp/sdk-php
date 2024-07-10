@@ -21,13 +21,20 @@ composer require MarketDataApp/sdk-php
 
 ```php
 $client = new MarketDataApp\Client();
+
+// Indices
 $quote = $client->indices->quote('DJI');
-$candles = $this->client->indices->candles(
+$candles = $client->indices->candles(
     symbol: "DJI",
     from: Carbon::parse('2022-09-01'),
     to: Carbon::parse('2022-09-05'),
     resolution: 'D'
 );
+
+// Stocks
+$quote = $client->stocks->quote('AAPL');
+$quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
+$bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
 ```
 
 ## Testing

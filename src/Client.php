@@ -3,6 +3,7 @@
 namespace MarketDataApp;
 
 use MarketDataApp\Endpoints\Indices;
+use MarketDataApp\Endpoints\Stocks;
 
 class Client extends ClientBase
 {
@@ -13,10 +14,16 @@ class Client extends ClientBase
      */
     public Indices $indices;
 
+    /**
+     * Stock endpoints include numerous fundamental, technical, and pricing data.
+     */
+    public Stocks $stocks;
+
     public function __construct($token)
     {
         parent::__construct($token);
 
         $this->indices = new Indices($this);
+        $this->stocks = new Stocks($this);
     }
 }
