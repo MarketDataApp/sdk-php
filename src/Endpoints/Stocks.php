@@ -45,7 +45,7 @@ class Stocks
      * @param bool $adjustsplits Adjust historical data for historical splits and reverse splits. Market Data uses
      * the CRSP methodology for adjustment. Daily candles default: true.
      *
-     * @return Candles
+     * @return BulkCandles
      * @throws ApiException
      * @throws GuzzleException
      */

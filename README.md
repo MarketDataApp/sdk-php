@@ -20,7 +20,7 @@ composer require MarketDataApp/sdk-php
 ## Usage
 
 ```php
-$client = new MarketDataApp\Client();
+$client = new MarketDataApp\Client('your_api_token');
 
 // Indices
 $quote = $client->indices->quote('DJI');
@@ -32,6 +32,8 @@ $candles = $client->indices->candles(
 );
 
 // Stocks
+$candles = $client->stocks->candles('AAPL');
+$bulk_candles = $client->stocks->bulkCandles(['AAPL, MSFT']);
 $quote = $client->stocks->quote('AAPL');
 $quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
 $bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
