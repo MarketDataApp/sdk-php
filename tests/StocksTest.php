@@ -3,11 +3,8 @@
 namespace MarketDataApp\Tests;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
@@ -21,10 +18,13 @@ use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class StocksTest extends TestCase
 {
+
+    use MockResponses;
 
     private Client $client;
 
@@ -398,9 +398,7 @@ class StocksTest extends TestCase
             'surpriseEPSpct' => -3.0928,
             'updated'        => 1701690000
         ];
-        $this->setMockResponses([
-            new Response(200, [], json_encode($mocked_response)),
-        ]);
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
         $earnings = $this->client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 
         $this->assertInstanceOf(Earnings::class, $earnings);
@@ -439,9 +437,7 @@ class StocksTest extends TestCase
             'source'          => 'https=>//investorplace.com/2023/12/whoa-there-let-apple-stock-take-a-breather-before-jumping-in-headfirst/',
             'publicationDate' => 1703041200
         ];
-        $this->setMockResponses([
-            new Response(200, [], json_encode($mocked_response)),
-        ]);
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
         $news = $this->client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 
         $this->assertInstanceOf(News::class, $news);
@@ -467,12 +463,5 @@ class StocksTest extends TestCase
 
         $this->expectException(\GuzzleHttp\Exception\GuzzleException::class);
         $response = $this->client->stocks->quote("INVALID");
-    }
-
-    private function setMockResponses(array $responses): void
-    {
-        $mock = new MockHandler($responses);
-        $handlerStack = HandlerStack::create($mock);
-        $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
     }
 }

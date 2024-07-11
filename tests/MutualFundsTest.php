@@ -12,10 +12,13 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class MutualFundsTest extends TestCase
 {
+
+    use MockResponses;
 
     private Client $client;
 

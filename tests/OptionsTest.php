@@ -16,10 +16,13 @@ use MarketDataApp\Endpoints\Responses\Options\Lookup;
 use MarketDataApp\Endpoints\Responses\Options\OptionChain;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class OptionsTest extends TestCase
 {
+
+    use MockResponses;
 
     private Client $client;
 

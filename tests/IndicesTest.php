@@ -3,21 +3,21 @@
 namespace MarketDataApp\Tests;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candle;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class IndicesTest extends TestCase
 {
+
+    use MockResponses;
 
     private Client $client;
 
@@ -167,12 +167,5 @@ class IndicesTest extends TestCase
 
         $this->expectException(\GuzzleHttp\Exception\GuzzleException::class);
         $response = $this->client->indices->quote("INVALID");
-    }
-
-    private function setMockResponses(array $responses): void
-    {
-        $mock = new MockHandler($responses);
-        $handlerStack = HandlerStack::create($mock);
-        $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
     }
 }

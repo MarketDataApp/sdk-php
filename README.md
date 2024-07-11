@@ -44,7 +44,7 @@ $news = $client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'))
 ## Testing
 
 ```bash
-./vendor/bin/phpunit tests
+./vendor/bin/phpunit
 ```
 
 ## Changelog
