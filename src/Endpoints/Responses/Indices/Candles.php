@@ -9,8 +9,8 @@ class Candles
 
     /**
      * - Will always be ok when there is data for the candles requested.
-     * - Status will be no_data if no candles are found for the request.
-     * - Status will be error if the request produces an error response.
+     * - Statuses will be no_data if no candles are found for the request.
+     * - Statuses will be error if the request produces an error response.
      */
     public string $status;
 

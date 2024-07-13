@@ -39,6 +39,23 @@ $quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
 $bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
 $earnings = $client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 $news = $client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+
+// Markets
+$status = $client->markets->status();
+
+// MutualFunds
+$candles = $client->mutual_funds->candles();
+
+// Options
+$expirations = $client->options->expirations();
+$lookup = $client->options->lookup()
+$strikes = $client->options->strikes();
+$option_chain = $client->options->option_chain();
+$quotes = $client->options->quotes();
+
+// Utilities
+$status = $client->utilities->api_status();
+$headers = $client->utilities->headers();
 ```
 
 ## Testing
