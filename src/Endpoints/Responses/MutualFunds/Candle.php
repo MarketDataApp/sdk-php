@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Endpoints\Responses\Stocks;
+namespace MarketDataApp\Endpoints\Responses\MutualFunds;
 
 use Carbon\Carbon;
 
@@ -19,19 +19,15 @@ class Candle
     // Close price.
     public float $close;
 
-    // Volume.
-    public int $volume;
-
     // Candle time (Unix timestamp, UTC). Daily, weekly, monthly, yearly candles are returned without times.
     public Carbon $timestamp;
 
-    public function __construct(float $open, float $high, float $low, float $close, int $volume, Carbon $timestamp)
+    public function __construct(float $open, float $high, float $low, float $close, Carbon $timestamp)
     {
         $this->open = $open;
         $this->high = $high;
         $this->low = $low;
         $this->close = $close;
-        $this->volume = $volume;
         $this->timestamp = $timestamp;
     }
 }

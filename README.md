@@ -41,10 +41,15 @@ $earnings = $client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-
 $news = $client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 
 // Markets
-$status = $client->markets->status();
+$status = $client->markets->status(date: Carbon::parse('2023-01-01'));
 
-// MutualFunds
-$candles = $client->mutual_funds->candles();
+// Mutual Funds
+$candles = $client->mutual_funds->candles(
+    symbol: 'VFINX',
+    from: Carbon::parse('2022-09-01'),
+    to: Carbon::parse('2022-09-05'),
+    resolution: 'D'
+);
 
 // Options
 $expirations = $client->options->expirations();
