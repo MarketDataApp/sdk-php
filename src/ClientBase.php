@@ -66,7 +66,7 @@ abstract class ClientBase
 
         $response = json_decode($json_response);
 
-        if($response->s === 'error') {
+        if(isset($response->s) && $response->s === 'error') {
             throw new ApiException(message: $response->errmsg, response: $response);
         }
 
