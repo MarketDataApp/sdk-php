@@ -90,8 +90,8 @@ class IndicesTest extends TestCase
 
         $response = $this->client->indices->candles(
             symbol: "DJI",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -122,8 +122,8 @@ class IndicesTest extends TestCase
 
         $response = $this->client->indices->candles(
             symbol: "DJI",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -147,8 +147,8 @@ class IndicesTest extends TestCase
 
         $response = $this->client->indices->candles(
             symbol: "DJI",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 

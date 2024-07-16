@@ -83,8 +83,8 @@ class StocksTest extends TestCase
 
         $response = $this->client->stocks->candles(
             symbol: "AAPL",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -116,8 +116,8 @@ class StocksTest extends TestCase
 
         $response = $this->client->stocks->candles(
             symbol: "AAPl",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -140,8 +140,8 @@ class StocksTest extends TestCase
 
         $response = $this->client->stocks->candles(
             symbol: "AAPL",
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -399,7 +399,7 @@ class StocksTest extends TestCase
             'updated'        => 1701690000
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
-        $earnings = $this->client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+        $earnings = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
 
         $this->assertInstanceOf(Earnings::class, $earnings);
         $this->assertEquals($mocked_response['s'], $earnings->status);
@@ -438,7 +438,7 @@ class StocksTest extends TestCase
             'publicationDate' => 1703041200
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
-        $news = $this->client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+        $news = $this->client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
 
         $this->assertInstanceOf(News::class, $news);
         $this->assertEquals($mocked_response['s'], $news->status);

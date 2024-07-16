@@ -101,8 +101,8 @@ class OptionsTest extends TestCase
 
         $response = $this->client->options->strikes(
             symbol: 'AAPL',
-            expiration: Carbon::parse('2023-01-20'),
-            date: Carbon::parse('2023-01-03'),
+            expiration: '2023-01-20',
+            date: '2023-01-03',
         );
 
         // Verify that the response is an object of the correct type.
@@ -122,8 +122,8 @@ class OptionsTest extends TestCase
 
         $response = $this->client->options->strikes(
             symbol: 'AAPL',
-            expiration: Carbon::parse('2023-01-20'),
-            date: Carbon::parse('2023-01-03'),
+            expiration: '2023-01-20',
+            date: '2023-01-03',
         );
 
         // Verify that the response is an object of the correct type.
@@ -245,7 +245,7 @@ class OptionsTest extends TestCase
 
         $response = $this->client->options->option_chain(
             symbol: 'AAPL',
-            expiration: Carbon::parse('2025-01-17'),
+            expiration: '2025-01-17',
             side: Side::CALL,
         );
 

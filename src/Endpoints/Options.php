@@ -2,7 +2,6 @@
 
 namespace MarketDataApp\Endpoints;
 
-use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
@@ -35,13 +34,13 @@ class Options
      * @param int|null $strike Limit the lookup of expiration dates to the strike provided. This will cause the endpoint to
      * only return expiration dates that include this strike.
      *
-     * @param Carbon|null $date Use to lookup a historical list of expiration dates from a specific previous trading
+     * @param string|null $date Use to lookup a historical list of expiration dates from a specific previous trading
      * day. If date is omitted the expiration dates will be from the current trading day during market hours or from the
-     * last trading day when the market is closed.
+     * last trading day when the market is closed. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
      * @throws ApiException|GuzzleException
      */
-    public function expirations(string $symbol, int $strike = null, Carbon $date = null): Expirations
+    public function expirations(string $symbol, int $strike = null, string $date = null): Expirations
     {
         // Stub
         return new Expirations($this->client->execute(self::BASE_URL . "options/expirations/$symbol",
@@ -72,15 +71,15 @@ class Options
      *
      * @param string $symbol The underlying ticker symbol for the options chain you wish to lookup.
      *
-     * @param Carbon|null $expiration Limit the lookup of strikes to options that expire on a specific expiration date.
+     * @param string|null $expiration Limit the lookup of strikes to options that expire on a specific expiration date.
      *
-     * @param Carbon|null $date Use to lookup a historical list of strikes from a specific previous trading day. If date
+     * @param string|null $date Use to lookup a historical list of strikes from a specific previous trading day. If date
      * is omitted the expiration dates will be from the current trading day during market hours or from the last trading
-     * day when the market is closed.
+     * day when the market is closed. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
      * @throws ApiException|GuzzleException
      */
-    public function strikes(string $symbol, Carbon $expiration = null, Carbon $date = null): Strikes
+    public function strikes(string $symbol, string $expiration = null, string $date = null): Strikes
     {
         // Stub
         return new Strikes($this->client->execute(self::BASE_URL . "options/strikes/$symbol",
@@ -97,13 +96,15 @@ class Options
      * all expirations.
      *
      * @param string $symbol The ticker symbol of the underlying asset.
-     * @param Carbon|null $date Use to lookup a historical end of day options chain from a specific trading day. If no
-     * date is specified the chain will be the most current chain available during market hours. When the market is
-     * closed the chain will be from the last trading day.
      *
-     * @param Carbon|Expiration $expiration
+     * @param string|null $date Use to lookup a historical end of day options chain from a specific trading day. If no
+     * date is specified the chain will be the most current chain available during market hours. When the market is
+     * closed the chain will be from the last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param string|Expiration $expiration
      * - Limits the option chain to a specific expiration date. Accepted date inputs: ISO 8601, unix, spreadsheet. This
-     * parameter is only required if requesting a quote along with the chain.
+     * parameter is only required if requesting a quote along with the chain. Accepted timestamp inputs: ISO 8601, unix,
+     * spreadsheet.
      *
      * - If omitted the next monthly expiration for real-time quotes or the next monthly expiration relative to the date
      * parameter for historical quotes will be returned.
@@ -114,11 +115,11 @@ class Options
      * consume your requests very quickly. The full SPX option chain has more than 20,000 contracts. A request is
      * consumed for each contact you request with a price in the option chain.
      *
-     * @param Carbon|null $from Limit the option chain to expiration dates after from (inclusive). Should be combined
-     * with to create a range.
+     * @param string|null $from Limit the option chain to expiration dates after from (inclusive). Should be combined
+     * with to create a range. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
-     * @param Carbon|null $to Limit the option chain to expiration dates before to (not inclusive). Should be combined
-     * with from to create a range.
+     * @param string|null $to Limit the option chain to expiration dates before to (not inclusive). Should be combined
+     * with from to create a range. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
      * @param int|null $month Limit the option chain to options that expire in a specific month (1-12).
      *
@@ -202,10 +203,10 @@ class Options
      */
     public function option_chain(
         string $symbol,
-        Carbon $date = null,
-        Carbon|Expiration $expiration = Expiration::ALL,
-        Carbon $from = null,
-        Carbon $to = null,
+        string $date = null,
+        string|Expiration $expiration = Expiration::ALL,
+        string $from = null,
+        string $to = null,
         int $month = null,
         int $year = null,
         bool $weekly = true,
@@ -261,21 +262,23 @@ class Options
      * @param string $option_symbol The option symbol (as defined by the OCC) for the option you wish to lookup. Use the
      * current OCC option symbol format, even for historic options that quoted before the format change in 2010.
      *
-     * @param Carbon|null $date Use to lookup a historical end of day quote from a specific trading day. If no date is
+     * @param string|null $date Use to lookup a historical end of day quote from a specific trading day. If no date is
      * specified the quote will be the most current price available during market hours. When the market is closed the
-     * quote will be from the last trading day.
+     * quote will be from the last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
-     * @param Carbon|null $from Use to lookup a series of end of day quotes. From is the oldest (leftmost) date to
+     * @param string|null $from Use to lookup a series of end of day quotes. From is the oldest (leftmost) date to
      * return (inclusive). If from/to is not specified the quote will be the most current price available during market
-     * hours. When the market is closed the quote will be from the last trading day.
+     * hours. When the market is closed the quote will be from the last trading day. Accepted timestamp inputs: ISO
+     * 8601, unix, spreadsheet.
      *
-     * @param Carbon|null $to Use to lookup a series of end of day quotes. From is the newest (rightmost) date to return
+     * @param string|null $to Use to lookup a series of end of day quotes. From is the newest (rightmost) date to return
      * (exclusive). If from/to is not specified the quote will be the most current price available during market hours.
-     * When the market is closed the quote will be from the last trading day.
+     * When the market is closed the quote will be from the last trading day. Accepted timestamp inputs: ISO 8601, unix,
+     * spreadsheet.
      *
      * @throws ApiException|GuzzleException
      */
-    public function quotes(string $option_symbol, Carbon $date = null, Carbon $from = null, Carbon $to = null): Quotes
+    public function quotes(string $option_symbol, string $date = null, string $from = null, string $to = null): Quotes
     {
         // Stub
         return new Quotes($this->client->execute(self::BASE_URL . "options/quotes/$option_symbol/",

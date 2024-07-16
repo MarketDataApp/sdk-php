@@ -34,7 +34,7 @@ class MarketsTest extends TestCase
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->markets->status(
-            date: Carbon::createFromTimestamp(1680580800)
+            date: '1680580800'
         );
 
         // Verify that the response is an object of the correct type.
