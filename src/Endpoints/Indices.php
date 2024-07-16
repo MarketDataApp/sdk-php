@@ -2,7 +2,6 @@
 
 namespace MarketDataApp\Endpoints;
 
-use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
@@ -38,8 +37,12 @@ class Indices
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
      *
-     * @param Carbon $from The leftmost candle on a chart (inclusive). If you use countback, to is not required.
-     * @param Carbon|null $to The rightmost candle on a chart (inclusive).
+     * @param string $from The leftmost candle on a chart (inclusive). If you use countback, to is not required.
+     * Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param string|null $to The rightmost candle on a chart (inclusive). Accepted timestamp inputs: ISO 8601, unix,
+     * spreadsheet.
+     *
      * @param string $resolution The duration of each candle.
      * Minutely Resolutions: (minutely, 1, 3, 5, 15, 30, 45, ...) Hourly Resolutions: (hourly, H, 1H, 2H, ...)
      * Daily Resolutions: (daily, D, 1D, 2D, ...)
@@ -51,12 +54,13 @@ class Indices
      * is not required.
      *
      * @return Candles
-     * @throws GuzzleException|ApiException
+     * @throws ApiException
+     * @throws GuzzleException
      */
     public function candles(
         string $symbol,
-        Carbon $from,
-        Carbon $to = null,
+        string $from,
+        string $to = null,
         string $resolution = 'D',
         int $countback = null
     ): Candles {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1-alpha
+
+- Changed all Carbon date endpoints to receive a string rather than a Carbon instance.
+
 ## v0.4.0-alpha
 
 - Completed remaining endpoints: 

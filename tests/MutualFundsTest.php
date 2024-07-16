@@ -40,8 +40,8 @@ class MutualFundsTest extends TestCase
 
         $response = $this->client->mutual_funds->candles(
             symbol: 'VFINX',
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -72,8 +72,8 @@ class MutualFundsTest extends TestCase
 
         $response = $this->client->mutual_funds->candles(
             symbol: 'VFINX',
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
@@ -96,8 +96,8 @@ class MutualFundsTest extends TestCase
 
         $response = $this->client->mutual_funds->candles(
             symbol: 'VFINX',
-            from: Carbon::parse('2022-09-01'),
-            to: Carbon::parse('2022-09-05'),
+            from: '2022-09-01',
+            to: '2022-09-05',
             resolution: 'D'
         );
 
