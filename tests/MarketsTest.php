@@ -3,19 +3,17 @@
 namespace MarketDataApp\Tests;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Markets\Status;
+use MarketDataApp\Endpoints\Responses\Markets\Statuses;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class MarketsTest extends TestCase
 {
+
+    use MockResponses;
 
     private Client $client;
 
@@ -28,7 +26,26 @@ class MarketsTest extends TestCase
 
     public function testStatus_success()
     {
-        // Stub
-        $this->assertInstanceOf(Status::class, $this->client->markets->status());
+        $mocked_response = [
+            's'      => 'ok',
+            'date'   => [1680580800],
+            'status' => ['open']
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            date: Carbon::createFromTimestamp(1680580800)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertCount(1, $response->statuses);
+
+        // Verify each item in the response is an object of the correct type and has the correct values.
+        for ($i = 0; $i < count($response->statuses); $i++) {
+            $this->assertInstanceOf(Status::class, $response->statuses[$i]);
+            $this->assertEquals(Carbon::parse($mocked_response['date'][$i]), $response->statuses[$i]->date);
+            $this->assertEquals($mocked_response['status'][$i], $response->statuses[$i]->status);
+        }
     }
 }

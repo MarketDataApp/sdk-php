@@ -39,12 +39,42 @@ $quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
 $bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
 $earnings = $client->stocks->earnings(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
 $news = $client->stocks->news(symbol: 'AAPL', from: Carbon::parse('2023-01-01'));
+
+// Markets
+$status = $client->markets->status(date: Carbon::parse('2023-01-01'));
+
+// Mutual Funds
+$candles = $client->mutual_funds->candles(
+    symbol: 'VFINX',
+    from: Carbon::parse('2022-09-01'),
+    to: Carbon::parse('2022-09-05'),
+    resolution: 'D'
+);
+
+// Options
+$expirations = $client->options->expirations('AAPL');
+$lookup = $client->options->lookup('AAPL 7/28/23 $200 Call');
+$strikes = $client->options->strikes(
+    symbol: 'AAPL',
+    expiration: Carbon::parse('2023-01-20'),
+    date: Carbon::parse('2023-01-03'),
+);
+$option_chain = $client->options->option_chain(
+    symbol: 'AAPL',
+    expiration: Carbon::parse('2025-01-17'),
+    side: Side::CALL,
+);
+$quotes = $client->options->quotes('AAPL250117C00150000');
+
+// Utilities
+$status = $client->utilities->api_status();
+$headers = $client->utilities->headers();
 ```
 
 ## Testing
 
 ```bash
-./vendor/bin/phpunit tests
+./vendor/bin/phpunit
 ```
 
 ## Changelog
