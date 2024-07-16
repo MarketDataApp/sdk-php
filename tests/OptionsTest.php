@@ -38,9 +38,9 @@ class OptionsTest extends TestCase
     public function testExpirations_success()
     {
         $mocked_response = [
-            's'               => 'ok',
-            'expirations'    => ['2022-09-23', '2022-09-30'],
-            'updated'             => 1663704000
+            's'           => 'ok',
+            'expirations' => ['2022-09-23', '2022-09-30'],
+            'updated'     => 1663704000
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -60,7 +60,7 @@ class OptionsTest extends TestCase
     public function testExpirations_noData_success()
     {
         $mocked_response = [
-            's' => 'no_data',
+            's'        => 'no_data',
             'nextTime' => 1663704000,
             'prevTime' => 1663705000
         ];
@@ -70,7 +70,7 @@ class OptionsTest extends TestCase
 
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Expirations::class, $response);
-        $this->assertFalse(isset($response->expirations));
+        $this->assertEmpty($response->expirations);
         $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
@@ -78,7 +78,7 @@ class OptionsTest extends TestCase
     public function testLookup_success()
     {
         $mocked_response = [
-            's' => 'no_data',
+            's'            => 'no_data',
             'optionSymbol' => 'AAPL230728C00200000',
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
@@ -92,8 +92,50 @@ class OptionsTest extends TestCase
 
     public function testStrikes_success()
     {
-        // Stub
-        $this->assertInstanceOf(Strikes::class, $this->client->options->strikes());
+        $mocked_response = [
+            's'       => 'ok',
+            'updated' => 1663704000,
+            'dates'   => [
+                '2023-01-20' => [
+                    30.0,
+                    35.0
+                ]
+            ]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: Carbon::parse('2023-01-20'),
+            date: Carbon::parse('2023-01-03'),
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
+        $this->assertEquals((array)$mocked_response['dates'], $response->dates);
+    }
+
+    public function testStrikes_noData_success()
+    {
+        $mocked_response = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: Carbon::parse('2023-01-20'),
+            date: Carbon::parse('2023-01-03'),
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEmpty($response->dates);
+        $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 
     public function testQuotes_success()

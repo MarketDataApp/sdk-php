@@ -15,7 +15,7 @@ class Expirations
      *
      * @var Carbon[] $expirations
      **/
-    public array $expirations;
+    public array $expirations = [];
 
     // The date and time of this list of options strikes was updated in Unix time. For historical strikes, this number
     // should match the date parameter.
@@ -34,9 +34,9 @@ class Expirations
 
         switch ($this->status) {
             case 'ok':
-                for ($i = 0; $i < count($response->expirations); $i++) {
-                    $this->expirations[] = Carbon::parse($response->expirations[$i]);
-                }
+                $this->expirations = array_map(function ($expiration) {
+                    return Carbon::parse($expiration);
+                }, $response->expirations);
                 $this->updated = Carbon::parse($response->updated);
                 break;
 
@@ -50,7 +50,5 @@ class Expirations
                 }
                 break;
         }
-
-        $this->updated = Carbon::parse($response->updated);
     }
 }

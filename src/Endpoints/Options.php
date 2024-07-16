@@ -65,13 +65,30 @@ class Options
     public function lookup(string $input): Lookup
     {
         // Stub
-        return new Lookup($this->client->execute(self::BASE_URL . "options/expirations/" . urlencode($input)));
+        return new Lookup($this->client->execute(self::BASE_URL . "options/lookup/" . urlencode($input)));
     }
 
-    public function strikes(): Strikes
+    /**
+     * Get a list of current or historical options strikes for an underlying symbol. If no optional parameters are used,
+     * the endpoint returns the strikes for every expiration in the chain.
+     *
+     * @param string $symbol The underlying ticker symbol for the options chain you wish to lookup.
+     *
+     * @param Carbon|null $expiration Limit the lookup of strikes to options that expire on a specific expiration date.
+     *
+     * @param Carbon|null $date Use to lookup a historical list of strikes from a specific previous trading day. If date
+     * is omitted the expiration dates will be from the current trading day during market hours or from the last trading
+     * day when the market is closed.
+     *
+     * @throws ApiException|GuzzleException
+     */
+    public function strikes(string $symbol, Carbon $expiration = null, Carbon $date = null): Strikes
     {
         // Stub
-        return new Strikes();
+        return new Strikes($this->client->execute(self::BASE_URL . "options/strikes/$symbol", [
+            'expiration' => $expiration,
+            'date'       => $date,
+        ]));
     }
 
     /**
