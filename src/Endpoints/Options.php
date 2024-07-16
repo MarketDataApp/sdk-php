@@ -44,10 +44,8 @@ class Options
     public function expirations(string $symbol, int $strike = null, Carbon $date = null): Expirations
     {
         // Stub
-        return new Expirations($this->client->execute(self::BASE_URL . "options/expirations/$symbol", [
-            'date'   => $date,
-            'strike' => $strike,
-        ]));
+        return new Expirations($this->client->execute(self::BASE_URL . "options/expirations/$symbol",
+            compact('strike', 'date')));
     }
 
     /**
@@ -85,10 +83,8 @@ class Options
     public function strikes(string $symbol, Carbon $expiration = null, Carbon $date = null): Strikes
     {
         // Stub
-        return new Strikes($this->client->execute(self::BASE_URL . "options/strikes/$symbol", [
-            'expiration' => $expiration,
-            'date'       => $date,
-        ]));
+        return new Strikes($this->client->execute(self::BASE_URL . "options/strikes/$symbol",
+            compact('expiration', 'date')));
     }
 
     /**
@@ -259,9 +255,30 @@ class Options
         ]));
     }
 
-    public function quotes(): Quotes
+    /**
+     * Get a current or historical end of day quote for a single options contract.
+     *
+     * @param string $option_symbol The option symbol (as defined by the OCC) for the option you wish to lookup. Use the
+     * current OCC option symbol format, even for historic options that quoted before the format change in 2010.
+     *
+     * @param Carbon|null $date Use to lookup a historical end of day quote from a specific trading day. If no date is
+     * specified the quote will be the most current price available during market hours. When the market is closed the
+     * quote will be from the last trading day.
+     *
+     * @param Carbon|null $from Use to lookup a series of end of day quotes. From is the oldest (leftmost) date to
+     * return (inclusive). If from/to is not specified the quote will be the most current price available during market
+     * hours. When the market is closed the quote will be from the last trading day.
+     *
+     * @param Carbon|null $to Use to lookup a series of end of day quotes. From is the newest (rightmost) date to return
+     * (exclusive). If from/to is not specified the quote will be the most current price available during market hours.
+     * When the market is closed the quote will be from the last trading day.
+     *
+     * @throws ApiException|GuzzleException
+     */
+    public function quotes(string $option_symbol, Carbon $date = null, Carbon $from = null, Carbon $to = null): Quotes
     {
         // Stub
-        return new Quotes();
+        return new Quotes($this->client->execute(self::BASE_URL . "options/quotes/$option_symbol/",
+            compact('date', 'from', 'to')));
     }
 }

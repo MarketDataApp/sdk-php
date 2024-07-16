@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.4.0-alpha
+
+- Completed remaining endpoints: 
+  - Options
+    - expirations
+    - lookup
+    - strikes
+    - option_chain
+    - quotes
+  - Utilities
+    - api_status
+    - headers
+  - Mutual Funds
+    - candles
+  - Markets
+    - status
+
 ## v0.3.0-alpha
 
 - Completed Stocks endpoints: earnings, news.

@@ -3,31 +3,12 @@
 namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
-use MarketDataApp\Enums\Side;
 
-class OptionChain
+class Quote
 {
 
     // The option symbol according to OCC symbology.
     public string $option_symbol;
-
-    // The ticker symbol of the underlying security.
-    public string $underlying;
-
-    // The option's expiration date in Unix time.
-    public Carbon $expiration;
-
-    // The response will be call or put.
-    public Side $side;
-
-    // The exercise price of the option.
-    public float $strike;
-
-    // The date the option was first traded.
-    public Carbon $first_traded;
-
-    // The number of days until the option expires.
-    public int $dte;
 
     // The ask price.
     public float $ask;
@@ -83,17 +64,11 @@ class OptionChain
     // The rho of the option.
     public float $rho;
 
-    // The date/time of the quote.
+    // The date and time of this quote snapshot in Unix time.
     public Carbon $updated;
 
     public function __construct(
         string $option_symbol,
-        string $underlying,
-        Carbon $expiration,
-        Side $side,
-        float $strike,
-        Carbon $first_traded,
-        int $dte,
         float $ask,
         int $ask_size,
         float $bid,
@@ -115,12 +90,6 @@ class OptionChain
         Carbon $updated,
     ) {
         $this->option_symbol = $option_symbol;
-        $this->underlying = $underlying;
-        $this->expiration = $expiration;
-        $this->side = $side;
-        $this->strike = $strike;
-        $this->first_traded = $first_traded;
-        $this->dte = $dte;
         $this->ask = $ask;
         $this->ask_size = $ask_size;
         $this->bid = $bid;

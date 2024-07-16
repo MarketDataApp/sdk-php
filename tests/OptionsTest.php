@@ -3,18 +3,13 @@
 namespace MarketDataApp\Tests;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Endpoints\Responses\Options\Lookup;
 use MarketDataApp\Endpoints\Responses\Options\OptionChain;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
+use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
 use MarketDataApp\Enums\Side;
@@ -140,8 +135,79 @@ class OptionsTest extends TestCase
 
     public function testQuotes_success()
     {
-        // Stub
-        $this->assertInstanceOf(Quotes::class, $this->client->options->quotes());
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000'],
+            'ask'             => [116.9, 112.15],
+            'askSize'         => [90, 90],
+            'bid'             => [114.1, 108.6],
+            'bidSize'         => [90, 90],
+            'mid'             => [115.5, 110.38],
+            'last'            => [115, 107.82],
+            'openInterest'    => [21957, 3012],
+            'volume'          => [0, 0],
+            'inTheMoney'      => [true, true],
+            'underlyingPrice' => [175.13, 175.13],
+            'iv'              => [1.629, 1.923],
+            'delta'           => [1, 1],
+            'gamma'           => [0, 0],
+            'theta'           => [-0.009, -0.009],
+            'vega'            => [0, 0],
+            'rho'             => [0.046, 0.05],
+            'intrinsicValue'  => [115.13, 110.13],
+            'extrinsicValue'  => [0.37, 0.25],
+            'updated'         => [1684702875, 1684702875],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->quotes('AAPL250117C00150000');
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals($mocked_response['s'], $response->status);
+        $this->assertCount(2, $response->quotes);
+
+        // Verify that the response is an object of the correct type.
+        for ($i = 0; $i < count($response->quotes); $i++) {
+            $this->assertInstanceOf(Quote::class, $response->quotes[$i]);
+            $this->assertEquals($mocked_response['optionSymbol'][$i], $response->quotes[$i]->option_symbol);
+            $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);
+            $this->assertEquals($mocked_response['askSize'][$i], $response->quotes[$i]->ask_size);
+            $this->assertEquals($mocked_response['bid'][$i], $response->quotes[$i]->bid);
+            $this->assertEquals($mocked_response['bidSize'][$i], $response->quotes[$i]->bid_size);
+            $this->assertEquals($mocked_response['mid'][$i], $response->quotes[$i]->mid);
+            $this->assertEquals($mocked_response['last'][$i], $response->quotes[$i]->last);
+            $this->assertEquals($mocked_response['openInterest'][$i], $response->quotes[$i]->open_interest);
+            $this->assertEquals($mocked_response['volume'][$i], $response->quotes[$i]->volume);
+            $this->assertEquals($mocked_response['inTheMoney'][$i], $response->quotes[$i]->in_the_money);
+            $this->assertEquals($mocked_response['underlyingPrice'][$i], $response->quotes[$i]->underlying_price);
+            $this->assertEquals($mocked_response['iv'][$i], $response->quotes[$i]->implied_volatility);
+            $this->assertEquals($mocked_response['delta'][$i], $response->quotes[$i]->delta);
+            $this->assertEquals($mocked_response['gamma'][$i], $response->quotes[$i]->gamma);
+            $this->assertEquals($mocked_response['theta'][$i], $response->quotes[$i]->theta);
+            $this->assertEquals($mocked_response['vega'][$i], $response->quotes[$i]->vega);
+            $this->assertEquals($mocked_response['rho'][$i], $response->quotes[$i]->rho);
+            $this->assertEquals($mocked_response['intrinsicValue'][$i], $response->quotes[$i]->intrinsic_value);
+            $this->assertEquals($mocked_response['extrinsicValue'][$i], $response->quotes[$i]->extrinsic_value);
+            $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
+        }
+    }
+
+    public function testQuotes_noData_success()
+    {
+        $mocked_response = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->quotes('AAPL');
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEmpty($response->quotes);
+        $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 
     public function testOptionChain_success()
@@ -149,31 +215,31 @@ class OptionsTest extends TestCase
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000'],
-            'underlying'      => ['AAPL', 'AAPL',],
-            'expiration'      => [1686945600, 1686945600,],
-            'side'            => ['call', 'call',],
-            'strike'          => [60, 65,],
-            'firstTraded'     => [1617197400, 1616592600,],
-            'dte'             => [26, 26,],
-            'updated'         => [1684702875, 1684702875,],
-            'bid'             => [114.1, 108.6,],
-            'bidSize'         => [90, 90,],
-            'mid'             => [115.5, 110.38,],
-            'ask'             => [116.9, 112.15,],
-            'askSize'         => [90, 90,],
-            'last'            => [115, 107.82,],
-            'openInterest'    => [21957, 3012,],
-            'volume'          => [0, 0,],
-            'inTheMoney'      => [true, true,],
-            'intrinsicValue'  => [115.13, 110.13,],
-            'extrinsicValue'  => [0.37, 0.25,],
-            'underlyingPrice' => [175.13, 175.13,],
-            'iv'              => [1.629, 1.923,],
-            'delta'           => [1, 1,],
-            'gamma'           => [0, 0,],
-            'theta'           => [-0.009, -0.009,],
-            'vega'            => [0, 0,],
-            'rho'             => [0.046, 0.05,]
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600],
+            'side'            => ['call', 'call'],
+            'strike'          => [60, 65],
+            'firstTraded'     => [1617197400, 1616592600],
+            'dte'             => [26, 26],
+            'updated'         => [1684702875, 1684702875],
+            'bid'             => [114.1, 108.6],
+            'bidSize'         => [90, 90],
+            'mid'             => [115.5, 110.38],
+            'ask'             => [116.9, 112.15],
+            'askSize'         => [90, 90],
+            'last'            => [115, 107.82],
+            'openInterest'    => [21957, 3012],
+            'volume'          => [0, 0],
+            'inTheMoney'      => [true, true],
+            'intrinsicValue'  => [115.13, 110.13],
+            'extrinsicValue'  => [0.37, 0.25],
+            'underlyingPrice' => [175.13, 175.13],
+            'iv'              => [1.629, 1.923],
+            'delta'           => [1, 1],
+            'gamma'           => [0, 0],
+            'theta'           => [-0.009, -0.009],
+            'vega'            => [0, 0],
+            'rho'             => [0.046, 0.05]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -190,7 +256,7 @@ class OptionsTest extends TestCase
         // Verify each item in the response is an object of the correct type and has the correct values.
         for ($i = 0; $i < count($response->option_chains); $i++) {
             $this->assertInstanceOf(OptionChain::class, $response->option_chains[$i]);
-            $this->assertEquals($mocked_response['optionSymbol'][$i], $response->option_chains[$i]->symbol);
+            $this->assertEquals($mocked_response['optionSymbol'][$i], $response->option_chains[$i]->option_symbol);
             $this->assertEquals($mocked_response['underlying'][$i], $response->option_chains[$i]->underlying);
             $this->assertEquals(Carbon::parse($mocked_response['expiration'][$i]),
                 $response->option_chains[$i]->expiration);
@@ -220,5 +286,23 @@ class OptionsTest extends TestCase
             $this->assertEquals($mocked_response['underlyingPrice'][$i],
                 $response->option_chains[$i]->underlying_price);
         }
+    }
+
+    public function testOptionChain_noData_success()
+    {
+        $mocked_response = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain('AAPL');
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEmpty($response->option_chains);
+        $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 }

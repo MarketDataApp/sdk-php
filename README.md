@@ -52,15 +52,19 @@ $candles = $client->mutual_funds->candles(
 );
 
 // Options
-$expirations = $client->options->expirations();
-$lookup = $client->options->lookup()
-$strikes = $client->options->strikes();
+$expirations = $client->options->expirations('AAPL');
+$lookup = $client->options->lookup('AAPL 7/28/23 $200 Call');
+$strikes = $client->options->strikes(
+    symbol: 'AAPL',
+    expiration: Carbon::parse('2023-01-20'),
+    date: Carbon::parse('2023-01-03'),
+);
 $option_chain = $client->options->option_chain(
     symbol: 'AAPL',
     expiration: Carbon::parse('2025-01-17'),
     side: Side::CALL,
 );
-$quotes = $client->options->quotes();
+$quotes = $client->options->quotes('AAPL250117C00150000');
 
 // Utilities
 $status = $client->utilities->api_status();
