@@ -26,16 +26,46 @@ class Options
         $this->client = $client;
     }
 
-    public function expirations(): Expirations
+    /**
+     * Get a list of current or historical option expiration dates for an underlying symbol. If no optional parameters
+     * are used, the endpoint returns all expiration dates in the option chain.
+     *
+     * @param string $symbol The underlying ticker symbol for the options chain you wish to lookup.
+     *
+     * @param int|null $strike Limit the lookup of expiration dates to the strike provided. This will cause the endpoint to
+     * only return expiration dates that include this strike.
+     *
+     * @param Carbon|null $date Use to lookup a historical list of expiration dates from a specific previous trading
+     * day. If date is omitted the expiration dates will be from the current trading day during market hours or from the
+     * last trading day when the market is closed.
+     *
+     * @throws ApiException|GuzzleException
+     */
+    public function expirations(string $symbol, int $strike = null, Carbon $date = null): Expirations
     {
         // Stub
-        return new Expirations();
+        return new Expirations($this->client->execute(self::BASE_URL . "options/expirations/$symbol", [
+            'date'   => $date,
+            'strike' => $strike,
+        ]));
     }
 
-    public function lookup(): Lookup
+    /**
+     * Generate a properly formatted OCC option symbol based on the user's human-readable description of an option. This endpoint converts text such as "AAPL 7/28/23 $200 Call" to OCC option symbol format: AAPL230728C00200000.
+     *
+     * @param string $input The human-readable string input that contains
+     *   - (1) stock symbol
+     *   - (2) strike
+     *   - (3) expiration date
+     *   - (4) option side (i.e. put or call).
+     *
+     *   This endpoint will translate the user's input into a valid OCC option symbol.
+     *   Example: "AAPL 7/28/23 $200 Call".
+     */
+    public function lookup(string $input): Lookup
     {
         // Stub
-        return new Lookup();
+        return new Lookup($this->client->execute(self::BASE_URL . "options/expirations/" . urlencode($input)));
     }
 
     public function strikes(): Strikes
@@ -185,30 +215,30 @@ class Options
         int $min_volume = null,
     ): OptionChains {
         return new OptionChains($this->client->execute(self::BASE_URL . "options/chain/$symbol", [
-            'date' => $date,
-            'expiration' => $expiration,
-            'from' => $from,
-            'to' => $to,
-            'month' => $month,
-            'year' => $year,
-            'weekly' => $weekly,
-            'monthly' => $monthly,
-            'quarterly' => $quarterly,
-            'nonstandard' => $non_standard,
-            'dte' => $dte,
-            'delta' => $delta,
-            'side' => $side,
-            'range' => $range,
-            'strike' => $strike,
-            'strikeLimit' => $strike_limit,
-            'minBid' => $min_bid,
-            'maxBid' => $max_bid,
-            'minAsk' => $min_ask,
-            'maxAsk' => $max_ask,
-            'minBidAskSpread' => $min_bid_ask_spread,
+            'date'               => $date,
+            'expiration'         => $expiration,
+            'from'               => $from,
+            'to'                 => $to,
+            'month'              => $month,
+            'year'               => $year,
+            'weekly'             => $weekly,
+            'monthly'            => $monthly,
+            'quarterly'          => $quarterly,
+            'nonstandard'        => $non_standard,
+            'dte'                => $dte,
+            'delta'              => $delta,
+            'side'               => $side,
+            'range'              => $range,
+            'strike'             => $strike,
+            'strikeLimit'        => $strike_limit,
+            'minBid'             => $min_bid,
+            'maxBid'             => $max_bid,
+            'minAsk'             => $min_ask,
+            'maxAsk'             => $max_ask,
+            'minBidAskSpread'    => $min_bid_ask_spread,
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
-            'minOpenInterest' => $min_open_interest,
-            'minVolume' => $min_volume,
+            'minOpenInterest'    => $min_open_interest,
+            'minVolume'          => $min_volume,
         ]));
     }
 

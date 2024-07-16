@@ -57,7 +57,7 @@ $lookup = $client->options->lookup()
 $strikes = $client->options->strikes();
 $option_chain = $client->options->option_chain(
     symbol: 'AAPL',
-    expiration: Carbon::parse('20225-01-17'),
+    expiration: Carbon::parse('2025-01-17'),
     side: Side::CALL,
 );
 $quotes = $client->options->quotes();
