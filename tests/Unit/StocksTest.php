@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests;
+namespace MarketDataApp\Tests\Unit;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
@@ -229,8 +229,6 @@ class StocksTest extends TestCase
         $this->assertEquals($mocked_response['bidSize'][0], $quote->bid_size);
         $this->assertEquals($mocked_response['mid'][0], $quote->mid);
         $this->assertEquals($mocked_response['last'][0], $quote->last);
-        $this->assertEquals($mocked_response['change'][0], $quote->change);
-        $this->assertEquals($mocked_response['changepct'][0], $quote->change_percent);
         $this->assertEquals($mocked_response['change'][0], $quote->change);
         $this->assertEquals($mocked_response['changepct'][0], $quote->change_percent);
         $this->assertNull($quote->fifty_two_week_high);

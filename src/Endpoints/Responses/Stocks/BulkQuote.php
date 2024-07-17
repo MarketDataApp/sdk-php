@@ -30,11 +30,11 @@ class BulkQuote
 
     // The difference in price in dollars (or the security's currency if different from dollars) compared to the closing
     // price of the previous day.
-    public float $change;
+    public float|null $change;
 
     // The difference in price in percent, expressed as a decimal, compared to the closing price of the previous day.
     // For example, a 30% change will be represented as 0.30.
-    public float $change_percent;
+    public float|null $change_percent;
 
     // The 52-week high for the stock. This parameter is omitted unless the optional 52week request parameter is set to
     // true.
@@ -58,8 +58,8 @@ class BulkQuote
         int $bid_size,
         float $mid,
         float $last,
-        float $change,
-        float $change_percent,
+        float|null $change,
+        float|null $change_percent,
         float|null $fifty_two_week_high,
         float|null $fifty_two_week_low,
         int $volume,

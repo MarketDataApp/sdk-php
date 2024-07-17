@@ -8,7 +8,7 @@ class Candle
 {
 
     // Open price.
-    public string $open;
+    public float $open;
 
     // High price.
     public float $high;
