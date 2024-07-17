@@ -22,6 +22,7 @@ class StocksTest extends TestCase
 
     protected function setUp(): void
     {
+        error_reporting(E_ALL);
         $token = "your_api_token";
         $client = new Client($token);
         $this->client = $client;
@@ -65,7 +66,6 @@ class StocksTest extends TestCase
 
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
-        $this->assertNotEmpty($response->symbols);
         $this->assertNotEmpty($response->candles);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
@@ -80,23 +80,23 @@ class StocksTest extends TestCase
 
     public function testQuote_success()
     {
-        $quote = $this->client->stocks->quote('AAPL');
+        $response = $this->client->stocks->quote('AAPL');
 
-        $this->assertInstanceOf(Quote::class, $quote);
-        $this->assertEquals('string', gettype($quote->status));
-        $this->assertEquals('string', gettype($quote->symbol));
-        $this->assertEquals('double', gettype($quote->ask));
-        $this->assertEquals('integer', gettype($quote->ask_size));
-        $this->assertEquals('double', gettype($quote->bid));
-        $this->assertEquals('integer', gettype($quote->bid_size));
-        $this->assertEquals('double', gettype($quote->mid));
-        $this->assertEquals('double', gettype($quote->last));
-        $this->assertTrue(in_array(gettype($quote->change), ['double', 'NULL']));
-        $this->assertTrue(in_array(gettype($quote->change_percent), ['double', 'NULL']));
-        $this->assertNull($quote->fifty_two_week_high);
-        $this->assertNull($quote->fifty_two_week_low);
-        $this->assertEquals('integer', gettype($quote->volume));
-        $this->assertInstanceOf(Carbon::class, $quote->updated);
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('string', gettype($response->status));
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+        $this->assertEquals('double', gettype($response->bid));
+        $this->assertEquals('integer', gettype($response->bid_size));
+        $this->assertEquals('double', gettype($response->mid));
+        $this->assertEquals('double', gettype($response->last));
+        $this->assertTrue(in_array(gettype($response->change), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->change_percent), ['double', 'NULL']));
+        $this->assertNull($response->fifty_two_week_high);
+        $this->assertNull($response->fifty_two_week_low);
+        $this->assertEquals('integer', gettype($response->volume));
+        $this->assertInstanceOf(Carbon::class, $response->updated);
     }
 
     /**

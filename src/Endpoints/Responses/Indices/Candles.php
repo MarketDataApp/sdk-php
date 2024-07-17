@@ -19,7 +19,10 @@ class Candles
 
     // Unix time of the next quote if there is no data in the requested period, but there is data in a subsequent
     // period.
-    public int $next_time;
+    public Carbon $next_time;
+
+    // Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+    public Carbon $prev_time;
 
     /**
      * @throws \Exception
@@ -43,7 +46,8 @@ class Candles
                 break;
 
             case 'no_data' && isset($response->nextTime):
-                $this->next_time = $response->nextTime;
+                $this->next_time = Carbon::parse($response->nextTime);
+                $this->prev_time = Carbon::parse($response->prevTime);
                 break;
         }
     }

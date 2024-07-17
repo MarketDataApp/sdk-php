@@ -24,10 +24,10 @@ class Quote
     public float $change_percent;
 
     // The 52-week high for the index.
-    public float $fifty_two_week_high;
+    public float|null $fifty_two_week_high = null;
 
     // The 52-week low for the index.
-    public float $fifty_two_week_low;
+    public float|null $fifty_two_week_low = null;
 
     // The date/time of the quote.
     public Carbon $updated;
@@ -40,9 +40,13 @@ class Quote
             $this->last = $response->last[0];
             $this->change = $response->change[0];
             $this->change_percent = $response->changepct[0];
-            $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
-            $this->fifty_two_week_low = $response->{'52weekLow'}[0];
-            $this->updated = Carbon::parse($response->updated);
+            if (isset($response->{'52weekHigh'})) {
+                $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
+            }
+            if (isset($response->{'52weekLow'})) {
+                $this->fifty_two_week_low = $response->{'52weekLow'}[0];
+            }
+            $this->updated = Carbon::parse($response->updated[0]);
         }
     }
 }

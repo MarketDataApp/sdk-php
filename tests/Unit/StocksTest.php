@@ -160,7 +160,6 @@ class StocksTest extends TestCase
     {
         $mocked_response = [
             's'      => 'ok',
-            'symbol' => 'AAPL,MSFT',
             'c'      => [22.84, 23.93],
             'h'      => [23.27, 24.68],
             'l'      => [22.26, 22.67],
@@ -178,7 +177,6 @@ class StocksTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertCount(2, $response->candles);
-        $this->assertCount(2, $response->symbols);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         for ($i = 0; $i < count($response->candles); $i++) {
@@ -210,7 +208,6 @@ class StocksTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertEmpty($response->candles);
-        $this->assertEmpty($response->symbols);
     }
 
     public function testQuote_success()

@@ -38,7 +38,7 @@ class IndicesTest extends TestCase
             'changepct'  => [2.4],
             '52weekHigh' => [4023.5],
             '52weekLow'  => [2035.0],
-            'updated'    => '2020-01-01T00:00:00.000000Z',
+            'updated'    => ['2020-01-01T00:00:00.000000Z'],
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -51,7 +51,7 @@ class IndicesTest extends TestCase
         $this->assertEquals($mocked_response['changepct'][0], $response->change_percent);
         $this->assertEquals($mocked_response['52weekHigh'][0], $response->fifty_two_week_high);
         $this->assertEquals($mocked_response['52weekLow'][0], $response->fifty_two_week_low);
-        $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
+        $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $response->updated);
     }
 
     public function testQuote_noData_success()
@@ -132,16 +132,18 @@ class IndicesTest extends TestCase
         $this->assertEquals($mocked_response['s'], $response->status);
         $this->assertEmpty($response->candles);
         $this->assertFalse(isset($response->next_time));
+        $this->assertFalse(isset($response->prev_time));
     }
 
     /**
      * @throws GuzzleException
      */
-    public function testCandles_noDataNextTime_success()
+    public function testCandles_noDataNextTimePrevTime_success()
     {
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1659326400,
+            'prevTime' => 1659326400,
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -156,7 +158,8 @@ class IndicesTest extends TestCase
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEmpty($response->candles);
         $this->assertEquals($mocked_response['s'], $response->status);
-        $this->assertEquals($mocked_response['nextTime'], $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->next_time);
     }
 
     public function testExceptionHandling_throwsGuzzleException()

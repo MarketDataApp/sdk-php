@@ -10,9 +10,6 @@ class BulkCandles
     // Will always be ok when there is data for the candles requested.
     public string $status;
 
-    // The ticker symbols of the stock.
-    public array $symbols = [];
-
     /** @var Candle[] $candles */
     public array $candles = [];
 
@@ -22,7 +19,6 @@ class BulkCandles
         $this->status = $response->s;
 
         if ($this->status === 'ok') {
-            $this->symbols = array_map('trim', explode(',', $response->symbol));
             for ($i = 0; $i < count($response->o); $i++) {
                 $this->candles[] = new Candle(
                     $response->o[$i],

@@ -23,9 +23,9 @@ composer require MarketDataApp/sdk-php
 $client = new MarketDataApp\Client('your_api_token');
 
 // Indices
-$quote = $client->indices->quote('DJI');
+$quote = $client->indices->quote('VIX');
 $candles = $client->indices->candles(
-    symbol: "DJI",
+    symbol: "VIX",
     from: '2022-09-01',
     to: '2022-09-05',
     resolution: 'D'
@@ -35,8 +35,8 @@ $candles = $client->indices->candles(
 $candles = $client->stocks->candles('AAPL');
 $bulk_candles = $client->stocks->bulkCandles(['AAPL, MSFT']);
 $quote = $client->stocks->quote('AAPL');
-$quotes = $client->stocks->quotes(['AAPL', 'NFLX']);
-$bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'NFLX']);
+$quotes = $client->stocks->quotes(['AAPL', 'MSFT']);
+$bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'MSFT']);
 $earnings = $client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
 $news = $client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
 
