@@ -7,31 +7,25 @@ use Carbon\Carbon;
 class Candle
 {
 
-    // Open price.
-    public float $open;
+    public function __construct(
 
-    // High price.
-    public float $high;
+        // Open price.
+        public float $open,
 
-    // Low price.
-    public float $low;
+        // High price.
+        public float $high,
 
-    // Close price.
-    public float $close;
+        // Low price.
+        public float $low,
 
-    // Volume.
-    public int $volume;
+        // Close price.
+        public float $close,
 
-    // Candle time (Unix timestamp, UTC). Daily, weekly, monthly, yearly candles are returned without times.
-    public Carbon $timestamp;
+        // Volume.
+        public int $volume,
 
-    public function __construct(float $open, float $high, float $low, float $close, int $volume, Carbon $timestamp)
-    {
-        $this->open = $open;
-        $this->high = $high;
-        $this->low = $low;
-        $this->close = $close;
-        $this->volume = $volume;
-        $this->timestamp = $timestamp;
+        // Candle time (Unix timestamp, UTC). Daily, weekly, monthly, yearly candles are returned without times.
+        public Carbon $timestamp,
+    ) {
     }
 }

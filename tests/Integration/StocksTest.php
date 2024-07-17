@@ -4,9 +4,6 @@ namespace MarketDataApp\Tests\Integration;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
@@ -14,11 +11,8 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
-use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
-use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
-use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class StocksTest extends TestCase
@@ -129,4 +123,25 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
     }
 
+    public function testEarnings_success()
+    {
+        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertNotEmpty($response->earnings);
+
+        $this->assertEquals('string', gettype($response->status));
+        $this->assertEquals('string', gettype($response->earnings[0]->symbol));
+        $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_year));
+        $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_quarter));
+        $this->assertInstanceOf(Carbon::class, $response->earnings[0]->date);
+        $this->assertInstanceOf(Carbon::class, $response->earnings[0]->report_date);
+        $this->assertEquals('string', gettype($response->earnings[0]->report_time));
+        $this->assertEquals('string', gettype($response->earnings[0]->currency));
+        $this->assertEquals('double', gettype($response->earnings[0]->reported_eps));
+        $this->assertEquals('double', gettype($response->earnings[0]->estimated_eps));
+        $this->assertEquals('double', gettype($response->earnings[0]->surprise_eps));
+        $this->assertEquals('double', gettype($response->earnings[0]->surprise_eps_pct));
+        $this->assertInstanceOf(Carbon::class, $response->earnings[0]->updated);
+    }
 }
