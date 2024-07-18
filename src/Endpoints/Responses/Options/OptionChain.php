@@ -46,7 +46,7 @@ class OptionChain
         public float $mid,
 
         // The last price negotiated for this option contract at the time of this quote.
-        public float $last,
+        public float|null $last,
 
         // The number of contracts negotiated during the trading day at the time of this quote.
         public int $volume,

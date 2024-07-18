@@ -120,7 +120,7 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->option_chains[0]->mid));
         $this->assertEquals('double', gettype($response->option_chains[0]->ask));
         $this->assertEquals('integer', gettype($response->option_chains[0]->ask_size));
-        $this->assertEquals('double', gettype($response->option_chains[0]->last));
+        $this->assertTrue(in_array(gettype($response->option_chains[0]->last), ['double', 'NULL']));
         $this->assertEquals('integer', gettype($response->option_chains[0]->open_interest));
         $this->assertEquals('integer', gettype($response->option_chains[0]->volume));
         $this->assertEquals('boolean', gettype($response->option_chains[0]->in_the_money));
