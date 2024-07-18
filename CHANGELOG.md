@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.2-beta
+
+This library is now in **beta**. Feel free to try it out and report any bugs you find back here.
+
+- Added integration tests for all endpoints except Market (unavailable)
+- Added more tests for more complete code coverage
+- Tweaks to data structures based on results of integration test
+
 ## v0.4.1-alpha
 
 - Changed all Carbon date endpoints to receive a string rather than a Carbon instance.

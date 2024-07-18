@@ -11,6 +11,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candle;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
@@ -169,6 +170,18 @@ class IndicesTest extends TestCase
         ]);
 
         $this->expectException(\GuzzleHttp\Exception\GuzzleException::class);
-        $response = $this->client->indices->quote("INVALID");
+        $this->client->indices->quote("INVALID");
+    }
+
+    public function testExceptionHandling_throwsApiException()
+    {
+        $mocked_response = [
+            's'      => 'error',
+            'errmsg' => 'Invalid symbol: INVALID',
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $this->expectException(ApiException::class);
+        $this->client->indices->quote("INVALID");
     }
 }

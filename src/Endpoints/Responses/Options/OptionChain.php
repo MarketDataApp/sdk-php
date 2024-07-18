@@ -67,7 +67,7 @@ class OptionChain
         public float $extrinsic_value,
 
         // The implied volatility of the option.
-        public float $implied_volatility,
+        public float|null $implied_volatility,
 
         // The delta of the option.
         public float $delta,

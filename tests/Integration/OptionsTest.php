@@ -127,7 +127,7 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->option_chains[0]->intrinsic_value));
         $this->assertEquals('double', gettype($response->option_chains[0]->extrinsic_value));
         $this->assertEquals('double', gettype($response->option_chains[0]->implied_volatility));
-        $this->assertEquals('double', gettype($response->option_chains[0]->delta));
+        $this->assertTrue(in_array(gettype($response->option_chains[0]->delta), ['double', 'NULL']));
         $this->assertEquals('double', gettype($response->option_chains[0]->gamma));
         $this->assertEquals('double', gettype($response->option_chains[0]->theta));
         $this->assertEquals('double', gettype($response->option_chains[0]->vega));

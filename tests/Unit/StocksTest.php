@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
@@ -210,6 +211,17 @@ class StocksTest extends TestCase
         $this->assertEmpty($response->candles);
     }
 
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testBulkCandles_invalidArguments_throwsInvalidArgumentException()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        // Must have snapshot or symbols
+        $this->client->stocks->bulkCandles(resolution: 'D');
+    }
+
     public function testQuote_success()
     {
         $mocked_response = $this->aapl_mocked_response;
@@ -333,6 +345,41 @@ class StocksTest extends TestCase
             $this->assertEquals($mocked_response['last'][$i], $response->quotes[$i]->last);
             $this->assertEquals($mocked_response['change'][$i], $response->quotes[$i]->change);
             $this->assertEquals($mocked_response['changepct'][$i], $response->quotes[$i]->change_percent);
+            $this->assertNull($response->quotes[$i]->fifty_two_week_high);
+            $this->assertNull($response->quotes[$i]->fifty_two_week_low);
+            $this->assertEquals($mocked_response['volume'][$i], $response->quotes[$i]->volume);
+            $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
+        }
+    }
+    /**
+     * @throws \Throwable
+     */
+    public function testBulkQuotes_52week_success()
+    {
+        $mocked_response = $this->multiple_mocked_response;
+        $mocked_response['52weekHigh'] = [400.0, 410.0];
+        $mocked_response['52weekLow'] = [399.99, 390.0];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkQuotes(['AAPL', 'NFLX']);
+        $this->assertInstanceOf(BulkQuotes::class, $response);
+        $this->assertEquals($response->status, $mocked_response['s']);
+        $this->assertCount(2, $response->quotes);
+
+        for ($i = 0; $i < count($response->quotes); $i++) {
+            $this->assertInstanceOf(BulkQuote::class, $response->quotes[$i]);
+
+            $this->assertEquals($mocked_response['symbol'][$i], $response->quotes[$i]->symbol);
+            $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);
+            $this->assertEquals($mocked_response['askSize'][$i], $response->quotes[$i]->ask_size);
+            $this->assertEquals($mocked_response['bid'][$i], $response->quotes[$i]->bid);
+            $this->assertEquals($mocked_response['bidSize'][$i], $response->quotes[$i]->bid_size);
+            $this->assertEquals($mocked_response['mid'][$i], $response->quotes[$i]->mid);
+            $this->assertEquals($mocked_response['last'][$i], $response->quotes[$i]->last);
+            $this->assertEquals($mocked_response['change'][$i], $response->quotes[$i]->change);
+            $this->assertEquals($mocked_response['changepct'][$i], $response->quotes[$i]->change_percent);
+            $this->assertEquals($mocked_response['52weekHigh'][$i], $response->quotes[$i]->fifty_two_week_high);
+            $this->assertEquals($mocked_response['52weekLow'][$i], $response->quotes[$i]->fifty_two_week_low);
             $this->assertEquals($mocked_response['volume'][$i], $response->quotes[$i]->volume);
             $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
         }
