@@ -4,20 +4,13 @@ namespace MarketDataApp\Tests\Integration;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
-use MarketDataApp\Endpoints\Responses\Indices\Candle;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
-use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 class IndicesTest extends TestCase
 {
-
-    use MockResponses;
 
     private Client $client;
 
@@ -47,6 +40,29 @@ class IndicesTest extends TestCase
     /**
      * @throws GuzzleException
      */
+    public function testCandles_success()
+    {
+        $response = $this->client->indices->candles(
+            symbol: "VIX",
+            from: '2024-07-15',
+            to: '2024-07-17',
+            resolution: 'D'
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->candles);
+        $this->assertEquals('double', gettype($response->candles[0]->open));
+        $this->assertEquals('double', gettype($response->candles[0]->high));
+        $this->assertEquals('double', gettype($response->candles[0]->low));
+        $this->assertEquals('double', gettype($response->candles[0]->close));
+        $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     public function testCandles_noData()
     {
         $response = $this->client->indices->candles(
@@ -62,4 +78,6 @@ class IndicesTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->next_time);
         $this->assertInstanceOf(Carbon::class, $response->prev_time);
     }
+
+
 }

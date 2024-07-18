@@ -43,7 +43,7 @@ class Options
     public function expirations(string $symbol, int $strike = null, string $date = null): Expirations
     {
         // Stub
-        return new Expirations($this->client->execute(self::BASE_URL . "options/expirations/$symbol",
+        return new Expirations($this->client->execute(self::BASE_URL . "expirations/$symbol",
             compact('strike', 'date')));
     }
 
@@ -61,8 +61,7 @@ class Options
      */
     public function lookup(string $input): Lookup
     {
-        // Stub
-        return new Lookup($this->client->execute(self::BASE_URL . "options/lookup/" . urlencode($input)));
+        return new Lookup($this->client->execute(self::BASE_URL . "lookup/" . $input));
     }
 
     /**
@@ -82,7 +81,7 @@ class Options
     public function strikes(string $symbol, string $expiration = null, string $date = null): Strikes
     {
         // Stub
-        return new Strikes($this->client->execute(self::BASE_URL . "options/strikes/$symbol",
+        return new Strikes($this->client->execute(self::BASE_URL . "strikes/$symbol",
             compact('expiration', 'date')));
     }
 
@@ -228,7 +227,7 @@ class Options
         int $min_open_interest = null,
         int $min_volume = null,
     ): OptionChains {
-        return new OptionChains($this->client->execute(self::BASE_URL . "options/chain/$symbol", [
+        return new OptionChains($this->client->execute(self::BASE_URL . "chain/$symbol", [
             'date'               => $date,
             'expiration'         => $expiration,
             'from'               => $from,
@@ -281,7 +280,7 @@ class Options
     public function quotes(string $option_symbol, string $date = null, string $from = null, string $to = null): Quotes
     {
         // Stub
-        return new Quotes($this->client->execute(self::BASE_URL . "options/quotes/$option_symbol/",
+        return new Quotes($this->client->execute(self::BASE_URL . "quotes/$option_symbol/",
             compact('date', 'from', 'to')));
     }
 }

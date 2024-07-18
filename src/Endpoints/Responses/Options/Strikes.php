@@ -37,7 +37,12 @@ class Strikes
 
         switch ($this->status) {
             case 'ok':
-                $this->dates = (array) $response->dates;
+                foreach($response as $key => $value) {
+                    if(in_array($key, ['s', 'updated']))
+                        continue;
+
+                    $this->dates[$key] = $value;
+                }
                 $this->updated = Carbon::parse($response->updated);
                 break;
 
