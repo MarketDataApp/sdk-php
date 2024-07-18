@@ -64,10 +64,6 @@ abstract class ClientBase
                 'query'   => $arguments,
             ]);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            if (!$e->hasResponse()) {
-                throw $e;
-            }
-
             $response = match ($e->getResponse()->getStatusCode()) {
                 404 => $e->getResponse(),
                 default => throw $e,
