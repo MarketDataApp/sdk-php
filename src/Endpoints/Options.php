@@ -42,7 +42,6 @@ class Options
      */
     public function expirations(string $symbol, int $strike = null, string $date = null): Expirations
     {
-        // Stub
         return new Expirations($this->client->execute(self::BASE_URL . "expirations/$symbol",
             compact('strike', 'date')));
     }
@@ -80,7 +79,6 @@ class Options
      */
     public function strikes(string $symbol, string $expiration = null, string $date = null): Strikes
     {
-        // Stub
         return new Strikes($this->client->execute(self::BASE_URL . "strikes/$symbol",
             compact('expiration', 'date')));
     }
@@ -279,7 +277,6 @@ class Options
      */
     public function quotes(string $option_symbol, string $date = null, string $from = null, string $to = null): Quotes
     {
-        // Stub
         return new Quotes($this->client->execute(self::BASE_URL . "quotes/$option_symbol/",
             compact('date', 'from', 'to')));
     }
