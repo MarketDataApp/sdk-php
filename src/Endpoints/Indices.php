@@ -53,9 +53,7 @@ class Indices
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
      *
-     * @return Candles
-     * @throws ApiException
-     * @throws GuzzleException
+     * @throws ApiException|GuzzleException
      */
     public function candles(
         string $symbol,

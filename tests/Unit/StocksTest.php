@@ -1,18 +1,20 @@
 <?php
 
-namespace MarketDataApp\Tests;
+namespace MarketDataApp\Tests\Unit;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
+use MarketDataApp\Endpoints\Responses\Stocks\Earning;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
@@ -159,7 +161,6 @@ class StocksTest extends TestCase
     {
         $mocked_response = [
             's'      => 'ok',
-            'symbol' => 'AAPL,MSFT',
             'c'      => [22.84, 23.93],
             'h'      => [23.27, 24.68],
             'l'      => [22.26, 22.67],
@@ -177,7 +178,6 @@ class StocksTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertCount(2, $response->candles);
-        $this->assertCount(2, $response->symbols);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         for ($i = 0; $i < count($response->candles); $i++) {
@@ -209,7 +209,17 @@ class StocksTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertEmpty($response->candles);
-        $this->assertEmpty($response->symbols);
+    }
+
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testBulkCandles_invalidArguments_throwsInvalidArgumentException()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        // Must have snapshot or symbols
+        $this->client->stocks->bulkCandles(resolution: 'D');
     }
 
     public function testQuote_success()
@@ -229,8 +239,6 @@ class StocksTest extends TestCase
         $this->assertEquals($mocked_response['bidSize'][0], $quote->bid_size);
         $this->assertEquals($mocked_response['mid'][0], $quote->mid);
         $this->assertEquals($mocked_response['last'][0], $quote->last);
-        $this->assertEquals($mocked_response['change'][0], $quote->change);
-        $this->assertEquals($mocked_response['changepct'][0], $quote->change_percent);
         $this->assertEquals($mocked_response['change'][0], $quote->change);
         $this->assertEquals($mocked_response['changepct'][0], $quote->change_percent);
         $this->assertNull($quote->fifty_two_week_high);
@@ -337,6 +345,41 @@ class StocksTest extends TestCase
             $this->assertEquals($mocked_response['last'][$i], $response->quotes[$i]->last);
             $this->assertEquals($mocked_response['change'][$i], $response->quotes[$i]->change);
             $this->assertEquals($mocked_response['changepct'][$i], $response->quotes[$i]->change_percent);
+            $this->assertNull($response->quotes[$i]->fifty_two_week_high);
+            $this->assertNull($response->quotes[$i]->fifty_two_week_low);
+            $this->assertEquals($mocked_response['volume'][$i], $response->quotes[$i]->volume);
+            $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
+        }
+    }
+    /**
+     * @throws \Throwable
+     */
+    public function testBulkQuotes_52week_success()
+    {
+        $mocked_response = $this->multiple_mocked_response;
+        $mocked_response['52weekHigh'] = [400.0, 410.0];
+        $mocked_response['52weekLow'] = [399.99, 390.0];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkQuotes(['AAPL', 'NFLX']);
+        $this->assertInstanceOf(BulkQuotes::class, $response);
+        $this->assertEquals($response->status, $mocked_response['s']);
+        $this->assertCount(2, $response->quotes);
+
+        for ($i = 0; $i < count($response->quotes); $i++) {
+            $this->assertInstanceOf(BulkQuote::class, $response->quotes[$i]);
+
+            $this->assertEquals($mocked_response['symbol'][$i], $response->quotes[$i]->symbol);
+            $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);
+            $this->assertEquals($mocked_response['askSize'][$i], $response->quotes[$i]->ask_size);
+            $this->assertEquals($mocked_response['bid'][$i], $response->quotes[$i]->bid);
+            $this->assertEquals($mocked_response['bidSize'][$i], $response->quotes[$i]->bid_size);
+            $this->assertEquals($mocked_response['mid'][$i], $response->quotes[$i]->mid);
+            $this->assertEquals($mocked_response['last'][$i], $response->quotes[$i]->last);
+            $this->assertEquals($mocked_response['change'][$i], $response->quotes[$i]->change);
+            $this->assertEquals($mocked_response['changepct'][$i], $response->quotes[$i]->change_percent);
+            $this->assertEquals($mocked_response['52weekHigh'][$i], $response->quotes[$i]->fifty_two_week_high);
+            $this->assertEquals($mocked_response['52weekLow'][$i], $response->quotes[$i]->fifty_two_week_low);
             $this->assertEquals($mocked_response['volume'][$i], $response->quotes[$i]->volume);
             $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
         }
@@ -385,36 +428,41 @@ class StocksTest extends TestCase
     {
         $mocked_response = [
             's'              => 'ok',
-            'symbol'         => 'AAPL',
-            'fiscalYear'     => 2023,
-            'fiscalQuarter'  => 1,
-            'date'           => 1672462800,
-            'reportDate'     => 1675314000,
-            'reportTime'     => 'before market open',
-            'currency'       => 'USD',
-            'reportedEPS'    => 1.88,
-            'estimatedEPS'   => 1.94,
-            'surpriseEPS'    => -0.06,
-            'surpriseEPSpct' => -3.0928,
-            'updated'        => 1701690000
+            'symbol'         => ['AAPL', 'AAPL'],
+            'fiscalYear'     => [2023, 2023],
+            'fiscalQuarter'  => [1, 2],
+            'date'           => [1672462800, 1672562800],
+            'reportDate'     => [1675314000, 1675414000],
+            'reportTime'     => ['before market open', 'after market close'],
+            'currency'       => ['USD', 'USD'],
+            'reportedEPS'    => [1.88, 1.92],
+            'estimatedEPS'   => [1.94, 1.9],
+            'surpriseEPS'    => [-0.06, 0.02],
+            'surpriseEPSpct' => [-3.0928, 0.2308],
+            'updated'        => [1701690000, 1701690000]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
-        $earnings = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
+        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
 
-        $this->assertInstanceOf(Earnings::class, $earnings);
-        $this->assertEquals($mocked_response['s'], $earnings->status);
-        $this->assertEquals($mocked_response['symbol'], $earnings->symbol);
-        $this->assertEquals($mocked_response['fiscalYear'], $earnings->fiscal_year);
-        $this->assertEquals($mocked_response['fiscalQuarter'], $earnings->fiscal_quarter);
-        $this->assertEquals(Carbon::parse($mocked_response['date']), $earnings->date);
-        $this->assertEquals(Carbon::parse($mocked_response['reportDate']), $earnings->report_date);
-        $this->assertEquals($mocked_response['reportTime'], $earnings->report_time);
-        $this->assertEquals($mocked_response['currency'], $earnings->currency);
-        $this->assertEquals($mocked_response['reportedEPS'], $earnings->reported_eps);
-        $this->assertEquals($mocked_response['estimatedEPS'], $earnings->estimated_eps);
-        $this->assertEquals($mocked_response['surpriseEPS'], $earnings->surprise_eps);
-        $this->assertEquals($mocked_response['surpriseEPSpct'], $earnings->surprise_eps_pct);
-        $this->assertEquals(Carbon::parse($mocked_response['updated']), $earnings->updated);
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals($response->status, $mocked_response['s']);
+        $this->assertNotEmpty($response->earnings);
+
+        for ($i = 0; $i < count($response->earnings); $i++) {
+            $this->assertInstanceOf(Earning::class, $response->earnings[$i]);
+            $this->assertEquals($mocked_response['symbol'][$i], $response->earnings[$i]->symbol);
+            $this->assertEquals($mocked_response['fiscalYear'][$i], $response->earnings[$i]->fiscal_year);
+            $this->assertEquals($mocked_response['fiscalQuarter'][$i], $response->earnings[$i]->fiscal_quarter);
+            $this->assertEquals(Carbon::parse($mocked_response['date'][$i]), $response->earnings[$i]->date);
+            $this->assertEquals(Carbon::parse($mocked_response['reportDate'][$i]), $response->earnings[$i]->report_date);
+            $this->assertEquals($mocked_response['reportTime'][$i], $response->earnings[$i]->report_time);
+            $this->assertEquals($mocked_response['currency'][$i], $response->earnings[$i]->currency);
+            $this->assertEquals($mocked_response['reportedEPS'][$i], $response->earnings[$i]->reported_eps);
+            $this->assertEquals($mocked_response['estimatedEPS'][$i], $response->earnings[$i]->estimated_eps);
+            $this->assertEquals($mocked_response['surpriseEPS'][$i], $response->earnings[$i]->surprise_eps);
+            $this->assertEquals($mocked_response['surpriseEPSpct'][$i], $response->earnings[$i]->surprise_eps_pct);
+            $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->earnings[$i]->updated);
+        }
     }
 
     /**

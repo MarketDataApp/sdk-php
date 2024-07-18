@@ -46,7 +46,6 @@ class Markets
         string $to = null,
         int $countback = null
     ): Statuses {
-        // Stub
         return new Statuses($this->client->execute(self::BASE_URL . "status/",
             compact('country', 'date', 'from', 'to', 'countback')));
     }

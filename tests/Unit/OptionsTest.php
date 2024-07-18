@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests;
+namespace MarketDataApp\Tests\Unit;
 
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
@@ -90,11 +90,9 @@ class OptionsTest extends TestCase
         $mocked_response = [
             's'       => 'ok',
             'updated' => 1663704000,
-            'dates'   => [
-                '2023-01-20' => [
-                    30.0,
-                    35.0
-                ]
+            '2023-01-20' => [
+                30.0,
+                35.0
             ]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
@@ -108,7 +106,7 @@ class OptionsTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Strikes::class, $response);
         $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
-        $this->assertEquals((array)$mocked_response['dates'], $response->dates);
+        $this->assertEquals($mocked_response['2023-01-20'], $response->dates['2023-01-20']);
     }
 
     public function testStrikes_noData_success()

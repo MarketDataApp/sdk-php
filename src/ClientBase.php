@@ -58,15 +58,23 @@ abstract class ClientBase
      */
     public function execute($method, array $arguments = []): object
     {
-        $response = $this->guzzle->get($method, [
-            'headers' => $this->headers(),
-            'query'   => $arguments,
-        ]);
+        try {
+            $response = $this->guzzle->get($method, [
+                'headers' => $this->headers(),
+                'query'   => $arguments,
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = match ($e->getResponse()->getStatusCode()) {
+                404 => $e->getResponse(),
+                default => throw $e,
+            };
+        }
+
         $json_response = (string)$response->getBody();
 
         $response = json_decode($json_response);
 
-        if(isset($response->s) && $response->s === 'error') {
+        if (isset($response->s) && $response->s === 'error') {
             throw new ApiException(message: $response->errmsg, response: $response);
         }
 
