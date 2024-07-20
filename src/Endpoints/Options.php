@@ -227,7 +227,7 @@ class Options
     ): OptionChains {
         return new OptionChains($this->client->execute(self::BASE_URL . "chain/$symbol", [
             'date'               => $date,
-            'expiration'         => gettype($expiration) === 'string' ? $expiration : $expiration->value,
+            'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
             'from'               => $from,
             'to'                 => $to,
             'month'              => $month,
@@ -238,8 +238,8 @@ class Options
             'nonstandard'        => $non_standard,
             'dte'                => $dte,
             'delta'              => $delta,
-            'side'               => $side->value,
-            'range'              => $range->value,
+            'side'               => $side instanceof Side ? $side->value : $side,
+            'range'              => $range instanceof Range ? $range->value : $range,
             'strike'             => $strike,
             'strikeLimit'        => $strike_limit,
             'minBid'             => $min_bid,
