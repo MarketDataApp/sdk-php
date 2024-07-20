@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.4-beta
+
+Update options->option_chain to use enum values rather than the enum itself.
+
+## v0.4.3-beta
+
+Small bug fixes found from initial beta test
+
+- Typo fixed Range::OUT_THE_MONEY > Range::OUT_OF_THE_MONEY
+- Corrected stocks->quotes() endpoint url
+- Changes OptionChain response to group strikes under expiration date
+
 ## v0.4.2-beta
 
 This library is now in **beta**. Feel free to try it out and report any bugs you find back here.
