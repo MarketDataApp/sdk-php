@@ -104,34 +104,37 @@ class OptionsTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(OptionChains::class, $response);
         $this->assertNotEmpty($response->option_chains);
+        $option_chain = array_pop($response->option_chains);
+        $this->assertNotEmpty($option_chain);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
-        $this->assertInstanceOf(OptionChainStrike::class, $response->option_chains[0]);
-        $this->assertEquals('string', gettype($response->option_chains[0]->option_symbol));
-        $this->assertEquals('string', gettype($response->option_chains[0]->underlying));
-        $this->assertInstanceOf(Carbon::class, $response->option_chains[0]->expiration);
-        $this->assertInstanceOf(Side::class, $response->option_chains[0]->side);
-        $this->assertEquals('double', gettype($response->option_chains[0]->strike));
-        $this->assertInstanceOf(Carbon::class, $response->option_chains[0]->first_traded);
-        $this->assertEquals('integer', gettype($response->option_chains[0]->dte));
-        $this->assertInstanceOf(Carbon::class, $response->option_chains[0]->updated);
-        $this->assertEquals('double', gettype($response->option_chains[0]->bid));
-        $this->assertEquals('integer', gettype($response->option_chains[0]->bid_size));
-        $this->assertEquals('double', gettype($response->option_chains[0]->mid));
-        $this->assertEquals('double', gettype($response->option_chains[0]->ask));
-        $this->assertEquals('integer', gettype($response->option_chains[0]->ask_size));
-        $this->assertTrue(in_array(gettype($response->option_chains[0]->last), ['double', 'NULL']));
-        $this->assertEquals('integer', gettype($response->option_chains[0]->open_interest));
-        $this->assertEquals('integer', gettype($response->option_chains[0]->volume));
-        $this->assertEquals('boolean', gettype($response->option_chains[0]->in_the_money));
-        $this->assertEquals('double', gettype($response->option_chains[0]->intrinsic_value));
-        $this->assertEquals('double', gettype($response->option_chains[0]->extrinsic_value));
-        $this->assertEquals('double', gettype($response->option_chains[0]->implied_volatility));
-        $this->assertTrue(in_array(gettype($response->option_chains[0]->delta), ['double', 'NULL']));
-        $this->assertEquals('double', gettype($response->option_chains[0]->gamma));
-        $this->assertEquals('double', gettype($response->option_chains[0]->theta));
-        $this->assertEquals('double', gettype($response->option_chains[0]->vega));
-        $this->assertEquals('double', gettype($response->option_chains[0]->rho));
-        $this->assertEquals('double', gettype($response->option_chains[0]->underlying_price));
+        $option_strike = array_pop($option_chain);
+        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertEquals('string', gettype($option_strike->option_symbol));
+        $this->assertEquals('string', gettype($option_strike->underlying));
+        $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
+        $this->assertInstanceOf(Side::class, $option_strike->side);
+        $this->assertEquals('double', gettype($option_strike->strike));
+        $this->assertInstanceOf(Carbon::class, $option_strike->first_traded);
+        $this->assertEquals('integer', gettype($option_strike->dte));
+        $this->assertInstanceOf(Carbon::class, $option_strike->updated);
+        $this->assertEquals('double', gettype($option_strike->bid));
+        $this->assertEquals('integer', gettype($option_strike->bid_size));
+        $this->assertEquals('double', gettype($option_strike->mid));
+        $this->assertEquals('double', gettype($option_strike->ask));
+        $this->assertEquals('integer', gettype($option_strike->ask_size));
+        $this->assertTrue(in_array(gettype($option_strike->last), ['double', 'NULL']));
+        $this->assertEquals('integer', gettype($option_strike->open_interest));
+        $this->assertEquals('integer', gettype($option_strike->volume));
+        $this->assertEquals('boolean', gettype($option_strike->in_the_money));
+        $this->assertEquals('double', gettype($option_strike->intrinsic_value));
+        $this->assertEquals('double', gettype($option_strike->extrinsic_value));
+        $this->assertEquals('double', gettype($option_strike->implied_volatility));
+        $this->assertTrue(in_array(gettype($option_strike->delta), ['double', 'NULL']));
+        $this->assertEquals('double', gettype($option_strike->gamma));
+        $this->assertEquals('double', gettype($option_strike->theta));
+        $this->assertEquals('double', gettype($option_strike->vega));
+        $this->assertEquals('double', gettype($option_strike->rho));
+        $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
 }
