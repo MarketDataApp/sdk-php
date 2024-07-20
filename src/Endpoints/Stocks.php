@@ -167,12 +167,12 @@ class Stocks
      *
      * @throws \Throwable
      */
-    public function quotes(array $symbols, bool $fifty_two_week = false): Quotes|BulkQuotes
+    public function quotes(array $symbols, bool $fifty_two_week = false): Quotes
     {
         // Execute standard quotes in parallel
         $calls = [];
         foreach ($symbols as $symbol) {
-            $calls[] = ["/stocks/quotes/$symbol", ['52week' => $fifty_two_week]];
+            $calls[] = [self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]];
         }
 
         return new Quotes($this->client->executeInParallel($calls));

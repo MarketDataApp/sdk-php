@@ -17,7 +17,7 @@ class OptionChains
     // Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
     public Carbon $prev_time;
 
-    /** @var OptionChain[] $option_chains */
+    /** @var array[array[OptionChainStrike[]]] $option_chains */
     public array $option_chains = [];
 
     public function __construct(object $response)
@@ -28,10 +28,11 @@ class OptionChains
         switch ($this->status) {
             case 'ok':
                 for ($i = 0; $i < count($response->optionSymbol); $i++) {
-                    $this->option_chains[] = new OptionChain(
+                    $expiration = Carbon::parse($response->expiration[$i]);
+                    $this->option_chains[$expiration->toDateString()][] = new OptionChainStrike(
                         option_symbol: $response->optionSymbol[$i],
                         underlying: $response->underlying[$i],
-                        expiration: Carbon::parse($response->expiration[$i]),
+                        expiration: $expiration,
                         side: Side::from($response->side[$i]),
                         strike: $response->strike[$i],
                         first_traded: Carbon::parse($response->firstTraded[$i]),

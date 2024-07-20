@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Endpoints\Responses\Options\Lookup;
-use MarketDataApp\Endpoints\Responses\Options\OptionChain;
+use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
@@ -106,7 +106,7 @@ class OptionsTest extends TestCase
         $this->assertNotEmpty($response->option_chains);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
-        $this->assertInstanceOf(OptionChain::class, $response->option_chains[0]);
+        $this->assertInstanceOf(OptionChainStrike::class, $response->option_chains[0]);
         $this->assertEquals('string', gettype($response->option_chains[0]->option_symbol));
         $this->assertEquals('string', gettype($response->option_chains[0]->underlying));
         $this->assertInstanceOf(Carbon::class, $response->option_chains[0]->expiration);

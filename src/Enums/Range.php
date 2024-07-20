@@ -6,6 +6,6 @@ enum Range: string
 {
 
     case IN_THE_MONEY = 'itm';
-    case OUT_THE_MONEY = 'otm';
+    case OUT_OF_THE_MONEY = 'otm';
     case ALL = 'all';
 }

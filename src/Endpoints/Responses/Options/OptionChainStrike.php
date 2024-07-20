@@ -5,7 +5,7 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 use Carbon\Carbon;
 use MarketDataApp\Enums\Side;
 
-class OptionChain
+class OptionChainStrike
 {
 
     public function __construct(
