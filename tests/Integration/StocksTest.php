@@ -99,6 +99,27 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->updated);
     }
 
+    public function testQuotes_success()
+    {
+        $response = $this->client->stocks->quotes(['AAPL']);
+
+        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertEquals('string', gettype($response->quotes[0]->status));
+        $this->assertEquals('string', gettype($response->quotes[0]->symbol));
+        $this->assertEquals('double', gettype($response->quotes[0]->ask));
+        $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
+        $this->assertEquals('double', gettype($response->quotes[0]->bid));
+        $this->assertEquals('integer', gettype($response->quotes[0]->bid_size));
+        $this->assertEquals('double', gettype($response->quotes[0]->mid));
+        $this->assertEquals('double', gettype($response->quotes[0]->last));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->change), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->change_percent), ['double', 'NULL']));
+        $this->assertNull($response->quotes[0]->fifty_two_week_high);
+        $this->assertNull($response->quotes[0]->fifty_two_week_low);
+        $this->assertEquals('integer', gettype($response->quotes[0]->volume));
+        $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
+    }
+
     /**
      * @throws \Throwable
      */

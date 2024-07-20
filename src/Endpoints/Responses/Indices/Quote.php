@@ -18,10 +18,10 @@ class Quote
 
     // The difference in price in dollars (or the index's native currency if different from dollars) compared to the
     // closing price of the previous day.
-    public float $change;
+    public float|null $change;
 
     // The difference in price in percent compared to the closing price of the previous day.
-    public float $change_percent;
+    public float|null $change_percent;
 
     // The 52-week high for the index.
     public float|null $fifty_two_week_high = null;
