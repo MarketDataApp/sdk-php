@@ -38,7 +38,7 @@ class IndicesTest extends TestCase
 
     public function testQuotes_success()
     {
-        $response = $this->client->indices->quotes(['AAPL']);
+        $response = $this->client->indices->quotes(['VIX']);
 
         $this->assertInstanceOf(Quote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->status));
