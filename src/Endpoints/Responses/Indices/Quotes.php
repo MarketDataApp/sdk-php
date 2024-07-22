@@ -9,7 +9,6 @@ class Quotes
 
     public function __construct(array $quotes)
     {
-        print_r($quotes);
         foreach ($quotes as $quote) {
             $this->quotes[] = new Quote($quote);
         }
