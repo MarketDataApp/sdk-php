@@ -11,6 +11,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candle;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Endpoints\Responses\Indices\Quotes;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,17 @@ class IndicesTest extends TestCase
     use MockResponses;
 
     private Client $client;
+
+    private array $aapl_mocked_response = [
+        's'          => 'ok',
+        'symbol'     => ['AAPL'],
+        'last'       => [50.5],
+        'change'     => [30.2],
+        'changepct'  => [2.4],
+        '52weekHigh' => [4023.5],
+        '52weekLow'  => [2035.0],
+        'updated'    => ['2020-01-01T00:00:00.000000Z'],
+    ];
 
     protected function setUp(): void
     {
@@ -53,6 +65,46 @@ class IndicesTest extends TestCase
         $this->assertEquals($mocked_response['52weekHigh'][0], $response->fifty_two_week_high);
         $this->assertEquals($mocked_response['52weekLow'][0], $response->fifty_two_week_low);
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $response->updated);
+    }
+
+
+
+    /**
+     * @throws GuzzleException
+     * @throws \Throwable
+     */
+    public function testQuotes_success()
+    {
+        $msft_mocked_response = [
+            's'          => 'ok',
+            'symbol'     => ['MSFT'],
+            'last'       => [300.67],
+            'change'     => [5.2],
+            'changepct'  => [2.2],
+            '52weekHigh' => [320.5],
+            '52weekLow'  => [200.0],
+            'updated'    => ['2020-01-01T00:00:00.000000Z'],
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($this->aapl_mocked_response)),
+            new Response(200, [], json_encode($msft_mocked_response)),
+        ]);
+
+        $quotes = $this->client->indices->quotes(['AAPL', 'MSFT']);
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        foreach ($quotes->quotes as $quote) {
+            $this->assertInstanceOf(Quote::class, $quote);
+            $mocked_response = $quote->symbol === "AAPL" ? $this->aapl_mocked_response : $msft_mocked_response;
+
+            $this->assertEquals($mocked_response['s'], $quote->status);
+            $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+            $this->assertEquals($mocked_response['last'][0], $quote->last);
+            $this->assertEquals($mocked_response['change'][0], $quote->change);
+            $this->assertEquals($mocked_response['changepct'][0], $quote->change_percent);
+            $this->assertEquals($mocked_response['52weekHigh'][0], $quote->fifty_two_week_high);
+            $this->assertEquals($mocked_response['52weekLow'][0], $quote->fifty_two_week_low);
+            $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $quote->updated);
+        }
     }
 
     public function testQuote_noData_success()

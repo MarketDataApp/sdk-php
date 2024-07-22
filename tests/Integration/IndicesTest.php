@@ -16,7 +16,6 @@ class IndicesTest extends TestCase
 
     protected function setUp(): void
     {
-        error_reporting(E_ALL);
         $token = "your_api_token";
         $client = new Client($token);
         $this->client = $client;
@@ -34,6 +33,22 @@ class IndicesTest extends TestCase
         $this->assertTrue(in_array(gettype($response->fifty_two_week_high), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($response->fifty_two_week_low), ['double', 'NULL']));
         $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+
+    public function testQuotes_success()
+    {
+        $response = $this->client->indices->quotes(['VIX']);
+
+        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertEquals('string', gettype($response->quotes[0]->status));
+        $this->assertEquals('string', gettype($response->quotes[0]->symbol));
+        $this->assertEquals('double', gettype($response->quotes[0]->last));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->change), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->change_percent), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->fifty_two_week_high), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->fifty_two_week_low), ['double', 'NULL']));
+        $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
     }
 
 

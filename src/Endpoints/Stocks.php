@@ -162,8 +162,7 @@ class Stocks
      * Get a real-time price quote for a multiple stocks by doing parallel requests.
      *
      * @param array $symbols The ticker symbols to return in the response.
-     * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output. By
-     * default this parameter is false if omitted.
+     * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
      *
      * @throws \Throwable
      */
