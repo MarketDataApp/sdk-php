@@ -16,7 +16,6 @@ class IndicesTest extends TestCase
 
     protected function setUp(): void
     {
-        error_reporting(E_ALL);
         $token = "your_api_token";
         $client = new Client($token);
         $this->client = $client;
