@@ -24,6 +24,7 @@ $client = new MarketDataApp\Client('your_api_token');
 
 // Indices
 $quote = $client->indices->quote('VIX');
+$quotes = $client->indices->quotes(['VIX', 'DJI']);
 $candles = $client->indices->candles(
     symbol: "VIX",
     from: '2022-09-01',

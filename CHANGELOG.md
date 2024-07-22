@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0-beta
+
+Added indices->quotes to parallelize and speed up multiple index quotes.
+
 ## v0.4.4-beta
 
 Update options->option_chain to use enum values rather than the enum itself.

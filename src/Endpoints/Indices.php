@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Endpoints\Responses\Indices\Quotes;
 use MarketDataApp\Exceptions\ApiException;
 
 class Indices
@@ -24,11 +25,35 @@ class Indices
      *
      * @param string $symbol The index symbol, without any leading or trailing index identifiers. For example, use DJI
      * do not use $DJI, ^DJI, .DJI, DJI.X, etc.
+     *
+     * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
+     *
      * @throws GuzzleException|ApiException
      */
     public function quote(string $symbol, bool $fifty_two_week = false): Quote
     {
-        return new Quote($this->client->execute(self::BASE_URL . "quotes/{$symbol}", ['52week' => $fifty_two_week]));
+        return new Quote($this->client->execute(self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]));
+    }
+
+
+
+    /**
+     * Get a real-time price quote for a multiple indices by doing parallel requests.
+     *
+     * @param array $symbols The ticker symbols to return in the response.
+     * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
+     *
+     * @throws \Throwable
+     */
+    public function quotes(array $symbols, bool $fifty_two_week = false): Quotes
+    {
+        // Execute standard quotes in parallel
+        $calls = [];
+        foreach ($symbols as $symbol) {
+            $calls[] = [self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]];
+        }
+
+        return new Quotes($this->client->executeInParallel($calls));
     }
 
     /**
