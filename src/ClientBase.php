@@ -70,13 +70,13 @@ abstract class ClientBase
             };
         }
 
-        switch($arguments['format']) {
+        switch ($arguments['format']) {
             case 'csv':
             case 'html':
-                $object_response = (object) array(
-                    $arguments['format'] => (string) $response->getBody()
+                $object_response = (object)array(
+                    $arguments['format'] => (string)$response->getBody()
                 );
-            break;
+                break;
 
             case 'json':
             default:
@@ -94,14 +94,13 @@ abstract class ClientBase
 
     protected function headers(string $format = 'json'): array
     {
-        $accept = match($format) {
-            'json' => 'application/json',
-            'csv' => 'text/csv',
-            'html' => 'text/html',
-        };
         return [
             'Host'          => self::API_HOST,
-            'Accept'        => $accept,
+            'Accept'        => match ($format) {
+                'json' => 'application/json',
+                'csv' => 'text/csv',
+                'html' => 'text/html',
+            },
             'Authorization' => "Bearer $this->token",
         ];
     }

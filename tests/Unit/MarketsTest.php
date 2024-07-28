@@ -5,8 +5,10 @@ namespace MarketDataApp\Tests\Unit;
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Markets\Status;
 use MarketDataApp\Endpoints\Responses\Markets\Statuses;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
@@ -47,5 +49,19 @@ class MarketsTest extends TestCase
             $this->assertEquals(Carbon::parse($mocked_response['date'][$i]), $response->statuses[$i]->date);
             $this->assertEquals($mocked_response['status'][$i], $response->statuses[$i]->status);
         }
+    }
+    public function testStatus_csv_success()
+    {
+        $mocked_response = 's, date, status';
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->markets->status(
+            date: '1680580800',
+            parameters: new Parameters(Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 }

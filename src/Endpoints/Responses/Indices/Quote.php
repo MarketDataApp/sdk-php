@@ -36,7 +36,9 @@ class Quote extends ResponseBase
     public function __construct(object $response)
     {
         parent::__construct($response);
-        if(!$this->isJson()) return;
+        if (!$this->isJson()) {
+            return;
+        }
 
         $this->status = $response->s;
         if ($this->status === "ok") {

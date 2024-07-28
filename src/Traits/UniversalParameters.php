@@ -7,7 +7,7 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 trait UniversalParameters
 {
 
-    protected function execute(string $method, $arguments, ?Parameters $parameters = null): object
+    protected function execute(string $method, $arguments, ?Parameters $parameters): object
     {
         if(is_null($parameters)) $parameters = new Parameters();
 

@@ -4,11 +4,15 @@ namespace MarketDataApp\Endpoints;
 
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Markets\Statuses;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Traits\UniversalParameters;
 
 class Markets
 {
+
+    use UniversalParameters;
 
     private Client $client;
     public const BASE_URL = "v1/markets/";
@@ -44,9 +48,10 @@ class Markets
         string $date = null,
         string $from = null,
         string $to = null,
-        int $countback = null
+        int $countback = null,
+        ?Parameters $parameters = null
     ): Statuses {
-        return new Statuses($this->client->execute(self::BASE_URL . "status/",
-            compact('country', 'date', 'from', 'to', 'countback')));
+        return new Statuses($this->execute(self::BASE_URL . "status/",
+            compact('country', 'date', 'from', 'to', 'countback'), $parameters));
     }
 }
