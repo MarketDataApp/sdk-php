@@ -56,7 +56,7 @@ abstract class ClientBase
      * @throws GuzzleException
      * @throws ApiException
      */
-    public function execute($method, array $arguments = []): object
+    public function execute($method, array $arguments = ['format' => 'json']): object
     {
         try {
             $response = $this->guzzle->get($method, [

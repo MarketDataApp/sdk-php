@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.0-beta
+
+Added universal parameters to all endpoints with the ability to change format to CSV and HTML (beta).
+
 ## v0.5.0-beta
 
 Added indices->quotes to parallelize and speed up multiple index quotes.
