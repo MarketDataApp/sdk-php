@@ -4,8 +4,10 @@ namespace MarketDataApp\Tests\Integration;
 
 use Carbon\Carbon;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candle;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
+use MarketDataApp\Enums\Format;
 use PHPUnit\Framework\TestCase;
 
 class MutualFundsTest extends TestCase
@@ -40,5 +42,20 @@ class MutualFundsTest extends TestCase
         $this->assertEquals('double', gettype($response->candles[0]->low));
         $this->assertEquals('double', gettype($response->candles[0]->open));
         $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
+    }
+
+    public function testCandles_csv_success()
+    {
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
     }
 }

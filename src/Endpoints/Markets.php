@@ -41,6 +41,8 @@ class Markets
      * @param int|null $countback Countback will fetch a number of dates before to If you use from, countback is not
      * required.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws GuzzleException|ApiException
      */
     public function status(
