@@ -5,6 +5,7 @@ namespace MarketDataApp\Tests\Integration;
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
@@ -12,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use PHPUnit\Framework\TestCase;
 
@@ -54,6 +56,21 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
     }
 
+    public function testCandles_csv_success()
+    {
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
+    }
+
     /**
      * @throws GuzzleException|ApiException
      */
@@ -78,6 +95,22 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
     }
 
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testBulkCandles_csv_success()
+    {
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ["AAPL"],
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
+    }
+
     public function testQuote_success()
     {
         $response = $this->client->stocks->quote('AAPL');
@@ -97,6 +130,17 @@ class StocksTest extends TestCase
         $this->assertNull($response->fifty_two_week_low);
         $this->assertEquals('integer', gettype($response->volume));
         $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+    public function testQuote_csv_success()
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
     }
 
     public function testQuotes_success()
@@ -144,6 +188,19 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function testBulkQuotes_csv_success()
+    {
+        $response = $this->client->stocks->bulkQuotes(
+            symbols: ['AAPL'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+        $this->assertInstanceOf(BulkQuotes::class, $response);
+        $this->assertNotEmpty($response->getCsv());
+    }
+
     public function testEarnings_success()
     {
         $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
@@ -164,5 +221,17 @@ class StocksTest extends TestCase
         $this->assertEquals('double', gettype($response->earnings[0]->surprise_eps));
         $this->assertEquals('double', gettype($response->earnings[0]->surprise_eps_pct));
         $this->assertInstanceOf(Carbon::class, $response->earnings[0]->updated);
+    }
+
+    public function testEarnings_csv_success()
+    {
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2023-01-01',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertNotEmpty($response->getCsv());
     }
 }

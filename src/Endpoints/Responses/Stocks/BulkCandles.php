@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class BulkCandles
+class BulkCandles extends ResponseBase
 {
 
     // Will always be ok when there is data for the candles requested.
@@ -15,6 +16,11 @@ class BulkCandles
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if (!$this->isJson()) {
+            return;
+        }
+
         // Convert the response to this object.
         $this->status = $response->s;
 

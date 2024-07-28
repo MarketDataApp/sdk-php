@@ -72,6 +72,21 @@ $status = $client->utilities->api_status();
 $headers = $client->utilities->headers();
 ```
 
+### Universal Parameters
+
+All endpoints (other than utilities) supports universal parameters. 
+
+For instance, you can change the format to CSV
+
+```
+$option_chain = $client->options->option_chain(
+    symbol: 'AAPL',
+    expiration: '2025-01-17',
+    side: Side::CALL,
+    parameters: new Parameters(format: Format::CSV),
+);
+```
+
 ## Testing
 
 ```bash

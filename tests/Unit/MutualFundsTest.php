@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candle;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -58,6 +60,23 @@ class MutualFundsTest extends TestCase
             $this->assertEquals($mocked_response['o'][$i], $response->candles[$i]->open);
             $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
         }
+    }
+    public function testCandles_csv_success()
+    {
+        $mocked_response = "s, t, o, h, l, c\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 
     /**

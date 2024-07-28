@@ -4,6 +4,7 @@ namespace MarketDataApp\Tests\Integration;
 
 use Carbon\Carbon;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Endpoints\Responses\Options\Lookup;
 use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
@@ -12,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
 use MarketDataApp\Enums\Expiration;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
 use PHPUnit\Framework\TestCase;
 
@@ -38,6 +40,16 @@ class OptionsTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->expirations[0]);
     }
 
+    public function testExpirations_csv_success()
+    {
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL', parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
+    }
 
     public function testLookup_success()
     {
@@ -60,6 +72,19 @@ class OptionsTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->updated);
         $this->assertNotEmpty($response->dates);
         $this->assertNotEmpty(array_pop($response->dates));
+    }
+
+    public function testStrikes_csv_success()
+    {
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            date: '2023-01-03',
+            parameters: new Parameters(format: Format::CSV),
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
     }
 
     public function testQuotes_success()
@@ -92,6 +117,17 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->quotes[0]->intrinsic_value));
         $this->assertEquals('double', gettype($response->quotes[0]->extrinsic_value));
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
+    }
+
+    public function testQuotes_csv_success()
+    {
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL250117C00150000',
+            parameters: new Parameters(format: Format::CSV),
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
     }
 
     public function testOptionChain_success()
@@ -132,12 +168,27 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($option_strike->extrinsic_value));
         $this->assertEquals('double', gettype($option_strike->implied_volatility));
         $this->assertTrue(in_array(gettype($option_strike->delta), ['double', 'NULL']));
-        $this->assertEquals('double', gettype($option_strike->gamma));
-        $this->assertEquals('double', gettype($option_strike->theta));
-        $this->assertEquals('double', gettype($option_strike->vega));
-        $this->assertEquals('double', gettype($option_strike->rho));
+        $this->assertTrue(in_array(gettype($option_strike->gamma), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->theta), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->vega), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
+
+    public function testOptionChain_csv_success()
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: '2025-01-17',
+            side: Side::CALL,
+            parameters: new Parameters(format: Format::CSV),
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
+    }
+
     public function testOptionChain_expirationEnum_success()
     {
         $response = $this->client->options->option_chain(
@@ -176,10 +227,10 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($option_strike->extrinsic_value));
         $this->assertEquals('double', gettype($option_strike->implied_volatility));
         $this->assertTrue(in_array(gettype($option_strike->delta), ['double', 'NULL']));
-        $this->assertEquals('double', gettype($option_strike->gamma));
-        $this->assertEquals('double', gettype($option_strike->theta));
-        $this->assertEquals('double', gettype($option_strike->vega));
-        $this->assertEquals('double', gettype($option_strike->rho));
+        $this->assertTrue(in_array(gettype($option_strike->gamma), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->theta), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->vega), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($option_strike->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
 }

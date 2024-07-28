@@ -4,11 +4,15 @@ namespace MarketDataApp\Endpoints;
 
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Traits\UniversalParameters;
 
 class MutualFunds
 {
+
+    use UniversalParameters;
 
     private Client $client;
     public const BASE_URL = "v1/funds/";
@@ -40,6 +44,8 @@ class MutualFunds
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @return Candles
      * @throws GuzzleException|ApiException
      */
@@ -49,9 +55,10 @@ class MutualFunds
         string $to = null,
         string $resolution = 'D',
         int $countback = null,
+        ?Parameters $parameters = null
     ): Candles {
-        return new Candles($this->client->execute(self::BASE_URL . "candles/{$resolution}/{$symbol}/",
-            compact('from', 'to', 'countback')
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/",
+            compact('from', 'to', 'countback'), $parameters
         ));
     }
 }

@@ -8,10 +8,12 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Indices\Candle;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
 use MarketDataApp\Endpoints\Responses\Indices\Quotes;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -67,6 +69,23 @@ class IndicesTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $response->updated);
     }
 
+    public function testQuote_csv_success()
+    {
+        $mocked_response = 's, symbol, last, change, changepct, 52weekHigh, 52weekLow, updated';
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->indices->quote(symbol: "DJI", parameters: new Parameters(Format::CSV));
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    public function testQuote_HTML_success()
+    {
+        $mocked_response = '<pre>Hello World</pre>';
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->indices->quote(symbol: "DJI", parameters: new Parameters(Format::HTML));
+        $this->assertEquals($mocked_response, $response->getHtml());
+    }
 
 
     /**
@@ -163,6 +182,28 @@ class IndicesTest extends TestCase
         }
     }
 
+
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testCandles_csv_success()
+    {
+        $mocked_response = "s, c, h, l, o, t\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->indices->candles(
+            symbol: "DJI",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     /**
      * @throws GuzzleException
      */
@@ -210,6 +251,8 @@ class IndicesTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEmpty($response->candles);
+        $this->assertFalse($response->isCsv());
+        $this->assertFalse($response->isHtml());
         $this->assertEquals($mocked_response['s'], $response->status);
         $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->next_time);

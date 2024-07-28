@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints;
 
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
@@ -12,9 +13,12 @@ use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Traits\UniversalParameters;
 
 class Stocks
 {
+
+    use UniversalParameters;
 
     private Client $client;
     public const BASE_URL = "v1/stocks/";
@@ -46,6 +50,8 @@ class Stocks
      * @param bool $adjust_splits Adjust historical data for historical splits and reverse splits. Market Data uses
      * the CRSP methodology for adjustment. Daily candles default: true.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @return BulkCandles
      * @throws ApiException
      * @throws GuzzleException
@@ -56,6 +62,7 @@ class Stocks
         bool $snapshot = false,
         string $date = null,
         bool $adjust_splits = false,
+        ?Parameters $parameters = null
     ): BulkCandles {
         if (empty($symbols) && !$snapshot) {
             throw new \InvalidArgumentException('Either symbols or snapshot must be set');
@@ -63,14 +70,14 @@ class Stocks
 
         $symbols = implode(',', array_map('trim', $symbols));
 
-        return new BulkCandles($this->client->execute(self::BASE_URL . "bulkcandles/{$resolution}/",
+        return new BulkCandles($this->execute("bulkcandles/{$resolution}/",
             [
                 'symbols'      => $symbols,
                 'snapshot'     => $snapshot,
                 'date'         => $date,
                 'adjustsplits' => $adjust_splits
             ]
-        ));
+            , $parameters));
     }
 
     /**
@@ -115,6 +122,8 @@ class Stocks
      * All data is currently returned unadjusted for dividends. Market Data uses the CRSP methodology for adjustment.
      * Daily candles default: true. Intraday candles default: false.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @return Candles
      * @throws GuzzleException|ApiException
      */
@@ -129,8 +138,9 @@ class Stocks
         string $country = null,
         bool $adjust_splits = false,
         bool $adjust_dividends = false,
+        ?Parameters $parameters = null
     ): Candles {
-        return new Candles($this->client->execute(self::BASE_URL . "candles/{$resolution}/{$symbol}/", [
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", [
                 'from'            => $from,
                 'to'              => $to,
                 'countback'       => $countback,
@@ -140,22 +150,25 @@ class Stocks
                 'adjustsplits'    => $adjust_splits,
                 'adjustdividends' => $adjust_dividends
             ]
-        ));
+            , $parameters));
     }
 
     /**
      * Get a real-time price quote for a stock.
      *
      * @param string $symbol The company's ticker symbol.
+     *
      * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output. By
      * default this parameter is false if omitted.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws GuzzleException|ApiException
      */
-    public function quote(string $symbol, bool $fifty_two_week = false): Quote
+    public function quote(string $symbol, bool $fifty_two_week = false, ?Parameters $parameters = null): Quote
     {
-        return new Quote($this->client->execute(self::BASE_URL . "quotes/{$symbol}",
-            ['52week' => $fifty_two_week]));
+        return new Quote($this->execute("quotes/{$symbol}",
+            ['52week' => $fifty_two_week], $parameters));
     }
 
     /**
@@ -163,24 +176,25 @@ class Stocks
      *
      * @param array $symbols The ticker symbols to return in the response.
      * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
      * @throws \Throwable
      */
-    public function quotes(array $symbols, bool $fifty_two_week = false): Quotes
+    public function quotes(array $symbols, bool $fifty_two_week = false, ?Parameters $parameters = null): Quotes
     {
         // Execute standard quotes in parallel
         $calls = [];
         foreach ($symbols as $symbol) {
-            $calls[] = [self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]];
+            $calls[] = ["quotes/$symbol", ['52week' => $fifty_two_week]];
         }
 
-        return new Quotes($this->client->executeInParallel($calls));
+        return new Quotes($this->execute_in_parallel($calls, $parameters));
     }
 
     /**
      * Get a real-time price quote for a multiple stocks in a single API request.
      *
-     * The bulkquotes endpoint is designed to return hundreds of symbols at once or full market snapshots. Response
+     * The bulkQuotes endpoint is designed to return hundreds of symbols at once or full market snapshots. Response
      * times for less than 50 symbols will be quicker using the standard quotes endpoint and sending your requests in
      * parallel.
      *
@@ -190,17 +204,19 @@ class Stocks
      * @param bool $snapshot Returns a full market snapshot with quotes for all symbols when set to true. The symbols
      * parameter may be omitted if the snapshot parameter is set.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws GuzzleException
      * @throws \Exception
      */
-    public function bulkQuotes(array $symbols = [], bool $snapshot = false): BulkQuotes
+    public function bulkQuotes(array $symbols = [], bool $snapshot = false, ?Parameters $parameters = null): BulkQuotes
     {
         if (empty($symbols) && !$snapshot) {
             throw new \InvalidArgumentException('Either symbols or snapshot must be set');
         }
 
-        return new BulkQuotes($this->client->execute(self::BASE_URL . "bulkquotes",
-            ['symbols' => implode(',', $symbols), 'snapshot' => $snapshot]));
+        return new BulkQuotes($this->execute("bulkquotes",
+            ['symbols' => implode(',', $symbols), 'snapshot' => $snapshot], $parameters));
     }
 
     /**
@@ -209,16 +225,21 @@ class Stocks
      * Premium subscription required.
      *
      * @param string $symbol The company's ticker symbol.
+     *
      * @param string|null $from The earliest earnings report to include in the output. If you use countback, from is not
      * required.
      *
      * @param string|null $to The latest earnings report to include in the output.
+     *
      * @param int|null $countback Countback will fetch a specific number of earnings reports before to. If you use from,
      * countback is not required.
      *
      * @param string|null $date Retrieve a specific earnings report by date.
+     *
      * @param string|null $datekey Retrieve a specific earnings report by date and quarter. Example: 2023-Q4. This
      * allows you to retrieve a 4th quarter value without knowing the company's specific fiscal year.
+     *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
      * @return Earnings
      * @throws ApiException
@@ -230,14 +251,15 @@ class Stocks
         string $to = null,
         int $countback = null,
         string $date = null,
-        string $datekey = null
+        string $datekey = null,
+        ?Parameters $parameters = null
     ): Earnings {
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }
 
-        return new Earnings($this->client->execute(self::BASE_URL . "earnings/{$symbol}",
-            compact('from', 'to', 'countback', 'date', 'datekey')));
+        return new Earnings($this->execute("earnings/{$symbol}",
+            compact('from', 'to', 'countback', 'date', 'datekey'), $parameters));
     }
 
     /**
@@ -246,12 +268,18 @@ class Stocks
      * CAUTION: This endpoint is in beta.
      *
      * @param string $symbol The ticker symbol of the stock.
+     *
      * @param string|null $from The earliest news to include in the output. If you use countback, from is not required.
+     *
      * @param string|null $to The latest news to include in the output.
+     *
      * @param int|null $countback Countback will fetch a specific number of news before to. If you use from, countback
      * is not required.
      *
      * @param string|null $date Retrieve news for a specific day.
+     *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws \InvalidArgumentException
      */
     public function news(
@@ -260,14 +288,13 @@ class Stocks
         string $to = null,
         int $countback = null,
         string $date = null,
+        ?Parameters $parameters = null
     ): News {
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }
 
-        return new News($this->client->execute(self::BASE_URL . "news/{$symbol}",
-            compact('from', 'to', 'countback', 'date')));
+        return new News($this->execute("news/{$symbol}",
+            compact('from', 'to', 'countback', 'date'), $parameters));
     }
-
-
 }

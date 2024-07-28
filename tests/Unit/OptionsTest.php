@@ -5,6 +5,7 @@ namespace MarketDataApp\Tests\Unit;
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Endpoints\Responses\Options\Lookup;
 use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
@@ -12,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -52,6 +54,21 @@ class OptionsTest extends TestCase
         }
     }
 
+    public function testExpirations_csv_success()
+    {
+        $mocked_response = "s, expirations, updated\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     public function testExpirations_noData_success()
     {
         $mocked_response = [
@@ -85,11 +102,24 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response['optionSymbol'], $response->option_symbol);
     }
 
+
+    public function testLookup_csv_success()
+    {
+        $mocked_response = "s, optionSymbol\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->lookup('AAPL 7/28/23 $200 Call', new Parameters(format: Format::CSV));
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Lookup::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     public function testStrikes_success()
     {
         $mocked_response = [
-            's'       => 'ok',
-            'updated' => 1663704000,
+            's'          => 'ok',
+            'updated'    => 1663704000,
             '2023-01-20' => [
                 30.0,
                 35.0
@@ -107,6 +137,23 @@ class OptionsTest extends TestCase
         $this->assertInstanceOf(Strikes::class, $response);
         $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
         $this->assertEquals($mocked_response['2023-01-20'], $response->dates['2023-01-20']);
+    }
+
+    public function testStrikes_csv_success()
+    {
+        $mocked_response = "s, updated, 2023-01-20\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: '2023-01-20',
+            date: '2023-01-03',
+            parameters: new Parameters(Format::CSV),
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 
     public function testStrikes_noData_success()
@@ -188,6 +235,21 @@ class OptionsTest extends TestCase
             $this->assertEquals($mocked_response['extrinsicValue'][$i], $response->quotes[$i]->extrinsic_value);
             $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
         }
+    }
+
+    public function testQuotes_csv_success()
+    {
+        $mocked_response = "s, optionSymbol, ask...\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL250117C00150000',
+            parameters: new Parameters(Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 
     public function testQuotes_noData_success()
@@ -284,6 +346,24 @@ class OptionsTest extends TestCase
             $this->assertEquals($mocked_response['underlyingPrice'][$i],
                 $option_strike->underlying_price);
         }
+    }
+
+
+
+    public function testOptionChain_csv_success()
+    {
+        $mocked_response = "s, optionSymbol, underlying...\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            parameters: new Parameters(Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 
     public function testOptionChain_noData_success()

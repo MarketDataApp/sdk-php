@@ -70,19 +70,19 @@ class OptionChainStrike
         public float|null $implied_volatility,
 
         // The delta of the option.
-        public float $delta,
+        public float|null $delta,
 
         // The gamma of the option.
-        public float $gamma,
+        public float|null $gamma,
 
         // The theta of the option.
-        public float $theta,
+        public float|null $theta,
 
         // The vega of the option.
-        public float $vega,
+        public float|null $vega,
 
         // The rho of the option.
-        public float $rho,
+        public float|null $rho,
 
         // The date/time of the quote.
         public Carbon $updated,
