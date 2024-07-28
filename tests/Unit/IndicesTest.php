@@ -182,6 +182,28 @@ class IndicesTest extends TestCase
         }
     }
 
+
+    /**
+     * @throws GuzzleException|ApiException
+     */
+    public function testCandles_csv_success()
+    {
+        $mocked_response = "s, c, h, l, o, t\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->indices->candles(
+            symbol: "DJI",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     /**
      * @throws GuzzleException
      */
@@ -229,6 +251,8 @@ class IndicesTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEmpty($response->candles);
+        $this->assertFalse($response->isCsv());
+        $this->assertFalse($response->isHtml());
         $this->assertEquals($mocked_response['s'], $response->status);
         $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->next_time);

@@ -56,11 +56,12 @@ abstract class ClientBase
      * @throws GuzzleException
      * @throws ApiException
      */
-    public function execute($method, array $arguments = ['format' => 'json']): object
+    public function execute($method, array $arguments = []): object
     {
         try {
+            $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
             $response = $this->guzzle->get($method, [
-                'headers' => $this->headers($arguments['format']),
+                'headers' => $this->headers($format),
                 'query'   => $arguments,
             ]);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -70,7 +71,7 @@ abstract class ClientBase
             };
         }
 
-        switch ($arguments['format']) {
+        switch ($format) {
             case 'csv':
             case 'html':
                 $object_response = (object)array(
