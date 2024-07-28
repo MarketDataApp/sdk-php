@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
@@ -19,6 +20,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -106,6 +108,24 @@ class StocksTest extends TestCase
         }
     }
 
+    public function testCandles_csv_success()
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     /**
      * @throws GuzzleException|ApiException
      */
@@ -160,13 +180,13 @@ class StocksTest extends TestCase
     public function testBulkCandles_success()
     {
         $mocked_response = [
-            's'      => 'ok',
-            'c'      => [22.84, 23.93],
-            'h'      => [23.27, 24.68],
-            'l'      => [22.26, 22.67],
-            'o'      => [22.41, 24.08],
-            'v'      => [123123, 66959442],
-            't'      => [1659326400, 1659412800]
+            's' => 'ok',
+            'c' => [22.84, 23.93],
+            'h' => [23.27, 24.68],
+            'l' => [22.26, 22.67],
+            'o' => [22.41, 24.08],
+            'v' => [123123, 66959442],
+            't' => [1659326400, 1659412800]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -189,6 +209,22 @@ class StocksTest extends TestCase
             $this->assertEquals($mocked_response['v'][$i], $response->candles[$i]->volume);
             $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
         }
+    }
+
+    public function testBulkCandles_csv_success()
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ["AAPL", "MSFT"],
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify that the response is an object of the correct type.
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 
     /**
@@ -245,6 +281,21 @@ class StocksTest extends TestCase
         $this->assertNull($quote->fifty_two_week_low);
         $this->assertEquals($mocked_response['volume'][0], $quote->volume);
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $quote->updated);
+    }
+
+    public function testQuote_csv_success()
+    {
+        $mocked_response = "a, b, c";
+        $this->setMockResponses([
+            new Response(200, [], $mocked_response),
+        ]);
+        $quote = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response, $quote->getCsv());
     }
 
     public function testQuote_52week_success()
@@ -351,6 +402,20 @@ class StocksTest extends TestCase
             $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
         }
     }
+
+    public function testBulkQuotes_csv_success()
+    {
+        $mocked_response = "a, b, c";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->bulkQuotes(
+            symbols: ['AAPL', 'NFLX'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+        $this->assertInstanceOf(BulkQuotes::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     /**
      * @throws \Throwable
      */
@@ -454,7 +519,8 @@ class StocksTest extends TestCase
             $this->assertEquals($mocked_response['fiscalYear'][$i], $response->earnings[$i]->fiscal_year);
             $this->assertEquals($mocked_response['fiscalQuarter'][$i], $response->earnings[$i]->fiscal_quarter);
             $this->assertEquals(Carbon::parse($mocked_response['date'][$i]), $response->earnings[$i]->date);
-            $this->assertEquals(Carbon::parse($mocked_response['reportDate'][$i]), $response->earnings[$i]->report_date);
+            $this->assertEquals(Carbon::parse($mocked_response['reportDate'][$i]),
+                $response->earnings[$i]->report_date);
             $this->assertEquals($mocked_response['reportTime'][$i], $response->earnings[$i]->report_time);
             $this->assertEquals($mocked_response['currency'][$i], $response->earnings[$i]->currency);
             $this->assertEquals($mocked_response['reportedEPS'][$i], $response->earnings[$i]->reported_eps);
@@ -465,6 +531,20 @@ class StocksTest extends TestCase
         }
     }
 
+    public function testEarnings_csv_success()
+    {
+        $mocked_response = "s, symbol, fiscalYear...";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2023-01-01',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
     /**
      * @throws GuzzleException|ApiException
      */
@@ -473,7 +553,6 @@ class StocksTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->client->stocks->earnings('AAPL');
     }
-
 
     public function testNews_success()
     {
@@ -495,6 +574,20 @@ class StocksTest extends TestCase
         $this->assertEquals($mocked_response['content'], $news->content);
         $this->assertEquals($mocked_response['source'], $news->source);
         $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
+    }
+
+    public function testNews_csv_success()
+    {
+        $mocked_response = "s, symbol, headline...";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2023-01-01',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals($mocked_response, $news->getCsv());
     }
 
     public function testNews_noFromOrCountback_throwsException()
