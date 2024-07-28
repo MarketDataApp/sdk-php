@@ -57,7 +57,7 @@ class MutualFunds
         int $countback = null,
         ?Parameters $parameters = null
     ): Candles {
-        return new Candles($this->execute(self::BASE_URL . "candles/{$resolution}/{$symbol}/",
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/",
             compact('from', 'to', 'countback'), $parameters
         ));
     }

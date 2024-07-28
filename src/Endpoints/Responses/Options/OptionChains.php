@@ -3,9 +3,10 @@
 namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 use MarketDataApp\Enums\Side;
 
-class OptionChains
+class OptionChains extends ResponseBase
 {
 
     // Status will always be ok when there is the quote requested.
@@ -22,6 +23,11 @@ class OptionChains
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if (!$this->isJson()) {
+            return;
+        }
+
         // Convert the response to this object.
         $this->status = $response->s;
 

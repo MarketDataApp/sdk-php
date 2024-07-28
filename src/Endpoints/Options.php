@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints;
 
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Endpoints\Responses\Options\Lookup;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
@@ -13,9 +14,12 @@ use MarketDataApp\Enums\Expiration;
 use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Traits\UniversalParameters;
 
 class Options
 {
+
+    use UniversalParameters;
 
     private Client $client;
     public const BASE_URL = "v1/options/";
@@ -38,12 +42,18 @@ class Options
      * day. If date is omitted the expiration dates will be from the current trading day during market hours or from the
      * last trading day when the market is closed. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws ApiException|GuzzleException
      */
-    public function expirations(string $symbol, int $strike = null, string $date = null): Expirations
-    {
-        return new Expirations($this->client->execute(self::BASE_URL . "expirations/$symbol",
-            compact('strike', 'date')));
+    public function expirations(
+        string $symbol,
+        int $strike = null,
+        string $date = null,
+        ?Parameters $parameters = null
+    ): Expirations {
+        return new Expirations($this->execute("expirations/$symbol",
+            compact('strike', 'date'), $parameters));
     }
 
     /**
@@ -55,12 +65,14 @@ class Options
      *   - (3) expiration date
      *   - (4) option side (i.e. put or call).
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      *   This endpoint will translate the user's input into a valid OCC option symbol.
      *   Example: "AAPL 7/28/23 $200 Call".
      */
-    public function lookup(string $input): Lookup
+    public function lookup(string $input, ?Parameters $parameters = null): Lookup
     {
-        return new Lookup($this->client->execute(self::BASE_URL . "lookup/" . $input));
+        return new Lookup($this->execute("lookup/" . $input, [], $parameters));
     }
 
     /**
@@ -75,12 +87,18 @@ class Options
      * is omitted the expiration dates will be from the current trading day during market hours or from the last trading
      * day when the market is closed. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws ApiException|GuzzleException
      */
-    public function strikes(string $symbol, string $expiration = null, string $date = null): Strikes
-    {
-        return new Strikes($this->client->execute(self::BASE_URL . "strikes/$symbol",
-            compact('expiration', 'date')));
+    public function strikes(
+        string $symbol,
+        string $expiration = null,
+        string $date = null,
+        ?Parameters $parameters = null
+    ): Strikes {
+        return new Strikes($this->execute("strikes/$symbol",
+            compact('expiration', 'date'), $parameters));
     }
 
     /**
@@ -196,6 +214,8 @@ class Options
      * @param int|null $min_volume Limit the option chain to options with a volume transacted greater than or equal to
      * the number provided.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws GuzzleException|ApiException
      */
     public function option_chain(
@@ -224,8 +244,9 @@ class Options
         float $max_bid_ask_spread_pct = null,
         int $min_open_interest = null,
         int $min_volume = null,
+        ?Parameters $parameters = null
     ): OptionChains {
-        return new OptionChains($this->client->execute(self::BASE_URL . "chain/$symbol", [
+        return new OptionChains($this->execute("chain/$symbol", [
             'date'               => $date,
             'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
             'from'               => $from,
@@ -250,7 +271,7 @@ class Options
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
             'minOpenInterest'    => $min_open_interest,
             'minVolume'          => $min_volume,
-        ]));
+        ], $parameters));
     }
 
     /**
@@ -273,11 +294,18 @@ class Options
      * When the market is closed the quote will be from the last trading day. Accepted timestamp inputs: ISO 8601, unix,
      * spreadsheet.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws ApiException|GuzzleException
      */
-    public function quotes(string $option_symbol, string $date = null, string $from = null, string $to = null): Quotes
-    {
-        return new Quotes($this->client->execute(self::BASE_URL . "quotes/$option_symbol/",
-            compact('date', 'from', 'to')));
+    public function quotes(
+        string $option_symbol,
+        string $date = null,
+        string $from = null,
+        string $to = null,
+        ?Parameters $parameters = null
+    ): Quotes {
+        return new Quotes($this->execute("quotes/$option_symbol/",
+            compact('date', 'from', 'to'), $parameters));
     }
 }

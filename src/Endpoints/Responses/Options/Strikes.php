@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class Strikes
+class Strikes extends ResponseBase
 {
     // Will always be ok when there is data for the candles requested.
     public string $status;
@@ -32,6 +33,11 @@ class Strikes
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if (!$this->isJson()) {
+            return;
+        }
+
         // Convert the response to this object.
         $this->status = $response->s;
 

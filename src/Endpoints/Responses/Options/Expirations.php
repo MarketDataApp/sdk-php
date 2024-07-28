@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class Expirations
+class Expirations extends ResponseBase
 {
 
     // Status will always be ok when there is strike data for the underlying/expirations requested.
@@ -29,6 +30,11 @@ class Expirations
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if (!$this->isJson()) {
+            return;
+        }
+
         // Convert the response to this object.
         $this->status = $response->s;
 

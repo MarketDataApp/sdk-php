@@ -53,7 +53,7 @@ class Markets
         int $countback = null,
         ?Parameters $parameters = null
     ): Statuses {
-        return new Statuses($this->execute(self::BASE_URL . "status/",
+        return new Statuses($this->execute("status/",
             compact('country', 'date', 'from', 'to', 'countback'), $parameters));
     }
 }

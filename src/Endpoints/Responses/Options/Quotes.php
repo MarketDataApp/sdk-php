@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class Quotes
+class Quotes extends ResponseBase
 {
 
     // Status will always be ok when there is data for the quote requested.
@@ -21,6 +22,11 @@ class Quotes
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if (!$this->isJson()) {
+            return;
+        }
+
         // Convert the response to this object.
         $this->status = $response->s;
 
