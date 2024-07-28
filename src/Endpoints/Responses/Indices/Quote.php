@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Indices;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class Quote
+class Quote extends ResponseBase
 {
 
     // Will always be ok when there is data for the symbol requested.
@@ -34,6 +35,9 @@ class Quote
 
     public function __construct(object $response)
     {
+        parent::__construct($response);
+        if(!$this->isJson()) return;
+
         $this->status = $response->s;
         if ($this->status === "ok") {
             $this->symbol = $response->symbol[0];

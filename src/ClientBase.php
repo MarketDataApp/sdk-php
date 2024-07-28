@@ -31,7 +31,7 @@ abstract class ClientBase
     /**
      * @throws \Throwable
      */
-    public function executeInParallel(array $calls): array
+    public function execute_in_parallel(array $calls): array
     {
         $promises = [];
         foreach ($calls as $call) {
@@ -60,7 +60,7 @@ abstract class ClientBase
     {
         try {
             $response = $this->guzzle->get($method, [
-                'headers' => $this->headers(),
+                'headers' => $this->headers($arguments['format']),
                 'query'   => $arguments,
             ]);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -70,22 +70,38 @@ abstract class ClientBase
             };
         }
 
-        $json_response = (string)$response->getBody();
+        switch($arguments['format']) {
+            case 'csv':
+            case 'html':
+                $object_response = (object) array(
+                    $arguments['format'] => (string) $response->getBody()
+                );
+            break;
 
-        $response = json_decode($json_response);
+            case 'json':
+            default:
+                $json_response = (string)$response->getBody();
 
-        if (isset($response->s) && $response->s === 'error') {
-            throw new ApiException(message: $response->errmsg, response: $response);
+                $object_response = json_decode($json_response);
+
+                if (isset($object_response->s) && $object_response->s === 'error') {
+                    throw new ApiException(message: $object_response->errmsg, response: $response);
+                }
         }
 
-        return $response;
+        return $object_response;
     }
 
-    protected function headers(): array
+    protected function headers(string $format = 'json'): array
     {
+        $accept = match($format) {
+            'json' => 'application/json',
+            'csv' => 'text/csv',
+            'html' => 'text/html',
+        };
         return [
             'Host'          => self::API_HOST,
-            'Accept'        => 'application/json',
+            'Accept'        => $accept,
             'Authorization' => "Bearer $this->token",
         ];
     }

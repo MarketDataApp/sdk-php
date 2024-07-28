@@ -3,8 +3,9 @@
 namespace MarketDataApp\Endpoints\Responses\Indices;
 
 use Carbon\Carbon;
+use MarketDataApp\Endpoints\Responses\ResponseBase;
 
-class Candles
+class Candles extends ResponseBase
 {
 
     /**
@@ -29,6 +30,10 @@ class Candles
      */
     public function __construct(object $response)
     {
+        parent::__construct($response);
+
+        if(!$this->isJson()) return;
+
         // Convert the response to this object.
         $this->status = $response->s;
 

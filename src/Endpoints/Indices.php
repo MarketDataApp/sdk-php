@@ -4,13 +4,17 @@ namespace MarketDataApp\Endpoints;
 
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
 use MarketDataApp\Endpoints\Responses\Indices\Quotes;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Traits\UniversalParameters;
 
 class Indices
 {
+
+    use UniversalParameters;
 
     private Client $client;
     public const BASE_URL = "v1/indices/";
@@ -28,13 +32,17 @@ class Indices
      *
      * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws GuzzleException|ApiException
      */
-    public function quote(string $symbol, bool $fifty_two_week = false): Quote
-    {
-        return new Quote($this->client->execute(self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]));
+    public function quote(
+        string $symbol,
+        bool $fifty_two_week = false,
+        ?Parameters $parameters = null
+    ): Quote {
+        return new Quote($this->execute("quotes/$symbol", ['52week' => $fifty_two_week], $parameters));
     }
-
 
 
     /**
@@ -42,18 +50,22 @@ class Indices
      *
      * @param array $symbols The ticker symbols to return in the response.
      * @param bool $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote output.
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
      * @throws \Throwable
      */
-    public function quotes(array $symbols, bool $fifty_two_week = false): Quotes
-    {
+    public function quotes(
+        array $symbols,
+        bool $fifty_two_week = false,
+        ?Parameters $parameters = null
+    ): Quotes {
         // Execute standard quotes in parallel
         $calls = [];
         foreach ($symbols as $symbol) {
-            $calls[] = [self::BASE_URL . "quotes/$symbol", ['52week' => $fifty_two_week]];
+            $calls[] = ["quotes/$symbol", ['52week' => $fifty_two_week]];
         }
 
-        return new Quotes($this->client->executeInParallel($calls));
+        return new Quotes($this->execute_in_parallel($calls, $parameters));
     }
 
     /**
@@ -78,6 +90,8 @@ class Indices
      * @param int|null $countback Will fetch a number of candles before (to the left of) to. If you use from, countback
      * is not required.
      *
+     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
+     *
      * @throws ApiException|GuzzleException
      */
     public function candles(
@@ -85,10 +99,10 @@ class Indices
         string $from,
         string $to = null,
         string $resolution = 'D',
-        int $countback = null
+        int $countback = null,
+        ?Parameters $parameters = null
     ): Candles {
-        return new Candles($this->client->execute(self::BASE_URL . "candles/{$resolution}/{$symbol}/",
-            compact('from', 'to', 'countback')
-        ));
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", compact('from', 'to', 'countback'),
+            $parameters));
     }
 }

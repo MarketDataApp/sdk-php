@@ -5,8 +5,10 @@ namespace MarketDataApp\Tests\Integration;
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Indices\Candles;
 use MarketDataApp\Endpoints\Responses\Indices\Quote;
+use MarketDataApp\Enums\Format;
 use PHPUnit\Framework\TestCase;
 
 class IndicesTest extends TestCase
@@ -33,6 +35,13 @@ class IndicesTest extends TestCase
         $this->assertTrue(in_array(gettype($response->fifty_two_week_high), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($response->fifty_two_week_low), ['double', 'NULL']));
         $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+    public function testQuote_csv_success()
+    {
+        $response = $this->client->indices->quote(symbol: "VIX", parameters: new Parameters(format: Format::CSV));
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('string', gettype($response->getCsv()));
     }
 
 
@@ -93,6 +102,4 @@ class IndicesTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->next_time);
         $this->assertInstanceOf(Carbon::class, $response->prev_time);
     }
-
-
 }
