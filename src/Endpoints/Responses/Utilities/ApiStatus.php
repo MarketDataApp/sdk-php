@@ -11,7 +11,7 @@ class ApiStatus
 {
 
     /**
-     * Will always be ok when the status information is successfully retrieved.
+     * Will always be "ok" when the status information is successfully retrieved.
      *
      * @var string
      */
