@@ -145,7 +145,7 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->quotes[0]->gamma));
         $this->assertEquals('double', gettype($response->quotes[0]->theta));
         $this->assertEquals('double', gettype($response->quotes[0]->vega));
-        $this->assertTrue(in_array(gettype($response->rho), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($response->quotes[0]->intrinsic_value));
         $this->assertEquals('double', gettype($response->quotes[0]->extrinsic_value));
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
