@@ -4,15 +4,31 @@ namespace MarketDataApp\Endpoints\Responses\Utilities;
 
 use Carbon\Carbon;
 
+/**
+ * Represents the status of the API and its services.
+ */
 class ApiStatus
 {
 
-    // Will always be ok when the status information is successfully retrieved.
+    /**
+     * Will always be ok when the status information is successfully retrieved.
+     *
+     * @var string
+     */
     public string $status;
 
-    /* @var ServiceStatus[] $services */
+    /**
+     * Array of ServiceStatus objects representing the status of each service.
+     *
+     * @var ServiceStatus[]
+     */
     public array $services;
 
+    /**
+     * ApiStatus constructor.
+     *
+     * @param object $response The raw response object containing API status information.
+     */
     public function __construct(object $response)
     {
         // Convert the response to this object.

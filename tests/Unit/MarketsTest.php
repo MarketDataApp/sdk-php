@@ -12,13 +12,30 @@ use MarketDataApp\Enums\Format;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Markets endpoints of the MarketDataApp.
+ *
+ * This class tests the functionality of the market status endpoint.
+ */
 class MarketsTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = "your_api_token";
@@ -26,6 +43,11 @@ class MarketsTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the status endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testStatus_success()
     {
         $mocked_response = [
@@ -50,6 +72,12 @@ class MarketsTest extends TestCase
             $this->assertEquals($mocked_response['status'][$i], $response->statuses[$i]->status);
         }
     }
+
+    /**
+     * Test the status endpoint with CSV format for a successful response.
+     *
+     * @return void
+     */
     public function testStatus_csv_success()
     {
         $mocked_response = 's, date, status';

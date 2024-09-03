@@ -9,11 +9,24 @@ use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Integration tests for the Utilities endpoints of the MarketDataApp API.
+ */
 class UtilitiesTest extends TestCase
 {
 
+    /**
+     * The MarketDataApp API client instance.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = 'your_api_token';
@@ -21,6 +34,11 @@ class UtilitiesTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the API status endpoint.
+     *
+     * @return void
+     */
     public function testApiStatus_success()
     {
         $response = $this->client->utilities->api_status();
@@ -37,6 +55,11 @@ class UtilitiesTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->services[0]->updated);
     }
 
+    /**
+     * Test the headers endpoint.
+     *
+     * @return void
+     */
     public function testHeaders_success()
     {
         $response = $this->client->utilities->headers();

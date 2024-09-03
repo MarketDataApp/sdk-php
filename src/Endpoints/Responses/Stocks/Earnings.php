@@ -5,15 +5,33 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Class Earnings
+ *
+ * Represents a collection of earnings data for stocks and handles the response parsing.
+ */
 class Earnings extends ResponseBase
 {
 
-    // Will always be ok when there is data for the symbol requested.
+    /**
+     * The status of the response. Will always be "ok" when there is data for the symbol requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    /** @var Earning[] $earnings */
+    /**
+     * Array of Earning objects representing individual stock earnings data.
+     *
+     * @var Earning[]
+     */
     public array $earnings;
 
+    /**
+     * Constructs a new Earnings object and parses the response data.
+     *
+     * @param object $response The raw response object to be parsed.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

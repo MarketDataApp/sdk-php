@@ -5,15 +5,31 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of bulk stock quotes.
+ */
 class BulkQuotes extends ResponseBase
 {
 
-    // Will always be ok when there is data for the symbol requested.
+    /**
+     * Status of the bulk quotes request. Will always be ok when there is data for the symbol requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    /** @var BulkQuote[] $quotes */
+    /**
+     * Array of BulkQuote objects representing individual stock quotes.
+     *
+     * @var BulkQuote[]
+     */
     public array $quotes;
 
+    /**
+     * Constructs a new BulkQuotes instance from the given response object.
+     *
+     * @param object $response The response object containing bulk quotes data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

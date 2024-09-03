@@ -25,13 +25,28 @@ use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Stocks endpoints of the MarketDataApp.
+ *
+ * This class tests various scenarios of the stocks-related endpoints.
+ */
 class StocksTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Mocked response data for AAPL stock.
+     *
+     * @var array
+     */
     private array $aapl_mocked_response = [
         's'         => 'ok',
         'symbol'    => ['AAPL'],
@@ -47,6 +62,11 @@ class StocksTest extends TestCase
         'updated'   => [1663958092]
     ];
 
+    /**
+     * Mocked response data for multiple stocks.
+     *
+     * @var array
+     */
     private array $multiple_mocked_response = [
         's'         => 'ok',
         'symbol'    => ['APPL', 'NFLX'],
@@ -62,6 +82,13 @@ class StocksTest extends TestCase
         'updated'   => [1663958094, 1663958092]
     ];
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = "your_api_token";
@@ -70,7 +97,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful response with 'from' and 'to' parameters.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_fromTo_success()
     {
@@ -108,6 +139,13 @@ class StocksTest extends TestCase
         }
     }
 
+    /**
+     * Test the candles endpoint for a successful CSV response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testCandles_csv_success()
     {
         $mocked_response = "s, c, h, l, o, v, t";
@@ -127,7 +165,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful 'no data' response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noData_success()
     {
@@ -150,7 +192,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful 'no data' response with next time.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noDataNextTime_success()
     {
@@ -173,9 +219,12 @@ class StocksTest extends TestCase
         $this->assertEmpty($response->candles);
     }
 
-
     /**
-     * @throws GuzzleException|ApiException
+     * Test the bulkCandles endpoint for a successful response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testBulkCandles_success()
     {
@@ -211,6 +260,11 @@ class StocksTest extends TestCase
         }
     }
 
+    /**
+     * Test the bulkCandles endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testBulkCandles_csv_success()
     {
         $mocked_response = "s, c, h, l, o, v, t";
@@ -228,7 +282,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the bulkCandles endpoint for a successful 'no data' response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testBulkCandles_noData_success()
     {
@@ -248,7 +306,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the bulkCandles endpoint for invalid arguments.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testBulkCandles_invalidArguments_throwsInvalidArgumentException()
     {
@@ -258,6 +320,11 @@ class StocksTest extends TestCase
         $this->client->stocks->bulkCandles(resolution: 'D');
     }
 
+    /**
+     * Test the quote endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testQuote_success()
     {
         $mocked_response = $this->aapl_mocked_response;
@@ -283,6 +350,11 @@ class StocksTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $quote->updated);
     }
 
+    /**
+     * Test the quote endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testQuote_csv_success()
     {
         $mocked_response = "a, b, c";
@@ -298,6 +370,11 @@ class StocksTest extends TestCase
         $this->assertEquals($mocked_response, $quote->getCsv());
     }
 
+    /**
+     * Test the quote endpoint for a successful response with 52-week high/low.
+     *
+     * @return void
+     */
     public function testQuote_52week_success()
     {
         $mocked_response = $this->aapl_mocked_response;
@@ -326,6 +403,9 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the quotes endpoint for a successful response.
+     *
+     * @return void
      * @throws GuzzleException
      * @throws \Throwable
      */
@@ -372,6 +452,9 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the bulkQuotes endpoint for a successful response.
+     *
+     * @return void
      * @throws \Throwable
      */
     public function testBulkQuotes_success()
@@ -403,6 +486,11 @@ class StocksTest extends TestCase
         }
     }
 
+    /**
+     * Test the bulkQuotes endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testBulkQuotes_csv_success()
     {
         $mocked_response = "a, b, c";
@@ -417,6 +505,9 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the bulkQuotes endpoint for a successful response with 52-week high/low.
+     *
+     * @return void
      * @throws \Throwable
      */
     public function testBulkQuotes_52week_success()
@@ -451,6 +542,9 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the bulkQuotes endpoint for a successful response with snapshot parameter.
+     *
+     * @return void
      * @throws GuzzleException
      */
     public function testBulkQuotes_snapshot_success()
@@ -481,6 +575,9 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the bulkQuotes endpoint for an exception when no parameters are provided.
+     *
+     * @return void
      * @throws GuzzleException
      */
     public function testBulkQuotes_noParameters_throwsException()
@@ -489,6 +586,11 @@ class StocksTest extends TestCase
         $this->client->stocks->bulkQuotes();
     }
 
+    /**
+     * Test the earnings endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testEarnings_success()
     {
         $mocked_response = [
@@ -531,6 +633,11 @@ class StocksTest extends TestCase
         }
     }
 
+    /**
+     * Test the earnings endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testEarnings_csv_success()
     {
         $mocked_response = "s, symbol, fiscalYear...";
@@ -546,7 +653,11 @@ class StocksTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the earnings endpoint for an exception when neither 'from' nor 'countback' is provided.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testEarnings_noFromOrCountback_throwsException()
     {
@@ -554,6 +665,11 @@ class StocksTest extends TestCase
         $this->client->stocks->earnings('AAPL');
     }
 
+    /**
+     * Test the news endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testNews_success()
     {
         $mocked_response = [
@@ -576,6 +692,11 @@ class StocksTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
     }
 
+    /**
+     * Test the news endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testNews_csv_success()
     {
         $mocked_response = "s, symbol, headline...";
@@ -590,12 +711,22 @@ class StocksTest extends TestCase
         $this->assertEquals($mocked_response, $news->getCsv());
     }
 
+    /**
+     * Test the news endpoint for an exception when neither 'from' nor 'countback' is provided.
+     *
+     * @return void
+     */
     public function testNews_noFromOrCountback_throwsException()
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->client->stocks->news('AAPL');
     }
 
+    /**
+     * Test exception handling for GuzzleException.
+     *
+     * @return void
+     */
     public function testExceptionHandling_throwsGuzzleException()
     {
         $this->setMockResponses([

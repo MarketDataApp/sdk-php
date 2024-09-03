@@ -8,27 +8,62 @@ use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Exceptions\ApiException;
 
+/**
+ * Abstract base class for Market Data API client.
+ *
+ * This class provides core functionality for API communication,
+ * including parallel execution, async requests, and response handling.
+ */
 abstract class ClientBase
 {
 
+    /**
+     * The base URL for the Market Data API.
+     */
     public const API_URL = "https://api.marketdata.app/";
+
+    /**
+     * The host for the Market Data API.
+     */
     public const API_HOST = "api.marketdata.app";
 
+    /**
+     * @var GuzzleClient The Guzzle HTTP client instance.
+     */
     protected GuzzleClient $guzzle;
+
+    /**
+     * @var string The API token for authentication.
+     */
     protected string $token;
 
+    /**
+     * ClientBase constructor.
+     *
+     * @param string $token The API token for authentication.
+     */
     public function __construct(string $token)
     {
         $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
         $this->token = $token;
     }
 
+    /**
+     * Set a custom Guzzle client.
+     *
+     * @param GuzzleClient $guzzleClient The Guzzle client to use.
+     */
     public function setGuzzle(GuzzleClient $guzzleClient): void
     {
         $this->guzzle = $guzzleClient;
     }
 
     /**
+     * Execute multiple API calls in parallel.
+     *
+     * @param array $calls An array of method calls, each containing the method name and arguments.
+     *
+     * @return array An array of decoded JSON responses.
      * @throws \Throwable
      */
     public function execute_in_parallel(array $calls): array
@@ -44,6 +79,14 @@ abstract class ClientBase
         }, $responses);
     }
 
+    /**
+     * Perform an asynchronous API request.
+     *
+     * @param string $method    The API method to call.
+     * @param array  $arguments The arguments for the API call.
+     *
+     * @return PromiseInterface
+     */
     protected function async($method, array $arguments = []): PromiseInterface
     {
         return $this->guzzle->getAsync($method, [
@@ -53,6 +96,12 @@ abstract class ClientBase
     }
 
     /**
+     * Execute a single API request.
+     *
+     * @param string $method    The API method to call.
+     * @param array  $arguments The arguments for the API call.
+     *
+     * @return object The API response as an object.
      * @throws GuzzleException
      * @throws ApiException
      */
@@ -93,6 +142,13 @@ abstract class ClientBase
         return $object_response;
     }
 
+    /**
+     * Generate headers for API requests.
+     *
+     * @param string $format The desired response format (json, csv, or html).
+     *
+     * @return array An array of headers.
+     */
     protected function headers(string $format = 'json'): array
     {
         return [

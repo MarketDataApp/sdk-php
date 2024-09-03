@@ -5,15 +5,31 @@ namespace MarketDataApp\Endpoints\Responses\Markets;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of market statuses for different dates.
+ */
 class Statuses extends ResponseBase
 {
 
-    // Will always be ok when there is data for the dates requested.
+    /**
+     * The status of the response. Will always be ok when there is data for the dates requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    /** @var Status[] $statuses */
+    /**
+     * Array of Status objects representing market statuses for different dates.
+     *
+     * @var Status[]
+     */
     public array $statuses = [];
 
+    /**
+     * Constructs a new Statuses instance from the given response object.
+     *
+     * @param object $response The response object containing market status data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

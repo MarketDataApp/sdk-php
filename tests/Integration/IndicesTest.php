@@ -11,11 +11,22 @@ use MarketDataApp\Endpoints\Responses\Indices\Quote;
 use MarketDataApp\Enums\Format;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class IndicesTest
+ *
+ * Integration tests for indices-related functionality in the MarketDataApp.
+ */
 class IndicesTest extends TestCase
 {
 
+    /**
+     * @var Client The client instance used for testing.
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     */
     protected function setUp(): void
     {
         $token = "your_api_token";
@@ -23,6 +34,9 @@ class IndicesTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test successful quote retrieval.
+     */
     public function testQuote_success()
     {
         $response = $this->client->indices->quote("VIX");
@@ -37,6 +51,9 @@ class IndicesTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->updated);
     }
 
+    /**
+     * Test successful quote retrieval in CSV format.
+     */
     public function testQuote_csv_success()
     {
         $response = $this->client->indices->quote(symbol: "VIX", parameters: new Parameters(format: Format::CSV));
@@ -44,7 +61,9 @@ class IndicesTest extends TestCase
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
-
+    /**
+     * Test successful retrieval of multiple quotes.
+     */
     public function testQuotes_success()
     {
         $response = $this->client->indices->quotes(['VIX']);
@@ -60,8 +79,9 @@ class IndicesTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
     }
 
-
     /**
+     * Test successful candles retrieval.
+     *
      * @throws GuzzleException
      */
     public function testCandles_success()
@@ -85,6 +105,8 @@ class IndicesTest extends TestCase
     }
 
     /**
+     * Test candles retrieval with no data.
+     *
      * @throws GuzzleException
      */
     public function testCandles_noData()

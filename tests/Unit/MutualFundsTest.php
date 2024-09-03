@@ -14,13 +14,30 @@ use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Mutual Funds endpoints of the MarketDataApp.
+ *
+ * This class tests various scenarios of the candles endpoint for mutual funds data.
+ */
 class MutualFundsTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = 'your_api_token';
@@ -28,6 +45,13 @@ class MutualFundsTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the candles endpoint with 'from' and 'to' parameters for a successful response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testCandles_fromTo_success()
     {
         $mocked_response = [
@@ -61,6 +85,14 @@ class MutualFundsTest extends TestCase
             $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
         }
     }
+
+    /**
+     * Test the candles endpoint with CSV format for a successful response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testCandles_csv_success()
     {
         $mocked_response = "s, t, o, h, l, c\r\n";
@@ -80,7 +112,11 @@ class MutualFundsTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful response with no data.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noData_success()
     {
@@ -103,7 +139,11 @@ class MutualFundsTest extends TestCase
     }
 
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful response with no data and next time.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noDataNextTime_success()
     {
