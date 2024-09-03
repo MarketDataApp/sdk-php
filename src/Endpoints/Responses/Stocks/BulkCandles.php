@@ -5,15 +5,31 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of stock candles data in bulk format.
+ */
 class BulkCandles extends ResponseBase
 {
 
-    // Will always be ok when there is data for the candles requested.
+    /**
+     * Status of the bulk candles request. Will always be ok when there is data for the candles requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    /** @var Candle[] $candles */
+    /**
+     * Array of Candle objects representing individual stock candles.
+     *
+     * @var Candle[]
+     */
     public array $candles = [];
 
+    /**
+     * Constructs a new BulkCandles instance from the given response object.
+     *
+     * @param object $response The response object containing bulk candles data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

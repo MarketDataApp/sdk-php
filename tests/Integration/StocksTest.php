@@ -17,11 +17,25 @@ use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class StocksTest
+ *
+ * Integration tests for stocks-related functionality in the MarketDataApp.
+ * This class tests various API endpoints related to stocks, including
+ * candles, quotes, bulk quotes, and earnings data.
+ */
 class StocksTest extends TestCase
 {
 
+    /**
+     * @var Client The client instance used for testing.
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     * Initializes a new Client instance with the API token.
+     */
     protected function setUp(): void
     {
         error_reporting(E_ALL);
@@ -31,6 +45,8 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test successful retrieval of stock candles.
+     *
      * @throws GuzzleException|ApiException
      */
     public function testCandles_success()
@@ -42,11 +58,9 @@ class StocksTest extends TestCase
             resolution: 'D'
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertNotEmpty($response->candles);
 
-        // Verify each item in the response is an object of the correct type and has the correct values.
         $this->assertInstanceOf(Candle::class, $response->candles[0]);
         $this->assertEquals('double', gettype($response->candles[0]->close));
         $this->assertEquals('double', gettype($response->candles[0]->high));
@@ -56,6 +70,9 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
     }
 
+    /**
+     * Test successful retrieval of stock candles in CSV format.
+     */
     public function testCandles_csv_success()
     {
         $response = $this->client->stocks->candles(
@@ -66,12 +83,13 @@ class StocksTest extends TestCase
             parameters: new Parameters(format: Format::CSV)
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
     /**
+     * Test successful retrieval of bulk stock candles.
+     *
      * @throws GuzzleException|ApiException
      */
     public function testBulkCandles_success()
@@ -81,11 +99,9 @@ class StocksTest extends TestCase
             resolution: 'D'
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertNotEmpty($response->candles);
 
-        // Verify each item in the response is an object of the correct type and has the correct values.
         $this->assertInstanceOf(Candle::class, $response->candles[0]);
         $this->assertEquals('double', gettype($response->candles[0]->close));
         $this->assertEquals('double', gettype($response->candles[0]->high));
@@ -96,6 +112,8 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test successful retrieval of bulk stock candles in CSV format.
+     *
      * @throws GuzzleException|ApiException
      */
     public function testBulkCandles_csv_success()
@@ -106,11 +124,13 @@ class StocksTest extends TestCase
             parameters: new Parameters(format: Format::CSV)
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful retrieval of a stock quote.
+     */
     public function testQuote_success()
     {
         $response = $this->client->stocks->quote('AAPL');
@@ -132,6 +152,9 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->updated);
     }
 
+    /**
+     * Test successful retrieval of a stock quote in CSV format.
+     */
     public function testQuote_csv_success()
     {
         $response = $this->client->stocks->quote(
@@ -143,6 +166,9 @@ class StocksTest extends TestCase
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful retrieval of multiple stock quotes.
+     */
     public function testQuotes_success()
     {
         $response = $this->client->stocks->quotes(['AAPL']);
@@ -165,6 +191,8 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test successful retrieval of bulk stock quotes.
+     *
      * @throws \Throwable
      */
     public function testBulkQuotes_success()
@@ -189,6 +217,8 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test successful retrieval of bulk stock quotes in CSV format.
+     *
      * @throws \Throwable
      */
     public function testBulkQuotes_csv_success()
@@ -201,9 +231,12 @@ class StocksTest extends TestCase
         $this->assertNotEmpty($response->getCsv());
     }
 
+    /**
+     * Test successful retrieval of earnings data.
+     */
     public function testEarnings_success()
     {
-        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
+        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2024-01-01');
 
         $this->assertInstanceOf(Earnings::class, $response);
         $this->assertNotEmpty($response->earnings);
@@ -223,11 +256,14 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->earnings[0]->updated);
     }
 
+    /**
+     * Test successful retrieval of earnings data in CSV format.
+     */
     public function testEarnings_csv_success()
     {
         $response = $this->client->stocks->earnings(
             symbol: 'AAPL',
-            from: '2023-01-01',
+            from: '2024-01-01',
             parameters: new Parameters(format: Format::CSV)
         );
 

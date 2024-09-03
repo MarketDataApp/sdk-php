@@ -5,21 +5,45 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of option quotes with associated data.
+ */
 class Quotes extends ResponseBase
 {
 
-    // Status will always be ok when there is data for the quote requested.
+    /**
+     * Status of the quotes request. Will always be ok when there is data for the quote requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    // Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+    /**
+     * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+     *
+     * @var Carbon
+     */
     public Carbon $next_time;
 
-    // Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+    /**
+     * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+     *
+     * @var Carbon
+     */
     public Carbon $prev_time;
 
-    /** @var Quote[] $quotes */
+    /**
+     * Array of Quote objects.
+     *
+     * @var Quote[]
+     */
     public array $quotes = [];
 
+    /**
+     * Constructs a new Quotes instance from the given response object.
+     *
+     * @param object $response The response object containing quotes data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

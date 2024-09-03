@@ -18,13 +18,28 @@ use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Indices endpoints of the MarketDataApp.
+ *
+ * This class tests various scenarios of the quote endpoint for indices data.
+ */
 class IndicesTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Mocked response data for AAPL stock.
+     *
+     * @var array
+     */
     private array $aapl_mocked_response = [
         's'          => 'ok',
         'symbol'     => ['AAPL'],
@@ -36,6 +51,13 @@ class IndicesTest extends TestCase
         'updated'    => ['2020-01-01T00:00:00.000000Z'],
     ];
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = "your_api_token";
@@ -43,6 +65,13 @@ class IndicesTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the quote endpoint for a successful JSON response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testQuote_success()
     {
         $mocked_response = [
@@ -69,6 +98,13 @@ class IndicesTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated'][0]), $response->updated);
     }
 
+    /**
+     * Test the quote endpoint for a successful CSV response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testQuote_csv_success()
     {
         $mocked_response = 's, symbol, last, change, changepct, 52weekHigh, 52weekLow, updated';
@@ -78,6 +114,13 @@ class IndicesTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the quote endpoint for a successful HTML response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testQuote_HTML_success()
     {
         $mocked_response = '<pre>Hello World</pre>';
@@ -87,8 +130,10 @@ class IndicesTest extends TestCase
         $this->assertEquals($mocked_response, $response->getHtml());
     }
 
-
     /**
+     * Test the quotes endpoint for multiple symbols.
+     *
+     * @return void
      * @throws GuzzleException
      * @throws \Throwable
      */
@@ -126,6 +171,13 @@ class IndicesTest extends TestCase
         }
     }
 
+    /**
+     * Test the quote endpoint for a successful 'no data' response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
     public function testQuote_noData_success()
     {
         $mocked_response = [
@@ -146,7 +198,11 @@ class IndicesTest extends TestCase
     }
 
     /**
+     * Test the candles endpoint for a successful response with 'from' and 'to' parameters.
+     *
+     * @return void
      * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_fromTo_success()
     {
@@ -182,9 +238,12 @@ class IndicesTest extends TestCase
         }
     }
 
-
     /**
-     * @throws GuzzleException|ApiException
+     * Test the candles endpoint for a successful CSV response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_csv_success()
     {
@@ -205,7 +264,11 @@ class IndicesTest extends TestCase
     }
 
     /**
+     * Test the candles endpoint for a successful 'no data' response.
+     *
+     * @return void
      * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noData_success()
     {
@@ -230,7 +293,11 @@ class IndicesTest extends TestCase
     }
 
     /**
+     * Test the candles endpoint for a successful 'no data' response with next and previous times.
+     *
+     * @return void
      * @throws GuzzleException
+     * @throws ApiException
      */
     public function testCandles_noDataNextTimePrevTime_success()
     {
@@ -258,6 +325,11 @@ class IndicesTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->next_time);
     }
 
+    /**
+     * Test exception handling for GuzzleException.
+     *
+     * @return void
+     */
     public function testExceptionHandling_throwsGuzzleException()
     {
         $this->setMockResponses([
@@ -268,6 +340,11 @@ class IndicesTest extends TestCase
         $this->client->indices->quote("INVALID");
     }
 
+    /**
+     * Test exception handling for ApiException.
+     *
+     * @return void
+     */
     public function testExceptionHandling_throwsApiException()
     {
         $mocked_response = [

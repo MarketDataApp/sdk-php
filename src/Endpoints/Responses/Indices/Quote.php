@@ -5,34 +5,58 @@ namespace MarketDataApp\Endpoints\Responses\Indices;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a financial quote for an index.
+ */
 class Quote extends ResponseBase
 {
 
-    // Will always be ok when there is data for the symbol requested.
+    /**
+     * Status of the quote request. Will always be ok when there is data for the symbol requested.
+     */
     public string $status;
 
-    // The symbol of the index.
+    /**
+     * The symbol of the index.
+     */
     public string $symbol;
 
-    // The last price of the index.
+    /**
+     * The last price of the index.
+     */
     public float $last;
 
-    // The difference in price in dollars (or the index's native currency if different from dollars) compared to the
-    // closing price of the previous day.
+    /**
+     * The difference in price in dollars (or the index's native currency if different from dollars) compared to the
+     * closing price of the previous day.
+     */
     public float|null $change;
 
-    // The difference in price in percent compared to the closing price of the previous day.
+    /**
+     * The difference in price in percent compared to the closing price of the previous day.
+     */
     public float|null $change_percent;
 
-    // The 52-week high for the index.
+    /**
+     * The 52-week high for the index.
+     */
     public float|null $fifty_two_week_high = null;
 
-    // The 52-week low for the index.
+    /**
+     * The 52-week low for the index.
+     */
     public float|null $fifty_two_week_low = null;
 
-    // The date/time of the quote.
+    /**
+     * The date/time of the quote.
+     */
     public Carbon $updated;
 
+    /**
+     * Constructs a new Quote instance.
+     *
+     * @param object $response The response object to be processed.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

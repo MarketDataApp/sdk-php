@@ -18,13 +18,30 @@ use MarketDataApp\Enums\Side;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Options endpoints of the MarketDataApp.
+ *
+ * This class tests various scenarios of the options-related endpoints.
+ */
 class OptionsTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = 'your_api_token';
@@ -32,6 +49,11 @@ class OptionsTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the expirations endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testExpirations_success()
     {
         $mocked_response = [
@@ -54,6 +76,11 @@ class OptionsTest extends TestCase
         }
     }
 
+    /**
+     * Test the expirations endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testExpirations_csv_success()
     {
         $mocked_response = "s, expirations, updated\r\n";
@@ -69,6 +96,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the expirations endpoint for a successful 'no data' response.
+     *
+     * @return void
+     */
     public function testExpirations_noData_success()
     {
         $mocked_response = [
@@ -87,6 +119,11 @@ class OptionsTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 
+    /**
+     * Test the lookup endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testLookup_success()
     {
         $mocked_response = [
@@ -102,7 +139,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response['optionSymbol'], $response->option_symbol);
     }
 
-
+    /**
+     * Test the lookup endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testLookup_csv_success()
     {
         $mocked_response = "s, optionSymbol\r\n";
@@ -115,6 +156,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the strikes endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testStrikes_success()
     {
         $mocked_response = [
@@ -139,6 +185,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response['2023-01-20'], $response->dates['2023-01-20']);
     }
 
+    /**
+     * Test the strikes endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testStrikes_csv_success()
     {
         $mocked_response = "s, updated, 2023-01-20\r\n";
@@ -156,6 +207,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the strikes endpoint for a successful 'no data' response.
+     *
+     * @return void
+     */
     public function testStrikes_noData_success()
     {
         $mocked_response = [
@@ -178,6 +234,11 @@ class OptionsTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 
+    /**
+     * Test the quotes endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testQuotes_success()
     {
         $mocked_response = [
@@ -237,6 +298,11 @@ class OptionsTest extends TestCase
         }
     }
 
+    /**
+     * Test the quotes endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testQuotes_csv_success()
     {
         $mocked_response = "s, optionSymbol, ask...\r\n";
@@ -252,6 +318,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the quotes endpoint for a successful 'no data' response.
+     *
+     * @return void
+     */
     public function testQuotes_noData_success()
     {
         $mocked_response = [
@@ -270,6 +341,11 @@ class OptionsTest extends TestCase
         $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
     }
 
+    /**
+     * Test the option_chain endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testOptionChain_success()
     {
         $mocked_response = [
@@ -348,8 +424,11 @@ class OptionsTest extends TestCase
         }
     }
 
-
-
+    /**
+     * Test the option_chain endpoint for a successful CSV response.
+     *
+     * @return void
+     */
     public function testOptionChain_csv_success()
     {
         $mocked_response = "s, optionSymbol, underlying...\r\n";
@@ -366,6 +445,11 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response, $response->getCsv());
     }
 
+    /**
+     * Test the option_chain endpoint for a successful 'no data' response.
+     *
+     * @return void
+     */
     public function testOptionChain_noData_success()
     {
         $mocked_response = [

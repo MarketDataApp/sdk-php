@@ -11,13 +11,30 @@ use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test case for the Utilities endpoints of the MarketDataApp.
+ *
+ * This class tests the functionality of the API status and headers endpoints.
+ */
 class UtilitiesTest extends TestCase
 {
 
     use MockResponses;
 
+    /**
+     * The client instance used for testing.
+     *
+     * @var Client
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     *
+     * This method is called before each test.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $token = 'your_api_token';
@@ -25,6 +42,11 @@ class UtilitiesTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test the API status endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testApiStatus_success()
     {
         $mocked_response = [
@@ -55,6 +77,11 @@ class UtilitiesTest extends TestCase
         }
     }
 
+    /**
+     * Test the headers endpoint for a successful response.
+     *
+     * @return void
+     */
     public function testHeaders_success()
     {
         $mocked_response = [

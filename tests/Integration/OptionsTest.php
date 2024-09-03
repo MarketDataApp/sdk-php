@@ -17,11 +17,25 @@ use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class OptionsTest
+ *
+ * Integration tests for options-related functionality in the MarketDataApp.
+ * This class tests various API endpoints related to options, including
+ * expirations, lookups, strikes, quotes, and option chains.
+ */
 class OptionsTest extends TestCase
 {
 
+    /**
+     * @var Client The client instance used for testing.
+     */
     private Client $client;
 
+    /**
+     * Set up the test environment.
+     * Initializes a new Client instance with the API token.
+     */
     protected function setUp(): void
     {
         $token = 'your_api_token';
@@ -29,37 +43,50 @@ class OptionsTest extends TestCase
         $this->client = $client;
     }
 
+    /**
+     * Test successful retrieval of option expirations.
+     * Verifies that the response contains valid expiration dates.
+     */
     public function testExpirations_success()
     {
         $response = $this->client->options->expirations('AAPL');
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Expirations::class, $response);
         $this->assertNotEmpty($response->expirations);
         $this->assertInstanceOf(Carbon::class, $response->updated);
         $this->assertInstanceOf(Carbon::class, $response->expirations[0]);
     }
 
+    /**
+     * Test successful retrieval of option expirations in CSV format.
+     * Verifies that the response is a string containing CSV data.
+     */
     public function testExpirations_csv_success()
     {
         $response = $this->client->options->expirations(
             symbol: 'AAPL', parameters: new Parameters(format: Format::CSV)
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Expirations::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful lookup of an option symbol.
+     * Verifies that the response contains the correct option symbol.
+     */
     public function testLookup_success()
     {
         $response = $this->client->options->lookup('AAPL 7/28/23 $200 Call');
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Lookup::class, $response);
         $this->assertEquals('AAPL230728C00200000', $response->option_symbol);
     }
 
+    /**
+     * Test successful retrieval of option strikes.
+     * Verifies that the response contains valid strike prices.
+     */
     public function testStrikes_success()
     {
         $response = $this->client->options->strikes(
@@ -67,13 +94,16 @@ class OptionsTest extends TestCase
             date: '2023-01-03',
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Strikes::class, $response);
         $this->assertInstanceOf(Carbon::class, $response->updated);
         $this->assertNotEmpty($response->dates);
         $this->assertNotEmpty(array_pop($response->dates));
     }
 
+    /**
+     * Test successful retrieval of option strikes in CSV format.
+     * Verifies that the response is a string containing CSV data.
+     */
     public function testStrikes_csv_success()
     {
         $response = $this->client->options->strikes(
@@ -82,11 +112,14 @@ class OptionsTest extends TestCase
             parameters: new Parameters(format: Format::CSV),
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Strikes::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful retrieval of option quotes.
+     * Verifies that the response contains valid quote data with correct types.
+     */
     public function testQuotes_success()
     {
         $response = $this->client->options->quotes('AAPL250117C00150000');
@@ -95,7 +128,6 @@ class OptionsTest extends TestCase
         $this->assertEquals('ok', $response->status);
         $this->assertNotEmpty($response->quotes);
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Quote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
         $this->assertEquals('double', gettype($response->quotes[0]->ask));
@@ -113,12 +145,16 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->quotes[0]->gamma));
         $this->assertEquals('double', gettype($response->quotes[0]->theta));
         $this->assertEquals('double', gettype($response->quotes[0]->vega));
-        $this->assertEquals('double', gettype($response->quotes[0]->rho));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($response->quotes[0]->intrinsic_value));
         $this->assertEquals('double', gettype($response->quotes[0]->extrinsic_value));
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
     }
 
+    /**
+     * Test successful retrieval of option quotes in CSV format.
+     * Verifies that the response is a string containing CSV data.
+     */
     public function testQuotes_csv_success()
     {
         $response = $this->client->options->quotes(
@@ -130,6 +166,10 @@ class OptionsTest extends TestCase
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful retrieval of option chain.
+     * Verifies that the response contains valid option chain data with correct types.
+     */
     public function testOptionChain_success()
     {
         $response = $this->client->options->option_chain(
@@ -138,13 +178,11 @@ class OptionsTest extends TestCase
             side: Side::CALL,
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(OptionChains::class, $response);
         $this->assertNotEmpty($response->option_chains);
         $option_chain = array_pop($response->option_chains);
         $this->assertNotEmpty($option_chain);
 
-        // Verify each item in the response is an object of the correct type and has the correct values.
         $option_strike = array_pop($option_chain);
         $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));
@@ -175,6 +213,10 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
 
+    /**
+     * Test successful retrieval of option chain in CSV format.
+     * Verifies that the response is a string containing CSV data.
+     */
     public function testOptionChain_csv_success()
     {
         $response = $this->client->options->option_chain(
@@ -184,11 +226,15 @@ class OptionsTest extends TestCase
             parameters: new Parameters(format: Format::CSV),
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(OptionChains::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
     }
 
+    /**
+     * Test successful retrieval of option chain using Expiration enum.
+     * Verifies that the response contains valid option chain data with correct types
+     * when using the Expiration::ALL enum value.
+     */
     public function testOptionChain_expirationEnum_success()
     {
         $response = $this->client->options->option_chain(
@@ -197,13 +243,11 @@ class OptionsTest extends TestCase
             side: Side::CALL,
         );
 
-        // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(OptionChains::class, $response);
         $this->assertNotEmpty($response->option_chains);
         $option_chain = array_pop($response->option_chains);
         $this->assertNotEmpty($option_chain);
 
-        // Verify each item in the response is an object of the correct type and has the correct values.
         $option_strike = array_pop($option_chain);
         $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));

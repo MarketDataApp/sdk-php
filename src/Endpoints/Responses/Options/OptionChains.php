@@ -6,21 +6,45 @@ use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 use MarketDataApp\Enums\Side;
 
+/**
+ * Represents a collection of option chains with associated data.
+ */
 class OptionChains extends ResponseBase
 {
 
-    // Status will always be ok when there is the quote requested.
+    /**
+     * Status of the option chains request. Will always be ok when there is the quote requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    // Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+    /**
+     * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+     *
+     * @var Carbon
+     */
     public Carbon $next_time;
 
-    // Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+    /**
+     * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+     *
+     * @var Carbon
+     */
     public Carbon $prev_time;
 
-    /** @var array[array[OptionChainStrike[]]] $option_chains */
+    /**
+     * Multidimensional array of OptionChainStrike objects organized by date.
+     *
+     * @var array<string, OptionChainStrike[]>
+     */
     public array $option_chains = [];
 
+    /**
+     * Constructs a new OptionChains instance from the given response object.
+     *
+     * @param object $response The response object containing option chains data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

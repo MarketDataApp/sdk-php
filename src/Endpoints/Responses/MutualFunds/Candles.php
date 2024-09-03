@@ -5,19 +5,39 @@ namespace MarketDataApp\Endpoints\Responses\MutualFunds;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of financial candles for mutual funds.
+ */
 class Candles extends ResponseBase
 {
 
-    // Will always be ok when there is data for the candles requested.
+    /**
+     * Status of the candles request. Will always be ok when there is data for the candles requested.
+     *
+     * @var string
+     */
     public string $status;
 
-    // Unix time of the next quote if there is no data in the requested period, but there is data in a subsequent
-    // period.
+    /**
+     * Unix time of the next quote if there is no data in the requested period, but there is data in a subsequent
+     * period.
+     *
+     * @var int
+     */
     public int $next_time;
 
-    /** @var Candle[] $candles */
+    /**
+     * Array of Candle objects representing financial data for mutual funds.
+     *
+     * @var Candle[]
+     */
     public array $candles = [];
 
+    /**
+     * Constructs a new Candles instance from the given response object.
+     *
+     * @param object $response The response object containing candle data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);

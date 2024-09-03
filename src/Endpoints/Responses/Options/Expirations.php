@@ -5,29 +5,54 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
 
+/**
+ * Represents a collection of option expirations dates and related data.
+ */
 class Expirations extends ResponseBase
 {
 
-    // Status will always be ok when there is strike data for the underlying/expirations requested.
+    /**
+     * Status of the expirations request. Will always be ok when there is strike data for the underlying/expirations
+     * requested.
+     *
+     * @var string
+     */
     public string $status;
 
     /**
      * The expiration dates requested for the underlying with the option strikes for each expiration.
      *
-     * @var Carbon[] $expirations
-     **/
+     * @var Carbon[]
+     */
     public array $expirations = [];
 
-    // The date and time of this list of options strikes was updated in Unix time. For historical strikes, this number
-    // should match the date parameter.
+    /**
+     * The date and time this list of options strikes was updated in Unix time.
+     * For historical strikes, this number should match the date parameter.
+     *
+     * @var Carbon
+     */
     public Carbon $updated;
 
-    // Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+    /**
+     * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
+     *
+     * @var Carbon
+     */
     public Carbon $next_time;
 
-    // Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+    /**
+     * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
+     *
+     * @var Carbon
+     */
     public Carbon $prev_time;
 
+    /**
+     * Constructs a new Expirations instance from the given response object.
+     *
+     * @param object $response The response object containing expirations data.
+     */
     public function __construct(object $response)
     {
         parent::__construct($response);
