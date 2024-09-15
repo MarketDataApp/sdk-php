@@ -1,0 +1,41 @@
+name: Generate PHP Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Install phpDocumentor
+      run: |
+        wget https://phpdoc.org/phpDocumentor.phar
+        chmod +x phpDocumentor.phar
+        sudo mv phpDocumentor.phar /usr/local/bin/phpdoc
+
+    - name: Generate Documentation
+      run: phpdoc -d ./src -t ./docs
+
+    - name: Commit documentation changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .docs
+        git commit -m "Update documentation" -a || echo "No changes to commit"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
