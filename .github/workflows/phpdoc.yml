@@ -27,7 +27,7 @@ jobs:
         sudo mv phpDocumentor.phar /usr/local/bin/phpdoc
 
     - name: Generate Documentation
-      run: phpdoc -d ./src -t ./.docs
+      run: phpdoc -d ./src -t ./docs
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
