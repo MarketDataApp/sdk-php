@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+    <name>MarketData - PHPDoc Template</name>
+    <author>Kerry Jones</author>
+    <email>kerryjones21@gmail.com</email>
+    <version>1.0.0</version>
+    <extends>default</extends>
+    <transformations>
+    </transformations>
+</template>

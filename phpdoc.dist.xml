@@ -15,4 +15,5 @@
             </source>
         </api>
     </version>
+    <template name=".phpdoc/template" />
 </phpdocumentor>
