@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.0-beta
+
+**BREAKING CHANGE**: PHP 8.1 support has been dropped. The SDK now requires PHP 8.2 or higher.
+
+- Updated minimum PHP requirement from ^8.1 to ^8.2
+- Updated test matrix to test on PHP 8.2, 8.3, and 8.4
+- Upgraded PHPUnit from ^10.3.2 to ^11.4.0
+- Updated GitHub Actions workflows (actions/checkout to v4, create-pull-request to v7)
+- Updated PHPUnit XML schema to 11.4
+
 ## v0.6.0-beta
 
 Added universal parameters to all endpoints with the ability to change format to CSV and HTML (beta).
