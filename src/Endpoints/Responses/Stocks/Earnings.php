@@ -51,7 +51,7 @@ class Earnings extends ResponseBase
                     date: Carbon::parse($response->date[$i]),
                     report_date: Carbon::parse($response->reportDate[$i]),
                     report_time: $response->reportTime[$i],
-                    currency: $response->currency[$i],
+                    currency: $response->currency[$i] ?? null,
                     reported_eps: $response->reportedEPS[$i],
                     estimated_eps: $response->estimatedEPS[$i],
                     surprise_eps: $response->surpriseEPS[$i],

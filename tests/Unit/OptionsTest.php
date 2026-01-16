@@ -259,7 +259,6 @@ class OptionsTest extends TestCase
             'gamma'           => [0, 0],
             'theta'           => [-0.009, -0.009],
             'vega'            => [0, 0],
-            'rho'             => [0.046, 0.05],
             'intrinsicValue'  => [115.13, 110.13],
             'extrinsicValue'  => [0.37, 0.25],
             'updated'         => [1684702875, 1684702875],
@@ -291,7 +290,6 @@ class OptionsTest extends TestCase
             $this->assertEquals($mocked_response['gamma'][$i], $response->quotes[$i]->gamma);
             $this->assertEquals($mocked_response['theta'][$i], $response->quotes[$i]->theta);
             $this->assertEquals($mocked_response['vega'][$i], $response->quotes[$i]->vega);
-            $this->assertEquals($mocked_response['rho'][$i], $response->quotes[$i]->rho);
             $this->assertEquals($mocked_response['intrinsicValue'][$i], $response->quotes[$i]->intrinsic_value);
             $this->assertEquals($mocked_response['extrinsicValue'][$i], $response->quotes[$i]->extrinsic_value);
             $this->assertEquals(Carbon::parse($mocked_response['updated'][$i]), $response->quotes[$i]->updated);
@@ -374,8 +372,7 @@ class OptionsTest extends TestCase
             'delta'           => [1, 1, -0.95],
             'gamma'           => [0, 0, 0.3],
             'theta'           => [-0.009, -0.009, -.3],
-            'vega'            => [0, 0, 0.3],
-            'rho'             => [0.046, 0.05, 0.4]
+            'vega'            => [0, 0, 0.3]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
@@ -418,7 +415,6 @@ class OptionsTest extends TestCase
             $this->assertEquals($mocked_response['gamma'][$i], $option_strike->gamma);
             $this->assertEquals($mocked_response['theta'][$i], $option_strike->theta);
             $this->assertEquals($mocked_response['vega'][$i], $option_strike->vega);
-            $this->assertEquals($mocked_response['rho'][$i], $option_strike->rho);
             $this->assertEquals($mocked_response['underlyingPrice'][$i],
                 $option_strike->underlying_price);
         }

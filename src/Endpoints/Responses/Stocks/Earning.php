@@ -24,7 +24,7 @@ class Earning
      * @param Carbon     $report_date      The date the earnings report was released or is projected to be released.
      * @param string     $report_time      The value will be either before market open, after market close, or during
      *                                     market hours.
-     * @param string     $currency         The currency of the earnings report.
+     * @param string|null $currency        The currency of the earnings report. May be null for future/estimated earnings reports.
      * @param float|null $reported_eps     The earnings per share reported by the company. Earnings reported are
      *                                     typically non-GAAP unless the company does not report non-GAAP earnings.
      * @param float|null $estimated_eps    The average consensus estimate by Wall Street analysts.
@@ -41,7 +41,7 @@ class Earning
         public Carbon $date,
         public Carbon $report_date,
         public string $report_time,
-        public string $currency,
+        public string|null $currency,
         public float|null $reported_eps,
         public float|null $estimated_eps,
         public float|null $surprise_eps,

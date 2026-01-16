@@ -38,7 +38,10 @@ class OptionsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = 'your_api_token';
+        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
+        if ($token === 'your_api_token') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
         $client = new Client($token);
         $this->client = $client;
     }
@@ -122,7 +125,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_success()
     {
-        $response = $this->client->options->quotes('AAPL250117C00150000');
+        $response = $this->client->options->quotes('AAPL281215C00400000');
 
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertEquals('ok', $response->status);
@@ -145,7 +148,6 @@ class OptionsTest extends TestCase
         $this->assertEquals('double', gettype($response->quotes[0]->gamma));
         $this->assertEquals('double', gettype($response->quotes[0]->theta));
         $this->assertEquals('double', gettype($response->quotes[0]->vega));
-        $this->assertTrue(in_array(gettype($response->quotes[0]->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($response->quotes[0]->intrinsic_value));
         $this->assertEquals('double', gettype($response->quotes[0]->extrinsic_value));
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
@@ -158,7 +160,7 @@ class OptionsTest extends TestCase
     public function testQuotes_csv_success()
     {
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL250117C00150000',
+            option_symbol: 'AAPL281215C00400000',
             parameters: new Parameters(format: Format::CSV),
         );
 
@@ -174,7 +176,7 @@ class OptionsTest extends TestCase
     {
         $response = $this->client->options->option_chain(
             symbol: 'AAPL',
-            expiration: '2025-01-17',
+            expiration: '2028-12-15',
             side: Side::CALL,
         );
 
@@ -209,7 +211,6 @@ class OptionsTest extends TestCase
         $this->assertTrue(in_array(gettype($option_strike->gamma), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($option_strike->theta), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($option_strike->vega), ['double', 'NULL']));
-        $this->assertTrue(in_array(gettype($option_strike->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
 
@@ -274,7 +275,6 @@ class OptionsTest extends TestCase
         $this->assertTrue(in_array(gettype($option_strike->gamma), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($option_strike->theta), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($option_strike->vega), ['double', 'NULL']));
-        $this->assertTrue(in_array(gettype($option_strike->rho), ['double', 'NULL']));
         $this->assertEquals('double', gettype($option_strike->underlying_price));
     }
 }

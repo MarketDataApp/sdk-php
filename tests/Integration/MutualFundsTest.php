@@ -28,7 +28,10 @@ class MutualFundsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = 'your_api_token';
+        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
+        if ($token === 'your_api_token') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
         $client = new Client($token);
         $this->client = $client;
     }

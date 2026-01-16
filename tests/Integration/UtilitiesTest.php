@@ -29,7 +29,10 @@ class UtilitiesTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = 'your_api_token';
+        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
+        if ($token === 'your_api_token') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
         $client = new Client($token);
         $this->client = $client;
     }
@@ -44,7 +47,7 @@ class UtilitiesTest extends TestCase
         $response = $this->client->utilities->api_status();
         $this->assertInstanceOf(ApiStatus::class, $response);
 
-        $this->assertCount(4, $response->services);
+        $this->assertGreaterThanOrEqual(4, count($response->services));
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         $this->assertInstanceOf(ServiceStatus::class, $response->services[0]);

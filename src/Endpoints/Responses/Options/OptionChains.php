@@ -84,7 +84,6 @@ class OptionChains extends ResponseBase
                         gamma: $response->gamma[$i],
                         theta: $response->theta[$i],
                         vega: $response->vega[$i],
-                        rho: $response->rho[$i],
                         updated: Carbon::parse($response->updated[$i]),
                     );
                 }

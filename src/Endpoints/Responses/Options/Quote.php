@@ -38,7 +38,6 @@ class Quote
      * @param float      $gamma              The gamma of the option.
      * @param float      $theta              The theta of the option.
      * @param float      $vega               The vega of the option.
-     * @param float|null $rho                The rho of the option.
      * @param Carbon     $updated            The date and time of this quote snapshot in Unix time.
      */
     public function __construct(
@@ -60,7 +59,6 @@ class Quote
         public float $gamma,
         public float $theta,
         public float $vega,
-        public float|null $rho,
         public Carbon $updated,
     ) {
     }

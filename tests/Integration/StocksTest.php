@@ -39,7 +39,10 @@ class StocksTest extends TestCase
     protected function setUp(): void
     {
         error_reporting(E_ALL);
-        $token = "your_api_token";
+        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
+        if ($token === 'your_api_token') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
         $client = new Client($token);
         $this->client = $client;
     }
@@ -248,7 +251,8 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $response->earnings[0]->date);
         $this->assertInstanceOf(Carbon::class, $response->earnings[0]->report_date);
         $this->assertEquals('string', gettype($response->earnings[0]->report_time));
-        $this->assertEquals('string', gettype($response->earnings[0]->currency));
+        // Currency may be null for future/estimated earnings reports
+        $this->assertTrue(in_array(gettype($response->earnings[0]->currency), ['string', 'NULL']));
         $this->assertEquals('double', gettype($response->earnings[0]->reported_eps));
         $this->assertEquals('double', gettype($response->earnings[0]->estimated_eps));
         $this->assertEquals('double', gettype($response->earnings[0]->surprise_eps));

@@ -43,7 +43,6 @@ class OptionChainStrike
      * @param float|null $gamma              The gamma of the option.
      * @param float|null $theta              The theta of the option.
      * @param float|null $vega               The vega of the option.
-     * @param float|null $rho                The rho of the option.
      * @param Carbon     $updated            The date/time of the quote.
      */
     public function __construct(
@@ -71,7 +70,6 @@ class OptionChainStrike
         public float|null $gamma,
         public float|null $theta,
         public float|null $vega,
-        public float|null $rho,
         public Carbon $updated,
     ) {
     }
