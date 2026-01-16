@@ -7,8 +7,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
-use MarketDataApp\Endpoints\Responses\Stocks\BulkQuote;
-use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
@@ -191,47 +189,6 @@ class StocksTest extends TestCase
         $this->assertNull($response->quotes[0]->fifty_two_week_low);
         $this->assertEquals('integer', gettype($response->quotes[0]->volume));
         $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
-    }
-
-    /**
-     * Test successful retrieval of bulk stock quotes.
-     *
-     * @throws \Throwable
-     */
-    public function testBulkQuotes_success()
-    {
-        $response = $this->client->stocks->bulkQuotes(['AAPL']);
-        $this->assertInstanceOf(BulkQuotes::class, $response);
-        $this->assertNotEmpty($response->quotes);
-
-        $this->assertInstanceOf(BulkQuote::class, $response->quotes[0]);
-
-        $this->assertEquals('string', gettype($response->quotes[0]->symbol));
-        $this->assertEquals('double', gettype($response->quotes[0]->ask));
-        $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
-        $this->assertEquals('double', gettype($response->quotes[0]->bid));
-        $this->assertEquals('integer', gettype($response->quotes[0]->bid_size));
-        $this->assertEquals('double', gettype($response->quotes[0]->mid));
-        $this->assertEquals('double', gettype($response->quotes[0]->last));
-        $this->assertTrue(in_array(gettype($response->quotes[0]->change), ['double', 'NULL']));
-        $this->assertTrue(in_array(gettype($response->quotes[0]->change_percent), ['double', 'NULL']));
-        $this->assertEquals('integer', gettype($response->quotes[0]->volume));
-        $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
-    }
-
-    /**
-     * Test successful retrieval of bulk stock quotes in CSV format.
-     *
-     * @throws \Throwable
-     */
-    public function testBulkQuotes_csv_success()
-    {
-        $response = $this->client->stocks->bulkQuotes(
-            symbols: ['AAPL'],
-            parameters: new Parameters(format: Format::CSV)
-        );
-        $this->assertInstanceOf(BulkQuotes::class, $response);
-        $this->assertNotEmpty($response->getCsv());
     }
 
     /**

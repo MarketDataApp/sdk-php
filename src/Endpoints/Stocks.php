@@ -6,7 +6,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
-use MarketDataApp\Endpoints\Responses\Stocks\BulkQuotes;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
@@ -213,35 +212,6 @@ class Stocks
         }
 
         return new Quotes($this->execute_in_parallel($calls, $parameters));
-    }
-
-    /**
-     * Get real-time price quotes for multiple stocks in a single API request.
-     *
-     * The bulkQuotes endpoint is designed to return hundreds of symbols at once or full market snapshots. Response
-     * times for less than 50 symbols will be quicker using the standard quotes endpoint and sending your requests in
-     * parallel.
-     *
-     * @param array           $symbols    The ticker symbols to return in the response, separated by commas. The
-     *                                    symbols parameter may be omitted if the snapshot parameter is set to true.
-     *
-     * @param bool            $snapshot   Returns a full market snapshot with quotes for all symbols when set to true.
-     *                                    The symbols parameter may be omitted if the snapshot parameter is set.
-     *
-     * @param Parameters|null $parameters Universal parameters for all methods (such as format).
-     *
-     * @return BulkQuotes
-     * @throws GuzzleException
-     * @throws \Exception
-     */
-    public function bulkQuotes(array $symbols = [], bool $snapshot = false, ?Parameters $parameters = null): BulkQuotes
-    {
-        if (empty($symbols) && !$snapshot) {
-            throw new \InvalidArgumentException('Either symbols or snapshot must be set');
-        }
-
-        return new BulkQuotes($this->execute("bulkquotes",
-            ['symbols' => implode(',', $symbols), 'snapshot' => $snapshot], $parameters));
     }
 
     /**

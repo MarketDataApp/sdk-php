@@ -22,22 +22,11 @@ composer require MarketDataApp/sdk-php
 ```php
 $client = new MarketDataApp\Client('your_api_token');
 
-// Indices
-$quote = $client->indices->quote('VIX');
-$quotes = $client->indices->quotes(['VIX', 'DJI']);
-$candles = $client->indices->candles(
-    symbol: "VIX",
-    from: '2022-09-01',
-    to: '2022-09-05',
-    resolution: 'D'
-);
-
 // Stocks
 $candles = $client->stocks->candles('AAPL');
 $bulk_candles = $client->stocks->bulkCandles(['AAPL, MSFT']);
 $quote = $client->stocks->quote('AAPL');
 $quotes = $client->stocks->quotes(['AAPL', 'MSFT']);
-$bulk_quotes = $client->stocks->bulk_quotes(['AAPL', 'MSFT']);
 $earnings = $client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
 $news = $client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
 
@@ -62,10 +51,10 @@ $strikes = $client->options->strikes(
 );
 $option_chain = $client->options->option_chain(
     symbol: 'AAPL',
-    expiration: '2025-01-17',
+    expiration: '2028-12-15',
     side: Side::CALL,
 );
-$quotes = $client->options->quotes('AAPL250117C00150000');
+$quotes = $client->options->quotes('AAPL281215C00400000');
 
 // Utilities
 $status = $client->utilities->api_status();
@@ -81,7 +70,7 @@ For instance, you can change the format to CSV
 ```
 $option_chain = $client->options->option_chain(
     symbol: 'AAPL',
-    expiration: '2025-01-17',
+    expiration: '2028-12-15',
     side: Side::CALL,
     parameters: new Parameters(format: Format::CSV),
 );

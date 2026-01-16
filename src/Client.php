@@ -2,7 +2,6 @@
 
 namespace MarketDataApp;
 
-use MarketDataApp\Endpoints\Indices;
 use MarketDataApp\Endpoints\Markets;
 use MarketDataApp\Endpoints\MutualFunds;
 use MarketDataApp\Endpoints\Options;
@@ -13,18 +12,10 @@ use MarketDataApp\Endpoints\Utilities;
  * Client class for the Market Data API.
  *
  * This class provides access to various endpoints of the Market Data API,
- * including indices, stocks, options, markets, mutual funds, and utilities.
+ * including stocks, options, markets, mutual funds, and utilities.
  */
 class Client extends ClientBase
 {
-
-    /**
-     * The index endpoints provided by the Market Data API offer access to both real-time and historical data related to
-     * financial indices. These endpoints are designed to cater to a wide range of financial data needs.
-     *
-     * @var Indices
-     */
-    public Indices $indices;
 
     /**
      * Stock endpoints include numerous fundamental, technical, and pricing data.
@@ -76,7 +67,6 @@ class Client extends ClientBase
     {
         parent::__construct($token);
 
-        $this->indices = new Indices($this);
         $this->stocks = new Stocks($this);
         $this->options = new Options($this);
         $this->markets = new Markets($this);

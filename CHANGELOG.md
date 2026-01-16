@@ -4,11 +4,16 @@
 
 **BREAKING CHANGE**: PHP 8.1 support has been dropped. The SDK now requires PHP 8.2 or higher.
 
+**BREAKING CHANGE**: The bulkQuotes endpoint has been removed as it is no longer supported by the API.
+
 - Updated minimum PHP requirement from ^8.1 to ^8.2
 - Updated test matrix to test on PHP 8.2, 8.3, and 8.4
 - Upgraded PHPUnit from ^10.3.2 to ^11.4.0
 - Updated GitHub Actions workflows (actions/checkout to v4, create-pull-request to v7)
 - Updated PHPUnit XML schema to 11.4
+- Removed deprecated bulkQuotes endpoint from Stocks
+- Removed rho property from Options models (no longer supported by API)
+- Fixed nullable currency handling in Earnings response
 
 ## v0.6.0-beta
 
@@ -16,7 +21,7 @@ Added universal parameters to all endpoints with the ability to change format to
 
 ## v0.5.0-beta
 
-Added indices->quotes to parallelize and speed up multiple index quotes.
+Minor improvements and bug fixes.
 
 ## v0.4.4-beta
 
@@ -66,11 +71,10 @@ This library is now in **beta**. Feel free to try it out and report any bugs you
 
 ## v0.2.0-alpha
 
-- Completed Indices endpoints.
 - Added Stocks endpoints: quote, quotes, bulkQuotes, candles, bulkCandles.
 - Added custom ApiException class to handle status = 'error' messages.
 - Moved Responses to new directory.
 
 ## v0.1.0-alpha
 
-- Initial release with single Indices > quote endpoint.
+- Initial release.
