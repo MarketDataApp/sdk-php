@@ -13,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Exceptions\UnauthorizedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -230,5 +231,27 @@ class StocksTest extends TestCase
 
         $this->assertInstanceOf(Earnings::class, $response);
         $this->assertNotEmpty($response->getCsv());
+    }
+
+    /**
+     * Test SPY quote with no token throws UnauthorizedException.
+     *
+     * @return void
+     */
+    public function testQuote_noToken_throwsUnauthorizedException()
+    {
+        $client = new Client('');
+        
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionCode(401);
+        
+        try {
+            $client->stocks->quote('SPY');
+        } catch (UnauthorizedException $e) {
+            $this->assertEquals(401, $e->getCode());
+            $this->assertNotNull($e->getResponse());
+            $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            throw $e;
+        }
     }
 }

@@ -8,6 +8,7 @@ use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
+use MarketDataApp\Exceptions\UnauthorizedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -201,5 +202,27 @@ class UtilitiesTest extends TestCase
             $afterRateLimits->rate_limits->requests_reset->timestamp,
             'Reset timestamp should be within the next 24 hours'
         );
+    }
+
+    /**
+     * Test the user endpoint with invalid token throws UnauthorizedException.
+     *
+     * @return void
+     */
+    public function testUser_invalidToken_throwsUnauthorizedException()
+    {
+        $client = new Client('invalid_token_12345');
+        
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionCode(401);
+        
+        try {
+            $client->utilities->user();
+        } catch (UnauthorizedException $e) {
+            $this->assertEquals(401, $e->getCode());
+            $this->assertNotNull($e->getResponse());
+            $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            throw $e;
+        }
     }
 }

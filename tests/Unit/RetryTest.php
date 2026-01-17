@@ -10,6 +10,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
+use MarketDataApp\Exceptions\UnauthorizedException;
 use MarketDataApp\Retry\RetryConfig;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -497,5 +498,91 @@ class RetryTest extends TestCase
 
         $result = $this->client->stocks->quote('AAPL');
         $this->assertNotNull($result);
+    }
+
+    /**
+     * Test 401 Unauthorized throws UnauthorizedException in sync request.
+     *
+     * @return void
+     */
+    public function test401Unauthorized_throwsUnauthorizedException(): void
+    {
+        $this->setMockResponses([
+            new Response(401, [], json_encode(['errmsg' => 'Unauthorized: The token supplied with the request is missing, invalid, or cannot be used.'])),
+        ]);
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionMessage('Unauthorized: The token supplied with the request is missing, invalid, or cannot be used.');
+        $this->expectExceptionCode(401);
+
+        $this->client->stocks->quote('AAPL');
+    }
+
+    /**
+     * Test 401 Unauthorized does not retry (it's a 4xx error).
+     *
+     * @return void
+     */
+    public function test401Unauthorized_doesNotRetry(): void
+    {
+        $this->setMockResponses([
+            new Response(401, [], json_encode(['errmsg' => 'Unauthorized'])),
+        ]);
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionCode(401);
+
+        try {
+            $this->client->stocks->quote('AAPL');
+        } catch (UnauthorizedException $e) {
+            $this->assertEquals(401, $e->getCode());
+            $this->assertNotNull($e->getResponse());
+            $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            throw $e;
+        }
+    }
+
+    /**
+     * Test 401 Unauthorized throws UnauthorizedException in async request.
+     *
+     * @return void
+     */
+    public function test401Unauthorized_async_throwsUnauthorizedException(): void
+    {
+        $this->setMockResponses([
+            new Response(401, [], json_encode(['errmsg' => 'Unauthorized'])),
+        ]);
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionCode(401);
+
+        $this->client->execute_in_parallel([
+            ['v1/stocks/quotes/AAPL', []],
+        ]);
+    }
+
+    /**
+     * Test 401 Unauthorized exception preserves response.
+     *
+     * @return void
+     */
+    public function test401Unauthorized_preservesResponse(): void
+    {
+        $errorMessage = 'Unauthorized: The token supplied with the request is missing, invalid, or cannot be used.';
+        $response = new Response(401, [], json_encode(['errmsg' => $errorMessage]));
+        
+        $this->setMockResponses([$response]);
+
+        try {
+            $this->client->stocks->quote('AAPL');
+            $this->fail('Expected UnauthorizedException was not thrown');
+        } catch (UnauthorizedException $e) {
+            $this->assertEquals(401, $e->getCode());
+            $this->assertEquals($errorMessage, $e->getMessage());
+            $this->assertNotNull($e->getResponse());
+            $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            $this->assertInstanceOf(UnauthorizedException::class, $e);
+            $this->assertInstanceOf(BadStatusCodeError::class, $e); // Should extend BadStatusCodeError
+        }
     }
 }

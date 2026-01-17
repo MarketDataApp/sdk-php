@@ -10,6 +10,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
+use MarketDataApp\Exceptions\UnauthorizedException;
 use MarketDataApp\Retry\RetryConfig;
 
 /**
@@ -92,6 +93,7 @@ abstract class ClientBase
      * @return PromiseInterface
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws UnauthorizedException
      */
     protected function async($method, array $arguments = []): PromiseInterface
     {
@@ -165,6 +167,15 @@ abstract class ClientBase
                         if ($statusCode === 404) {
                             return $reason->getResponse();
                         }
+                        // 401 UNAUTHORIZED gets a specific exception
+                        if ($statusCode === 401) {
+                            throw new UnauthorizedException(
+                                $this->getErrorMessage($reason->getResponse()),
+                                $statusCode,
+                                $reason,
+                                $reason->getResponse()
+                            );
+                        }
                         // Other 4xx errors are non-retryable
                         throw new BadStatusCodeError(
                             $this->getErrorMessage($reason->getResponse()),
@@ -212,6 +223,7 @@ abstract class ClientBase
      * @throws ApiException
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws UnauthorizedException
      */
     public function execute($method, array $arguments = []): object
     {
@@ -244,6 +256,15 @@ abstract class ClientBase
                 
                 // Non-retryable client errors (4xx except 404)
                 $this->validateResponseStatusCode($e->getResponse(), false);
+                // 401 UNAUTHORIZED gets a specific exception
+                if ($statusCode === 401) {
+                    throw new UnauthorizedException(
+                        $this->getErrorMessage($e->getResponse()),
+                        $statusCode,
+                        $e,
+                        $e->getResponse()
+                    );
+                }
                 throw new BadStatusCodeError(
                     $this->getErrorMessage($e->getResponse()),
                     $statusCode,
@@ -347,6 +368,7 @@ abstract class ClientBase
      * @return void
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws UnauthorizedException
      */
     public function validateResponseStatusCode($response, bool $raiseForStatus = true): void
     {
@@ -370,6 +392,10 @@ abstract class ClientBase
 
         // Non-retryable errors (4xx)
         if ($raiseForStatus) {
+            // 401 UNAUTHORIZED gets a specific exception
+            if ($statusCode === 401) {
+                throw new UnauthorizedException($errorMessage, $statusCode, null, $response);
+            }
             throw new BadStatusCodeError($errorMessage, $statusCode, null, $response);
         }
     }
@@ -545,12 +571,28 @@ abstract class ClientBase
      *
      * @return \Psr\Http\Message\ResponseInterface The HTTP response.
      * @throws GuzzleException
+     * @throws UnauthorizedException
      */
     public function makeRawRequest(string $method, array $arguments = []): \Psr\Http\Message\ResponseInterface
     {
-        return $this->guzzle->get($method, [
-            'headers' => $this->headers('json'),
-            'query'   => $arguments,
-        ]);
+        try {
+            return $this->guzzle->get($method, [
+                'headers' => $this->headers('json'),
+                'query'   => $arguments,
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            // 401 UNAUTHORIZED gets a specific exception
+            if ($statusCode === 401) {
+                throw new UnauthorizedException(
+                    $this->getErrorMessage($e->getResponse()),
+                    $statusCode,
+                    $e,
+                    $e->getResponse()
+                );
+            }
+            // Re-throw other ClientExceptions
+            throw $e;
+        }
     }
 }
