@@ -588,15 +588,21 @@ class StocksTest extends TestCase
     /**
      * Test exception handling for GuzzleException.
      *
+     * RequestException is retryable, so we need to provide enough mock responses
+     * to exhaust retries (3 attempts total).
+     *
      * @return void
      */
     public function testExceptionHandling_throwsGuzzleException()
     {
         $this->setMockResponses([
             new RequestException("Error Communicating with Server", new Request('GET', 'test')),
+            new RequestException("Error Communicating with Server", new Request('GET', 'test')),
+            new RequestException("Error Communicating with Server", new Request('GET', 'test')),
         ]);
 
-        $this->expectException(\GuzzleHttp\Exception\GuzzleException::class);
+        // After retries are exhausted, RequestError is thrown (not GuzzleException)
+        $this->expectException(\MarketDataApp\Exceptions\RequestError::class);
         $response = $this->client->stocks->quote("INVALID");
     }
 }

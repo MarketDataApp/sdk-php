@@ -5,8 +5,12 @@ namespace MarketDataApp;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
+use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Exceptions\BadStatusCodeError;
+use MarketDataApp\Exceptions\RequestError;
+use MarketDataApp\Retry\RetryConfig;
 
 /**
  * Abstract base class for Market Data API client.
@@ -80,23 +84,125 @@ abstract class ClientBase
     }
 
     /**
-     * Perform an asynchronous API request.
+     * Perform an asynchronous API request with retry logic.
      *
      * @param string $method    The API method to call.
      * @param array  $arguments The arguments for the API call.
      *
      * @return PromiseInterface
+     * @throws RequestError
+     * @throws BadStatusCodeError
      */
     protected function async($method, array $arguments = []): PromiseInterface
     {
-        return $this->guzzle->getAsync($method, [
-            'headers' => $this->headers(),
-            'query'   => $arguments,
-        ]);
+        $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
+        $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
+        $attempt = 0;
+
+        $makeRequest = function() use ($method, $format, $arguments) {
+            return $this->guzzle->getAsync($method, [
+                'headers' => $this->headers($format),
+                'query'   => $arguments,
+            ]);
+        };
+
+        $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+            return $promise->then(
+                function($response) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+                    // Validate status code
+                    try {
+                        $this->validateResponseStatusCode($response, true);
+                        return $response;
+                    } catch (RequestError $e) {
+                        // Retryable error (5xx)
+                        $attempt++;
+                        if ($attempt < $maxAttempts) {
+                            $delay = $this->calculateBackoffDelay($attempt);
+                            // Use promise-based delay (non-blocking)
+                            return $this->createDelayedPromise($delay)
+                                ->then(function() use ($makeRequest, &$retry) {
+                                    return $retry($makeRequest());
+                                });
+                        }
+                        throw $e;
+                    } catch (BadStatusCodeError $e) {
+                        // Non-retryable error (4xx)
+                        throw $e;
+                    }
+                },
+                function($reason) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+                    // Handle ServerException (5xx)
+                    if ($reason instanceof \GuzzleHttp\Exception\ServerException) {
+                        $statusCode = $reason->getResponse()->getStatusCode();
+                        if (RetryConfig::isRetryableStatusCode($statusCode)) {
+                            $attempt++;
+                            if ($attempt < $maxAttempts) {
+                                $delay = $this->calculateBackoffDelay($attempt);
+                                return $this->createDelayedPromise($delay)
+                                    ->then(function() use ($makeRequest, &$retry) {
+                                        return $retry($makeRequest());
+                                    });
+                            }
+                            throw new RequestError(
+                                $this->getErrorMessage($reason->getResponse()),
+                                $statusCode,
+                                $reason,
+                                $reason->getResponse()
+                            );
+                        }
+                        throw new RequestError(
+                            $this->getErrorMessage($reason->getResponse()),
+                            $statusCode,
+                            $reason,
+                            $reason->getResponse()
+                        );
+                    }
+
+                    // Handle ClientException (4xx)
+                    if ($reason instanceof \GuzzleHttp\Exception\ClientException) {
+                        $statusCode = $reason->getResponse()->getStatusCode();
+                        // 404 is handled specially - return response
+                        if ($statusCode === 404) {
+                            return $reason->getResponse();
+                        }
+                        // Other 4xx errors are non-retryable
+                        throw new BadStatusCodeError(
+                            $this->getErrorMessage($reason->getResponse()),
+                            $statusCode,
+                            $reason,
+                            $reason->getResponse()
+                        );
+                    }
+
+                    // Handle RequestException (network errors, timeouts) - always retryable
+                    if ($reason instanceof \GuzzleHttp\Exception\RequestException) {
+                        $attempt++;
+                        if ($attempt < $maxAttempts) {
+                            $delay = $this->calculateBackoffDelay($attempt);
+                            return $this->createDelayedPromise($delay)
+                                ->then(function() use ($makeRequest, &$retry) {
+                                    return $retry($makeRequest());
+                                });
+                        }
+                        throw new RequestError(
+                            "Request failed: " . $reason->getMessage(),
+                            $reason->getCode(),
+                            $reason,
+                            $reason->hasResponse() ? $reason->getResponse() : null
+                        );
+                    }
+
+                    // Re-throw other exceptions
+                    throw $reason;
+                }
+            );
+        };
+
+        return $retry($makeRequest());
     }
 
     /**
-     * Execute a single API request.
+     * Execute a single API request with retry logic.
      *
      * @param string $method    The API method to call.
      * @param array  $arguments The arguments for the API call.
@@ -104,42 +210,243 @@ abstract class ClientBase
      * @return object The API response as an object.
      * @throws GuzzleException
      * @throws ApiException
+     * @throws RequestError
+     * @throws BadStatusCodeError
      */
     public function execute($method, array $arguments = []): object
     {
-        try {
-            $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
-            $response = $this->guzzle->get($method, [
-                'headers' => $this->headers($format),
-                'query'   => $arguments,
-            ]);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $response = match ($e->getResponse()->getStatusCode()) {
-                404 => $e->getResponse(),
-                default => throw $e,
-            };
+        $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
+        
+        // Retry logic matching Python SDK behavior
+        $attempt = 0;
+        $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
+        
+        while ($attempt < $maxAttempts) {
+            try {
+                $response = $this->guzzle->get($method, [
+                    'headers' => $this->headers($format),
+                    'query'   => $arguments,
+                ]);
+                
+                // Validate response status code
+                $this->validateResponseStatusCode($response, true);
+                
+                // Success - process response
+                return $this->processResponse($response, $format, $arguments);
+                
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                
+                // 404 is handled specially (return response instead of throwing)
+                if ($statusCode === 404) {
+                    return $this->processResponse($e->getResponse(), $format, $arguments);
+                }
+                
+                // Non-retryable client errors (4xx except 404)
+                $this->validateResponseStatusCode($e->getResponse(), false);
+                throw new BadStatusCodeError(
+                    $this->getErrorMessage($e->getResponse()),
+                    $statusCode,
+                    $e,
+                    $e->getResponse()
+                );
+                
+            } catch (\GuzzleHttp\Exception\ServerException $e) {
+                // Server errors (5xx) - check if retryable
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (RetryConfig::isRetryableStatusCode($statusCode)) {
+                    $attempt++;
+                    if ($attempt < $maxAttempts) {
+                        $this->waitForRetry($attempt);
+                        continue; // Retry
+                    }
+                }
+                
+                // Retries exhausted or non-retryable 5xx
+                throw new RequestError(
+                    $this->getErrorMessage($e->getResponse()),
+                    $statusCode,
+                    $e,
+                    $e->getResponse()
+                );
+                
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                // Network errors, timeouts, etc. - always retryable
+                $attempt++;
+                if ($attempt < $maxAttempts) {
+                    $this->waitForRetry($attempt);
+                    continue; // Retry
+                }
+                
+                // Retries exhausted
+                throw new RequestError(
+                    "Request failed: " . $e->getMessage(),
+                    $e->getCode(),
+                    $e,
+                    $e->hasResponse() ? $e->getResponse() : null
+                );
+                
+            } catch (RequestError $e) {
+                // RequestError from validateResponseStatusCode - retry if retryable
+                $response = $e->getResponse();
+                if ($response && RetryConfig::isRetryableStatusCode($response->getStatusCode())) {
+                    $attempt++;
+                    if ($attempt < $maxAttempts) {
+                        $this->waitForRetry($attempt);
+                        continue; // Retry
+                    }
+                }
+                
+                // Retries exhausted
+                throw $e;
+            }
         }
+        
+        // Should never reach here, but just in case
+        throw new RequestError("Request failed after $maxAttempts attempts", 0);
+    }
 
+    /**
+     * Process the response and return the appropriate object.
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
+     * @param string                                $format   The response format.
+     * @param array                                 $arguments The request arguments.
+     *
+     * @return object The processed response.
+     * @throws ApiException
+     */
+    protected function processResponse($response, string $format, array $arguments): object
+    {
         switch ($format) {
             case 'csv':
             case 'html':
-                $object_response = (object)array(
+                return (object)array(
                     $arguments['format'] => (string)$response->getBody()
                 );
-                break;
 
             case 'json':
             default:
                 $json_response = (string)$response->getBody();
-
                 $object_response = json_decode($json_response);
 
                 if (isset($object_response->s) && $object_response->s === 'error') {
                     throw new ApiException(message: $object_response->errmsg, response: $response);
                 }
+
+                return $object_response;
+        }
+    }
+
+    /**
+     * Validate response status code and raise appropriate exceptions.
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
+     * @param bool                                 $raiseForStatus Whether to raise for non-2xx status codes.
+     *
+     * @return void
+     * @throws RequestError
+     * @throws BadStatusCodeError
+     */
+    protected function validateResponseStatusCode($response, bool $raiseForStatus = true): void
+    {
+        if (!$response) {
+            return;
         }
 
-        return $object_response;
+        $statusCode = $response->getStatusCode();
+
+        // Valid status codes (200-299)
+        if ($statusCode >= 200 && $statusCode < 300) {
+            return;
+        }
+
+        $errorMessage = $this->getErrorMessage($response);
+
+        // Check if status code is retryable (> 500)
+        if (RetryConfig::isRetryableStatusCode($statusCode)) {
+            throw new RequestError($errorMessage, $statusCode, null, $response);
+        }
+
+        // Non-retryable errors (4xx)
+        if ($raiseForStatus) {
+            throw new BadStatusCodeError($errorMessage, $statusCode, null, $response);
+        }
+    }
+
+    /**
+     * Get error message from response.
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
+     *
+     * @return string The error message.
+     */
+    protected function getErrorMessage($response): string
+    {
+        if (!$response) {
+            return "Request failed";
+        }
+
+        try {
+            $body = (string)$response->getBody();
+            $data = json_decode($body, true);
+            if (isset($data['errmsg'])) {
+                return $data['errmsg'];
+            }
+            return $body ?: "Request failed with status code: " . $response->getStatusCode();
+        } catch (\Exception $e) {
+            return "Request failed with status code: " . $response->getStatusCode();
+        }
+    }
+
+    /**
+     * Calculate exponential backoff delay.
+     *
+     * @param int $attempt The current attempt number (1-based).
+     *
+     * @return float The delay in seconds.
+     */
+    protected function calculateBackoffDelay(int $attempt): float
+    {
+        $delay = RetryConfig::RETRY_BACKOFF * (2 ** ($attempt - 1));
+        return min(max($delay, RetryConfig::MIN_RETRY_BACKOFF), RetryConfig::MAX_RETRY_BACKOFF);
+    }
+
+    /**
+     * Create a promise that resolves after a delay.
+     * 
+     * Note: PHP doesn't have native async timers, so this uses a micro-delay
+     * approach. For true non-blocking behavior, an event loop would be needed.
+     * This implementation provides the delay while maintaining promise chaining.
+     *
+     * @param float $delay The delay in seconds.
+     *
+     * @return PromiseInterface A promise that resolves after the delay.
+     */
+    protected function createDelayedPromise(float $delay): PromiseInterface
+    {
+        // Create a promise that resolves after the delay
+        // Since PHP doesn't have native async timers, we use a small delay
+        // that allows other promises to process
+        return Create::promiseFor(null)->then(function() use ($delay) {
+            // Use usleep for the delay (this will block the current execution,
+            // but allows the promise chain to work correctly)
+            usleep((int)($delay * 1000000));
+            return null;
+        });
+    }
+
+    /**
+     * Wait for retry with exponential backoff.
+     *
+     * @param int $attempt The current attempt number (1-based).
+     *
+     * @return void
+     */
+    protected function waitForRetry(int $attempt): void
+    {
+        $delay = $this->calculateBackoffDelay($attempt);
+        usleep((int)($delay * 1000000)); // Convert seconds to microseconds
     }
 
     /**
