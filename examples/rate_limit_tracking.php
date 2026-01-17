@@ -15,25 +15,21 @@
  * Usage:
  *     php examples/rate_limit_tracking.php
  *
- * Make sure to set your API token as an environment variable:
+ * The token will be automatically read from MARKETDATA_TOKEN environment variable
+ * or .env file. You can set it with:
  *     export MARKETDATA_TOKEN=your_token_here
+ * Or create a .env file in the project root:
+ *     MARKETDATA_TOKEN=your_token_here
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use MarketDataApp\Client;
 
-// Get API token from environment variable
-$token = getenv('MARKETDATA_TOKEN');
-if (!$token) {
-    echo "Error: MARKETDATA_TOKEN environment variable not set.\n";
-    echo "Please set it with: export MARKETDATA_TOKEN=your_token_here\n";
-    exit(1);
-}
-
 // Initialize the client
+// Token will be automatically obtained from MARKETDATA_TOKEN environment variable or .env file
 // Rate limits are automatically fetched during client construction
-$client = new Client($token);
+$client = new Client();
 
 // Symbols to fetch quotes for
 $symbols = ['SPY', 'QQQ', 'EWZ', 'AAPL', 'MSFT'];

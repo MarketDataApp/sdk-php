@@ -61,13 +61,14 @@ class Client extends ClientBase
      *
      * Initializes all endpoint classes with the provided API token.
      *
-     * @param string $token The API token for authentication. An empty string is allowed
-     *                      for accessing free symbols like AAPL. A valid token is required
-     *                      for authenticated endpoints. An invalid token will throw
-     *                      UnauthorizedException during construction.
+     * @param string|null $token The API token for authentication. If not provided, the token will be
+     *                           automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
+     *                           An empty string is allowed for accessing free symbols like AAPL.
+     *                           A valid token is required for authenticated endpoints. An invalid token will throw
+     *                           UnauthorizedException during construction.
      * @throws \MarketDataApp\Exceptions\UnauthorizedException If the token is invalid (non-empty but returns 401 from /user endpoint)
      */
-    public function __construct($token)
+    public function __construct(?string $token = null)
     {
         parent::__construct($token);
 

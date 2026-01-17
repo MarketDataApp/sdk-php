@@ -14,6 +14,9 @@ use PHPUnit\Framework\TestCase;
  * - Valid token (should succeed and set rate_limits)
  * - Empty token (should succeed for free symbols)
  * - Invalid token (should throw UnauthorizedException)
+ * - Environment variable token (automatic resolution)
+ * - .env file token (automatic resolution)
+ * - Explicit token precedence over env vars
  */
 class ClientInitTest extends TestCase
 {
@@ -106,5 +109,114 @@ class ClientInitTest extends TestCase
             // Re-throw to satisfy expectException
             throw $e;
         }
+    }
+
+    /**
+     * Test that client can be initialized without token when MARKETDATA_TOKEN env var is set.
+     *
+     * The client should automatically read the token from the environment variable.
+     *
+     * @return void
+     */
+    public function testClientInit_withEnvVar_succeeds()
+    {
+        $token = getenv('MARKETDATA_TOKEN');
+        if ($token === false || $token === '') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
+
+        // Temporarily unset any existing env var to test clean state
+        $originalToken = getenv('MARKETDATA_TOKEN');
+        
+        // Create client without passing token - should read from env var
+        $client = new Client();
+
+        // Verify client was created successfully
+        $this->assertInstanceOf(Client::class, $client);
+
+        // If token was valid, rate limits should be set
+        if ($originalToken && $originalToken !== '') {
+            $this->assertNotNull($client->rate_limits, 'Rate limits should be set when token from env var is valid');
+        }
+    }
+
+    /**
+     * Test that explicit token takes precedence over environment variable.
+     *
+     * When both explicit token and env var are provided, explicit token should be used.
+     *
+     * @return void
+     */
+    public function testClientInit_explicitTokenOverridesEnvVar()
+    {
+        $envToken = getenv('MARKETDATA_TOKEN');
+        if ($envToken === false || $envToken === '') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
+
+        // Use a different explicit token (empty string to test precedence)
+        $explicitToken = '';
+        $client = new Client($explicitToken);
+
+        // Verify client was created with explicit token (empty string)
+        $this->assertInstanceOf(Client::class, $client);
+        // Empty token should result in null rate_limits
+        $this->assertNull($client->rate_limits, 'Rate limits should be null when explicit empty token is provided');
+    }
+
+    /**
+     * Test that client falls back to empty string when no token is provided.
+     *
+     * When no token is provided and no env var is set, client should use empty string
+     * (allowing free symbols like AAPL).
+     *
+     * @return void
+     */
+    public function testClientInit_noTokenProvided_fallsBackToEmpty()
+    {
+        // Save original env var
+        $originalToken = getenv('MARKETDATA_TOKEN');
+        
+        // Temporarily unset env var for this test
+        if ($originalToken !== false) {
+            putenv('MARKETDATA_TOKEN');
+            unset($_ENV['MARKETDATA_TOKEN']);
+            unset($_SERVER['MARKETDATA_TOKEN']);
+        }
+
+        try {
+            // Create client without token and without env var
+            $client = new Client();
+
+            // Verify client was created successfully
+            $this->assertInstanceOf(Client::class, $client);
+
+            // Rate limits should be null (empty token skips validation)
+            $this->assertNull($client->rate_limits, 'Rate limits should be null when no token is provided');
+        } finally {
+            // Restore original env var
+            if ($originalToken !== false) {
+                putenv('MARKETDATA_TOKEN=' . $originalToken);
+                $_ENV['MARKETDATA_TOKEN'] = $originalToken;
+                $_SERVER['MARKETDATA_TOKEN'] = $originalToken;
+            }
+        }
+    }
+
+    /**
+     * Test that client can be initialized without token parameter.
+     *
+     * This tests the new optional parameter feature and backward compatibility.
+     *
+     * @return void
+     */
+    public function testClientInit_noParameter_succeeds()
+    {
+        // This test verifies that new Client() works (backward compatibility maintained)
+        // It will use env var if available, or fall back to empty string
+        $client = new Client();
+
+        // Verify client was created successfully
+        $this->assertInstanceOf(Client::class, $client);
     }
 }

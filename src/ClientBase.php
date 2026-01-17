@@ -51,16 +51,17 @@ abstract class ClientBase
     /**
      * ClientBase constructor.
      *
-     * @param string $token The API token for authentication. An empty string is allowed
-     *                      for accessing free symbols like AAPL. A valid token is required
-     *                      for authenticated endpoints. An invalid token will throw
-     *                      UnauthorizedException during construction.
+     * @param string|null $token The API token for authentication. If not provided, the token will be
+     *                           automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
+     *                           An empty string is allowed for accessing free symbols like AAPL.
+     *                           A valid token is required for authenticated endpoints. An invalid token will throw
+     *                           UnauthorizedException during construction.
      * @throws UnauthorizedException If the token is invalid (non-empty but returns 401 from /user endpoint)
      */
-    public function __construct(string $token)
+    public function __construct(?string $token = null)
     {
         $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
-        $this->token = $token;
+        $this->token = Settings::getToken($token);
         $this->_setup_rate_limits();
     }
 
