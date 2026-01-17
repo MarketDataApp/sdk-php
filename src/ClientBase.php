@@ -43,6 +43,11 @@ abstract class ClientBase
     protected string $token;
 
     /**
+     * @var RateLimits|null Current rate limit information, automatically updated after each request.
+     */
+    public ?RateLimits $rate_limits = null;
+
+    /**
      * ClientBase constructor.
      *
      * @param string $token The API token for authentication.
@@ -51,6 +56,7 @@ abstract class ClientBase
     {
         $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
         $this->token = $token;
+        $this->_setup_rate_limits();
     }
 
     /**
@@ -61,6 +67,31 @@ abstract class ClientBase
     public function setGuzzle(GuzzleClient $guzzleClient): void
     {
         $this->guzzle = $guzzleClient;
+    }
+
+    /**
+     * Set up initial rate limits by fetching from the /user/ endpoint.
+     *
+     * This method is called during client construction to initialize rate limit
+     * information. If the request fails, rate_limits will remain null until the
+     * first successful request with rate limit headers.
+     *
+     * @return void
+     */
+    protected function _setup_rate_limits(): void
+    {
+        try {
+            $response = $this->makeRawRequest("user/");
+            $this->validateResponseStatusCode($response, true);
+            
+            $rateLimits = $this->extractRateLimitsFromResponse($response);
+            if ($rateLimits !== null) {
+                $this->rate_limits = $rateLimits;
+            }
+        } catch (\Exception $e) {
+            // Gracefully handle errors - rate_limits will remain null
+            // and will be populated on first successful request
+        }
     }
 
     /**
@@ -114,6 +145,13 @@ abstract class ClientBase
                     // Validate status code
                     try {
                         $this->validateResponseStatusCode($response, true);
+                        
+                        // Automatically update rate limits from response headers
+                        $rateLimits = $this->extractRateLimitsFromResponse($response);
+                        if ($rateLimits !== null) {
+                            $this->rate_limits = $rateLimits;
+                        }
+                        
                         return $response;
                     } catch (RequestError $e) {
                         // Retryable error (5xx)
@@ -165,7 +203,13 @@ abstract class ClientBase
                         $statusCode = $reason->getResponse()->getStatusCode();
                         // 404 is handled specially - return response
                         if ($statusCode === 404) {
-                            return $reason->getResponse();
+                            $response = $reason->getResponse();
+                            // Automatically update rate limits from response headers
+                            $rateLimits = $this->extractRateLimitsFromResponse($response);
+                            if ($rateLimits !== null) {
+                                $this->rate_limits = $rateLimits;
+                            }
+                            return $response;
                         }
                         // 401 UNAUTHORIZED gets a specific exception
                         if ($statusCode === 401) {
@@ -243,6 +287,12 @@ abstract class ClientBase
                 // Validate response status code
                 $this->validateResponseStatusCode($response, true);
                 
+                // Automatically update rate limits from response headers
+                $rateLimits = $this->extractRateLimitsFromResponse($response);
+                if ($rateLimits !== null) {
+                    $this->rate_limits = $rateLimits;
+                }
+                
                 // Success - process response
                 return $this->processResponse($response, $format, $arguments);
                 
@@ -251,7 +301,13 @@ abstract class ClientBase
                 
                 // 404 is handled specially (return response instead of throwing)
                 if ($statusCode === 404) {
-                    return $this->processResponse($e->getResponse(), $format, $arguments);
+                    $response = $e->getResponse();
+                    // Automatically update rate limits from response headers
+                    $rateLimits = $this->extractRateLimitsFromResponse($response);
+                    if ($rateLimits !== null) {
+                        $this->rate_limits = $rateLimits;
+                    }
+                    return $this->processResponse($response, $format, $arguments);
                 }
                 
                 // Non-retryable client errors (4xx except 404)
