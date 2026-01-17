@@ -9,59 +9,76 @@ use Carbon\Carbon;
  *
  * This value object holds rate limit data extracted from response headers.
  * It will be reused by both the User response class and future automatic rate limit tracking.
+ *
+ * Property names match the API header names (x-api-ratelimit-*):
+ * - limit: Total credits allowed (from x-api-ratelimit-limit)
+ * - remaining: Credits remaining (from x-api-ratelimit-remaining)
+ * - reset: When rate limit resets (from x-api-ratelimit-reset)
+ * - consumed: Credits consumed in current request (from x-api-ratelimit-consumed)
  */
 class RateLimits
 {
 
     /**
-     * Total number of requests allowed in the current rate limit window.
+     * Total number of credits allowed in the current rate limit window.
+     *
+     * Extracted from x-api-ratelimit-limit header.
      *
      * @var int
      */
-    public int $requests_limit;
+    public int $limit;
 
     /**
-     * Number of requests remaining in the current rate limit window.
+     * Number of credits remaining in the current rate limit window.
+     *
+     * Extracted from x-api-ratelimit-remaining header.
      *
      * @var int
      */
-    public int $requests_remaining;
+    public int $remaining;
 
     /**
      * Unix timestamp when the rate limit resets.
      *
+     * Extracted from x-api-ratelimit-reset header.
+     *
      * @var Carbon
      */
-    public Carbon $requests_reset;
+    public Carbon $reset;
 
     /**
-     * Number of requests consumed in the current request.
+     * Number of credits consumed in the current request.
      *
-     * According to API documentation: "The quantity of requests that were consumed
+     * Extracted from x-api-ratelimit-consumed header.
+     *
+     * According to API documentation: "The quantity of credits that were consumed
      * in the current request." This is NOT a cumulative count - it's the quantity
      * consumed for the specific request that returned these headers.
      *
+     * Note: Most requests consume 1 credit, but bulk requests or options requests
+     * may consume multiple credits per request.
+     *
      * @var int
      */
-    public int $requests_consumed;
+    public int $consumed;
 
     /**
      * RateLimits constructor.
      *
-     * @param int    $requests_limit     Total number of requests allowed.
-     * @param int    $requests_remaining Number of requests remaining.
-     * @param Carbon $requests_reset     Timestamp when rate limit resets.
-     * @param int    $requests_consumed  Number of requests consumed.
+     * @param int    $limit     Total number of credits allowed.
+     * @param int    $remaining Number of credits remaining.
+     * @param Carbon $reset     Timestamp when rate limit resets.
+     * @param int    $consumed  Number of credits consumed.
      */
     public function __construct(
-        int $requests_limit,
-        int $requests_remaining,
-        Carbon $requests_reset,
-        int $requests_consumed
+        int $limit,
+        int $remaining,
+        Carbon $reset,
+        int $consumed
     ) {
-        $this->requests_limit = $requests_limit;
-        $this->requests_remaining = $requests_remaining;
-        $this->requests_reset = $requests_reset;
-        $this->requests_consumed = $requests_consumed;
+        $this->limit = $limit;
+        $this->remaining = $remaining;
+        $this->reset = $reset;
+        $this->consumed = $consumed;
     }
 }

@@ -45,32 +45,32 @@ class RateLimitsTest extends TestCase
         $this->assertNotNull($this->client->rate_limits, 'Rate limits should be initialized during client construction');
         
         // Verify rate limit values are reasonable
-        $this->assertGreaterThan(0, $this->client->rate_limits->requests_limit, 
+        $this->assertGreaterThan(0, $this->client->rate_limits->limit, 
             'Rate limit should be positive');
-        $this->assertGreaterThanOrEqual(0, $this->client->rate_limits->requests_remaining,
+        $this->assertGreaterThanOrEqual(0, $this->client->rate_limits->remaining,
             'Requests remaining should be >= 0');
         $this->assertLessThanOrEqual(
-            $this->client->rate_limits->requests_limit,
-            $this->client->rate_limits->requests_remaining,
+            $this->client->rate_limits->limit,
+            $this->client->rate_limits->remaining,
             'Requests remaining should be <= limit'
         );
-        $this->assertGreaterThanOrEqual(0, $this->client->rate_limits->requests_consumed,
+        $this->assertGreaterThanOrEqual(0, $this->client->rate_limits->consumed,
             'Requests consumed should be >= 0');
         
-        // Verify requests_reset is a valid future timestamp
-        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->requests_reset,
+        // Verify reset is a valid future timestamp
+        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->reset,
             'Requests reset should be a Carbon instance');
         
         $now = Carbon::now();
         $oneDayFromNow = $now->copy()->addDay();
         $this->assertLessThanOrEqual(
             $oneDayFromNow->timestamp,
-            $this->client->rate_limits->requests_reset->timestamp,
+            $this->client->rate_limits->reset->timestamp,
             'Reset timestamp should be within the next 24 hours'
         );
         $this->assertGreaterThanOrEqual(
             $now->timestamp,
-            $this->client->rate_limits->requests_reset->timestamp,
+            $this->client->rate_limits->reset->timestamp,
             'Reset timestamp should be in the future or present'
         );
     }
@@ -83,9 +83,9 @@ class RateLimitsTest extends TestCase
     public function testRateLimits_updatedAfterRealRequest()
     {
         // Store initial rate limits
-        $initialLimit = $this->client->rate_limits->requests_limit;
-        $initialRemaining = $this->client->rate_limits->requests_remaining;
-        $initialReset = $this->client->rate_limits->requests_reset;
+        $initialLimit = $this->client->rate_limits->limit;
+        $initialRemaining = $this->client->rate_limits->remaining;
+        $initialReset = $this->client->rate_limits->reset;
         
         // Make a real API call (SPY is not a free symbol, will consume a request)
         $quote = $this->client->stocks->quote('SPY');
@@ -95,24 +95,24 @@ class RateLimitsTest extends TestCase
         // Verify rate limits were updated
         $this->assertNotNull($this->client->rate_limits, 'Rate limits should still be set after request');
         
-        // Verify requests_limit remains constant
-        $this->assertEquals($initialLimit, $this->client->rate_limits->requests_limit,
+        // Verify limit remains constant
+        $this->assertEquals($initialLimit, $this->client->rate_limits->limit,
             'Rate limit should remain constant');
         
-        // Verify requests_remaining decreased (SPY quote consumed at least 1 request)
+        // Verify remaining decreased (SPY quote consumed at least 1 credit)
         // Note: If SPY is free for the account, remaining might not decrease
         // But the rate limits should still be updated from the response headers
         $this->assertLessThanOrEqual(
             $initialRemaining,
-            $this->client->rate_limits->requests_remaining,
+            $this->client->rate_limits->remaining,
             'Requests remaining should be <= initial (may be same if SPY is free)'
         );
         
-        // Verify requests_reset timestamp is valid
-        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->requests_reset);
+        // Verify reset timestamp is valid
+        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->reset);
         $this->assertGreaterThanOrEqual(
             $initialReset->timestamp,
-            $this->client->rate_limits->requests_reset->timestamp,
+            $this->client->rate_limits->reset->timestamp,
             'Reset timestamp should be same or later than initial'
         );
     }
@@ -125,7 +125,7 @@ class RateLimitsTest extends TestCase
     public function testRateLimits_updatedAfterMultipleRequests()
     {
         // Store initial rate limits
-        $initialRemaining = $this->client->rate_limits->requests_remaining;
+        $initialRemaining = $this->client->rate_limits->remaining;
         $symbols = ['SPY', 'QQQ', 'EWZ'];
         
         $previousRemaining = $initialRemaining;
@@ -142,7 +142,7 @@ class RateLimitsTest extends TestCase
             
             // Verify that rate limits reflect the most recent response
             // Note: remaining may stay the same if symbols are free
-            $currentRemaining = $this->client->rate_limits->requests_remaining;
+            $currentRemaining = $this->client->rate_limits->remaining;
             $this->assertLessThanOrEqual(
                 $previousRemaining,
                 $currentRemaining,
@@ -159,7 +159,7 @@ class RateLimitsTest extends TestCase
         $this->assertNotNull($this->client->rate_limits);
         $this->assertLessThanOrEqual(
             $initialRemaining,
-            $this->client->rate_limits->requests_remaining,
+            $this->client->rate_limits->remaining,
             'Final requests remaining should be <= initial'
         );
     }
@@ -180,10 +180,10 @@ class RateLimitsTest extends TestCase
         $this->assertNotNull($clientRateLimits, 'Client rate_limits property should be accessible');
         
         // Verify all properties are accessible
-        $this->assertIsInt($clientRateLimits->requests_limit);
-        $this->assertIsInt($clientRateLimits->requests_remaining);
-        $this->assertIsInt($clientRateLimits->requests_consumed);
-        $this->assertInstanceOf(Carbon::class, $clientRateLimits->requests_reset);
+        $this->assertIsInt($clientRateLimits->limit);
+        $this->assertIsInt($clientRateLimits->remaining);
+        $this->assertIsInt($clientRateLimits->consumed);
+        $this->assertInstanceOf(Carbon::class, $clientRateLimits->reset);
         
         // Get rate limits from /user/ endpoint
         $userRateLimits = $this->client->utilities->user()->rate_limits;
@@ -191,20 +191,20 @@ class RateLimitsTest extends TestCase
         // Compare values - they should match (or be very close, as /user/ call itself may consume a request)
         // Note: The /user/ call itself may consume a request, so remaining might differ by 1
         $this->assertEquals(
-            $clientRateLimits->requests_limit,
-            $userRateLimits->requests_limit,
+            $clientRateLimits->limit,
+            $userRateLimits->limit,
             'Rate limit should match between client property and /user/ endpoint'
         );
         
         // Reset timestamp should match
         $this->assertEquals(
-            $clientRateLimits->requests_reset->timestamp,
-            $userRateLimits->requests_reset->timestamp,
+            $clientRateLimits->reset->timestamp,
+            $userRateLimits->reset->timestamp,
             'Reset timestamp should match between client property and /user/ endpoint'
         );
         
         // Remaining might differ by 1 if /user/ consumes a request
-        $remainingDiff = abs($clientRateLimits->requests_remaining - $userRateLimits->requests_remaining);
+        $remainingDiff = abs($clientRateLimits->remaining - $userRateLimits->remaining);
         $this->assertLessThanOrEqual(
             1,
             $remainingDiff,
@@ -220,7 +220,7 @@ class RateLimitsTest extends TestCase
     public function testRateLimits_asyncRequests_updateRateLimits()
     {
         // Store initial rate limits
-        $initialRemaining = $this->client->rate_limits->requests_remaining;
+        $initialRemaining = $this->client->rate_limits->remaining;
         
         // Make async requests using execute_in_parallel
         $symbols = ['SPY', 'QQQ'];
@@ -237,15 +237,15 @@ class RateLimitsTest extends TestCase
         // Note: Remaining may stay the same if symbols are free
         $this->assertLessThanOrEqual(
             $initialRemaining,
-            $this->client->rate_limits->requests_remaining,
+            $this->client->rate_limits->remaining,
             'Requests remaining should be <= initial after async requests'
         );
         
         // Verify rate limit structure is valid
-        $this->assertIsInt($this->client->rate_limits->requests_limit);
-        $this->assertIsInt($this->client->rate_limits->requests_remaining);
-        $this->assertIsInt($this->client->rate_limits->requests_consumed);
-        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->requests_reset);
+        $this->assertIsInt($this->client->rate_limits->limit);
+        $this->assertIsInt($this->client->rate_limits->remaining);
+        $this->assertIsInt($this->client->rate_limits->consumed);
+        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->reset);
     }
 
     /**

@@ -132,15 +132,15 @@ class UtilitiesTest extends TestCase
         $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $response->rate_limits);
 
         // Verify all rate limit fields are correctly extracted and converted
-        $this->assertEquals(60, $response->rate_limits->requests_limit);
-        $this->assertEquals(59, $response->rate_limits->requests_remaining);
-        $this->assertEquals(1, $response->rate_limits->requests_consumed);
+        $this->assertEquals(60, $response->rate_limits->limit);
+        $this->assertEquals(59, $response->rate_limits->remaining);
+        $this->assertEquals(1, $response->rate_limits->consumed);
         
-        // Verify that requests_reset is properly converted to Carbon datetime
-        $this->assertInstanceOf(Carbon::class, $response->rate_limits->requests_reset);
+        // Verify that reset is properly converted to Carbon datetime
+        $this->assertInstanceOf(Carbon::class, $response->rate_limits->reset);
         $this->assertEquals(
             Carbon::createFromTimestamp($resetTimestamp),
-            $response->rate_limits->requests_reset
+            $response->rate_limits->reset
         );
     }
 
@@ -245,9 +245,9 @@ class UtilitiesTest extends TestCase
 
         $response = $this->client->utilities->user();
         $this->assertInstanceOf(User::class, $response);
-        $this->assertEquals(60, $response->rate_limits->requests_limit);
-        $this->assertEquals(59, $response->rate_limits->requests_remaining);
-        $this->assertEquals(1, $response->rate_limits->requests_consumed);
+        $this->assertEquals(60, $response->rate_limits->limit);
+        $this->assertEquals(59, $response->rate_limits->remaining);
+        $this->assertEquals(1, $response->rate_limits->consumed);
     }
 
     /**
@@ -270,8 +270,8 @@ class UtilitiesTest extends TestCase
         $response = $this->client->utilities->user();
         $this->assertInstanceOf(User::class, $response);
         // Should convert correctly to integers (spaces trimmed, leading zeros handled)
-        $this->assertEquals(60, $response->rate_limits->requests_limit);
-        $this->assertEquals(59, $response->rate_limits->requests_remaining); // Leading zero removed
+        $this->assertEquals(60, $response->rate_limits->limit);
+        $this->assertEquals(59, $response->rate_limits->remaining); // Leading zero removed
     }
 
     /**
@@ -315,12 +315,12 @@ class UtilitiesTest extends TestCase
 
         $response = $this->client->utilities->user();
         $this->assertInstanceOf(User::class, $response);
-        $this->assertEquals(0, $response->rate_limits->requests_limit);
-        $this->assertEquals(0, $response->rate_limits->requests_remaining);
-        $this->assertEquals(0, $response->rate_limits->requests_consumed);
+        $this->assertEquals(0, $response->rate_limits->limit);
+        $this->assertEquals(0, $response->rate_limits->remaining);
+        $this->assertEquals(0, $response->rate_limits->consumed);
         $this->assertEquals(
             Carbon::createFromTimestamp($resetTimestamp),
-            $response->rate_limits->requests_reset
+            $response->rate_limits->reset
         );
     }
 }

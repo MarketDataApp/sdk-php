@@ -101,11 +101,11 @@ class RateLimitsTest extends TestCase
         
         // Verify rate limits were initialized
         $this->assertNotNull($this->client->rate_limits);
-        $this->assertEquals(100, $this->client->rate_limits->requests_limit);
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
-        $this->assertEquals(1, $this->client->rate_limits->requests_consumed);
-        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->requests_reset);
-        $this->assertEquals($resetTimestamp, $this->client->rate_limits->requests_reset->timestamp);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
+        $this->assertEquals(1, $this->client->rate_limits->consumed);
+        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->reset);
+        $this->assertEquals($resetTimestamp, $this->client->rate_limits->reset->timestamp);
     }
 
     /**
@@ -145,8 +145,8 @@ class RateLimitsTest extends TestCase
         
         // Verify rate limits were updated after successful request
         $this->assertNotNull($this->client->rate_limits);
-        $this->assertEquals(100, $this->client->rate_limits->requests_limit);
-        $this->assertEquals(98, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
+        $this->assertEquals(98, $this->client->rate_limits->remaining);
     }
 
     /**
@@ -178,7 +178,7 @@ class RateLimitsTest extends TestCase
         $this->initializeRateLimits($initialHeaders);
         
         // Verify initial rate limits
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
         
         // Now set up mock for the quote request
         $this->setMockResponses([
@@ -189,8 +189,8 @@ class RateLimitsTest extends TestCase
         $this->client->stocks->quote('AAPL');
         
         // Verify rate limits were updated
-        $this->assertEquals(98, $this->client->rate_limits->requests_remaining);
-        $this->assertEquals(100, $this->client->rate_limits->requests_limit);
+        $this->assertEquals(98, $this->client->rate_limits->remaining);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
     }
 
     /**
@@ -237,19 +237,19 @@ class RateLimitsTest extends TestCase
         ]);
         
         // Verify initial rate limits
-        $this->assertEquals(100, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(100, $this->client->rate_limits->remaining);
         
         // Make first request
         $this->client->stocks->quote('SPY');
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
         
         // Make second request
         $this->client->stocks->quote('QQQ');
-        $this->assertEquals(98, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(98, $this->client->rate_limits->remaining);
         
         // Make third request
         $this->client->stocks->quote('EWZ');
-        $this->assertEquals(97, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(97, $this->client->rate_limits->remaining);
     }
 
     /**
@@ -273,8 +273,8 @@ class RateLimitsTest extends TestCase
         $this->initializeRateLimits($initialHeaders);
         
         // Store initial rate limits
-        $initialRemaining = $this->client->rate_limits->requests_remaining;
-        $initialLimit = $this->client->rate_limits->requests_limit;
+        $initialRemaining = $this->client->rate_limits->remaining;
+        $initialLimit = $this->client->rate_limits->limit;
         
         // Mock stock quote response WITHOUT rate limit headers
         $this->setMockResponses([
@@ -285,8 +285,8 @@ class RateLimitsTest extends TestCase
         $this->client->stocks->quote('AAPL');
         
         // Verify rate limits were NOT updated (graceful degradation)
-        $this->assertEquals($initialRemaining, $this->client->rate_limits->requests_remaining);
-        $this->assertEquals($initialLimit, $this->client->rate_limits->requests_limit);
+        $this->assertEquals($initialRemaining, $this->client->rate_limits->remaining);
+        $this->assertEquals($initialLimit, $this->client->rate_limits->limit);
     }
 
     /**
@@ -321,13 +321,13 @@ class RateLimitsTest extends TestCase
         ]);
         
         // Verify initial rate limits
-        $this->assertEquals(100, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(100, $this->client->rate_limits->remaining);
         
         // Make async request using execute_in_parallel
         $this->client->stocks->quotes(['SPY']);
         
         // Verify rate limits were updated
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
     }
 
     /**
@@ -362,7 +362,7 @@ class RateLimitsTest extends TestCase
         ]);
         
         // Verify initial rate limits
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
         
         // Make a request that returns 404
         // 404 is handled specially and returns the response, so no exception is thrown
@@ -373,8 +373,8 @@ class RateLimitsTest extends TestCase
         }
         
         // Verify rate limits were updated even for 404
-        $this->assertEquals(98, $this->client->rate_limits->requests_remaining);
-        $this->assertEquals(100, $this->client->rate_limits->requests_limit);
+        $this->assertEquals(98, $this->client->rate_limits->remaining);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
     }
 
     /**
@@ -400,15 +400,15 @@ class RateLimitsTest extends TestCase
         $this->assertNotNull($this->client->rate_limits);
         
         // Verify all properties are accessible
-        $this->assertIsInt($this->client->rate_limits->requests_limit);
-        $this->assertIsInt($this->client->rate_limits->requests_remaining);
-        $this->assertIsInt($this->client->rate_limits->requests_consumed);
-        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->requests_reset);
+        $this->assertIsInt($this->client->rate_limits->limit);
+        $this->assertIsInt($this->client->rate_limits->remaining);
+        $this->assertIsInt($this->client->rate_limits->consumed);
+        $this->assertInstanceOf(Carbon::class, $this->client->rate_limits->reset);
         
         // Verify property values
-        $this->assertEquals(100, $this->client->rate_limits->requests_limit);
-        $this->assertEquals(99, $this->client->rate_limits->requests_remaining);
-        $this->assertEquals(1, $this->client->rate_limits->requests_consumed);
-        $this->assertEquals($resetTimestamp, $this->client->rate_limits->requests_reset->timestamp);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
+        $this->assertEquals(99, $this->client->rate_limits->remaining);
+        $this->assertEquals(1, $this->client->rate_limits->consumed);
+        $this->assertEquals($resetTimestamp, $this->client->rate_limits->reset->timestamp);
     }
 }

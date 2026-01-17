@@ -83,16 +83,16 @@ class UtilitiesTest extends TestCase
         $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $response->rate_limits);
 
         // Verify rate limit fields are present and have correct types
-        $this->assertIsInt($response->rate_limits->requests_limit);
-        $this->assertIsInt($response->rate_limits->requests_remaining);
-        $this->assertIsInt($response->rate_limits->requests_consumed);
-        $this->assertInstanceOf(Carbon::class, $response->rate_limits->requests_reset);
+        $this->assertIsInt($response->rate_limits->limit);
+        $this->assertIsInt($response->rate_limits->remaining);
+        $this->assertIsInt($response->rate_limits->consumed);
+        $this->assertInstanceOf(Carbon::class, $response->rate_limits->reset);
 
         // Verify values are reasonable (limit should be positive, remaining should be <= limit, etc.)
-        $this->assertGreaterThan(0, $response->rate_limits->requests_limit);
-        $this->assertGreaterThanOrEqual(0, $response->rate_limits->requests_remaining);
-        $this->assertLessThanOrEqual($response->rate_limits->requests_limit, $response->rate_limits->requests_remaining);
-        $this->assertGreaterThanOrEqual(0, $response->rate_limits->requests_consumed);
+        $this->assertGreaterThan(0, $response->rate_limits->limit);
+        $this->assertGreaterThanOrEqual(0, $response->rate_limits->remaining);
+        $this->assertLessThanOrEqual($response->rate_limits->limit, $response->rate_limits->remaining);
+        $this->assertGreaterThanOrEqual(0, $response->rate_limits->consumed);
     }
 
     /**
@@ -112,12 +112,12 @@ class UtilitiesTest extends TestCase
 
         // Verify rate limit structure is valid
         $this->assertInstanceOf(User::class, $rateLimits);
-        $this->assertGreaterThan(0, $rateLimits->rate_limits->requests_limit, 
+        $this->assertGreaterThan(0, $rateLimits->rate_limits->limit, 
             'Rate limit should be positive');
 
         // Check if this request consumed any credits
         // consumed = quantity consumed in THIS request (0 if free, >0 if paid)
-        $consumedInThisRequest = $rateLimits->rate_limits->requests_consumed;
+        $consumedInThisRequest = $rateLimits->rate_limits->consumed;
         
         // The test passes regardless - we're just checking behavior
         // consumed will be 0 if /user/ doesn't consume, >0 if it does
@@ -149,9 +149,9 @@ class UtilitiesTest extends TestCase
     {
         // Get initial rate limits (before SPY quote)
         $initialRateLimits = $this->client->utilities->user();
-        $initialLimit = $initialRateLimits->rate_limits->requests_limit;
-        $initialRemaining = $initialRateLimits->rate_limits->requests_remaining;
-        $initialReset = $initialRateLimits->rate_limits->requests_reset;
+        $initialLimit = $initialRateLimits->rate_limits->limit;
+        $initialRemaining = $initialRateLimits->rate_limits->remaining;
+        $initialReset = $initialRateLimits->rate_limits->reset;
 
         // Make a real API call to get stock quote for SPY (not a free trial symbol, will consume a request)
         $quote = $this->client->stocks->quote('SPY');
@@ -167,15 +167,15 @@ class UtilitiesTest extends TestCase
         $this->assertInstanceOf(User::class, $afterRateLimits);
         $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $afterRateLimits->rate_limits);
 
-        // Verify requests_limit remains constant
-        $this->assertEquals($initialLimit, $afterRateLimits->rate_limits->requests_limit, 
+        // Verify limit remains constant
+        $this->assertEquals($initialLimit, $afterRateLimits->rate_limits->limit, 
             'Rate limit should remain constant');
 
-        // Verify requests_remaining decreased (SPY quote consumed at least 1 request)
+        // Verify remaining decreased (SPY quote consumed at least 1 credit)
         // remaining should be less than initial because SPY quote consumed credits
         $this->assertLessThan(
             $initialRemaining,
-            $afterRateLimits->rate_limits->requests_remaining,
+            $afterRateLimits->rate_limits->remaining,
             'Requests remaining should have decreased after SPY quote call (SPY is not free)'
         );
 
@@ -183,14 +183,14 @@ class UtilitiesTest extends TestCase
         // This tells us if /user/ consumes credits, but doesn't tell us about SPY
         $this->assertGreaterThanOrEqual(
             0,
-            $afterRateLimits->rate_limits->requests_consumed,
+            $afterRateLimits->rate_limits->consumed,
             'Consumed should be >= 0 (quantity consumed in this /user/ request)'
         );
 
-        // Verify requests_reset is a valid future timestamp (should be same or later)
+        // Verify reset is a valid future timestamp (should be same or later)
         $this->assertGreaterThanOrEqual(
             $initialReset->timestamp,
-            $afterRateLimits->rate_limits->requests_reset->timestamp,
+            $afterRateLimits->rate_limits->reset->timestamp,
             'Reset timestamp should be same or later than initial'
         );
 
@@ -199,7 +199,7 @@ class UtilitiesTest extends TestCase
         $oneDayFromNow = $now->copy()->addDay();
         $this->assertLessThanOrEqual(
             $oneDayFromNow->timestamp,
-            $afterRateLimits->rate_limits->requests_reset->timestamp,
+            $afterRateLimits->rate_limits->reset->timestamp,
             'Reset timestamp should be within the next 24 hours'
         );
     }

@@ -68,10 +68,13 @@ class Utilities
      * Retrieve rate limit information for the current user.
      *
      * This endpoint returns rate limit information from response headers, including:
-     * - The maximum number of requests permitted (per day for Free/Starter/Trader plans or per minute for Prime users)
-     * - The number of requests remaining in the current rate period
-     * - The quantity of requests consumed in the current request (not cumulative)
+     * - The maximum number of credits permitted (per day for Free/Starter/Trader plans or per minute for Prime users)
+     * - The number of credits remaining in the current rate period
+     * - The quantity of credits consumed in the current request (not cumulative)
      * - When the current rate limit window resets (UTC epoch seconds)
+     *
+     * Note: Rate limits track credits, not requests. Most requests consume 1 credit,
+     * but bulk requests or options requests may consume multiple credits.
      *
      * @return User The user/rate limit information.
      * @throws GuzzleException|ApiException

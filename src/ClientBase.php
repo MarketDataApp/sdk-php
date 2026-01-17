@@ -44,6 +44,7 @@ abstract class ClientBase
 
     /**
      * @var RateLimits|null Current rate limit information, automatically updated after each request.
+     *                       Tracks credits (not requests), as some requests may consume multiple credits.
      */
     public ?RateLimits $rate_limits = null;
 
@@ -75,6 +76,9 @@ abstract class ClientBase
      * This method is called during client construction to initialize rate limit
      * information. If the request fails, rate_limits will remain null until the
      * first successful request with rate limit headers.
+     *
+     * Rate limits track credits, not requests. Most requests consume 1 credit,
+     * but bulk requests or options requests may consume multiple credits.
      *
      * @return void
      */
@@ -531,18 +535,18 @@ abstract class ClientBase
         }
 
         // Convert to integers
-        $requests_limit = (int)$limitHeader;
-        $requests_remaining = (int)$remainingHeader;
-        $requests_consumed = (int)$consumedHeader;
+        $limit = (int)$limitHeader;
+        $remaining = (int)$remainingHeader;
+        $consumed = (int)$consumedHeader;
         
         // Convert reset timestamp to Carbon datetime
-        $requests_reset = \Carbon\Carbon::createFromTimestamp((int)$resetHeader);
+        $reset = \Carbon\Carbon::createFromTimestamp((int)$resetHeader);
 
         return new RateLimits(
-            $requests_limit,
-            $requests_remaining,
-            $requests_reset,
-            $requests_consumed
+            $limit,
+            $remaining,
+            $reset,
+            $consumed
         );
     }
 
