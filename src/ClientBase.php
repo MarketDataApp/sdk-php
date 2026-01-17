@@ -51,7 +51,11 @@ abstract class ClientBase
     /**
      * ClientBase constructor.
      *
-     * @param string $token The API token for authentication.
+     * @param string $token The API token for authentication. An empty string is allowed
+     *                      for accessing free symbols like AAPL. A valid token is required
+     *                      for authenticated endpoints. An invalid token will throw
+     *                      UnauthorizedException during construction.
+     * @throws UnauthorizedException If the token is invalid (non-empty but returns 401 from /user endpoint)
      */
     public function __construct(string $token)
     {
@@ -80,10 +84,20 @@ abstract class ClientBase
      * Rate limits track credits, not requests. Most requests consume 1 credit,
      * but bulk requests or options requests may consume multiple credits.
      *
+     * If the token is empty, validation is skipped to allow free symbols like AAPL.
+     * If the token is invalid (returns 401), an UnauthorizedException is thrown
+     * to prevent client creation.
+     *
      * @return void
+     * @throws UnauthorizedException If the token is invalid (non-empty but returns 401)
      */
     protected function _setup_rate_limits(): void
     {
+        // Skip validation for empty token (allows free symbols like AAPL)
+        if ($this->token === '') {
+            return;
+        }
+        
         try {
             $response = $this->makeRawRequest("user/");
             $this->validateResponseStatusCode($response, true);
@@ -92,9 +106,12 @@ abstract class ClientBase
             if ($rateLimits !== null) {
                 $this->rate_limits = $rateLimits;
             }
+        } catch (UnauthorizedException $e) {
+            // Invalid token - re-throw to prevent client creation
+            throw $e;
         } catch (\Exception $e) {
-            // Gracefully handle errors - rate_limits will remain null
-            // and will be populated on first successful request
+            // Gracefully handle other errors (network, timeouts, etc.)
+            // rate_limits will remain null and will be populated on first successful request
         }
     }
 

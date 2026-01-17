@@ -38,7 +38,8 @@ class MarketsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = "your_api_token";
+        // Use empty token for unit tests to skip validation (tests use mocks anyway)
+        $token = "";
         $client = new Client($token);
         $this->client = $client;
     }

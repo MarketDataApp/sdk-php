@@ -4,6 +4,7 @@ namespace MarketDataApp\Tests\Integration;
 
 use Carbon\Carbon;
 use MarketDataApp\Client;
+use MarketDataApp\Exceptions\UnauthorizedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -249,23 +250,33 @@ class RateLimitsTest extends TestCase
     }
 
     /**
-     * Test that initialization failure is handled gracefully.
+     * Test that initialization with invalid token throws UnauthorizedException.
+     *
+     * With the new token validation behavior, an invalid token should cause
+     * UnauthorizedException to be thrown during construction, preventing client creation.
      *
      * @return void
      */
-    public function testRateLimits_initializationFailure_handledGracefully()
+    public function testRateLimits_invalidToken_throwsUnauthorizedException()
     {
-        // Create a client with invalid token
-        $client = new Client('invalid_token_12345');
+        // Expect UnauthorizedException to be thrown during construction
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionCode(401);
         
-        // Verify rate limits are null (initialization should fail)
-        $this->assertNull($client->rate_limits,
-            'Rate limits should be null when initialization fails');
-        
-        // Verify client can still be instantiated (no exception thrown)
-        $this->assertInstanceOf(Client::class, $client);
-        
-        // Note: Actual API calls will fail with this invalid token,
-        // but the client should be usable (requests will just fail)
+        try {
+            // Create a client with invalid token - should throw during construction
+            $client = new Client('invalid_token_12345');
+            
+            // If we get here, the exception wasn't thrown (unexpected)
+            $this->fail('Expected UnauthorizedException to be thrown during client construction');
+        } catch (UnauthorizedException $e) {
+            // Verify exception details
+            $this->assertEquals(401, $e->getCode());
+            $this->assertNotNull($e->getResponse());
+            $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            
+            // Re-throw to satisfy expectException
+            throw $e;
+        }
     }
 }

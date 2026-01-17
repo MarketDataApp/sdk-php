@@ -33,8 +33,9 @@ class RateLimitsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = 'test_api_token';
-        // Create client - rate_limits will be null if /user/ fails (which is fine for unit tests)
+        // Use empty token for unit tests to skip validation (tests use mocks anyway)
+        $token = '';
+        // Create client - rate_limits will be null (validation skipped for empty token)
         $this->client = new Client($token);
     }
 
@@ -50,10 +51,16 @@ class RateLimitsTest extends TestCase
             new Response(200, $headers, json_encode([]))
         ]);
         
-        $reflection = new \ReflectionClass($this->client);
-        $method = $reflection->getMethod('_setup_rate_limits');
-        $method->setAccessible(true);
-        $method->invoke($this->client);
+        // Since we're using empty tokens in unit tests, _setup_rate_limits() will skip.
+        // Instead, we'll directly extract and set rate limits from the mocked response.
+        $response = new \GuzzleHttp\Psr7\Response(200, $headers, json_encode([]));
+        $rateLimits = $this->client->extractRateLimitsFromResponse($response);
+        if ($rateLimits !== null) {
+            $reflection = new \ReflectionClass($this->client);
+            $property = $reflection->getProperty('rate_limits');
+            $property->setAccessible(true);
+            $property->setValue($this->client, $rateLimits);
+        }
     }
 
     /**

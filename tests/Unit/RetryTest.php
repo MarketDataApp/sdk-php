@@ -38,7 +38,8 @@ class RetryTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->client = new Client("test_token");
+        // Use empty token for unit tests to skip validation (tests use mocks anyway)
+        $this->client = new Client("");
     }
 
     // ========== Sync Request Retry Tests ==========

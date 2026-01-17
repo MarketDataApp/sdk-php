@@ -205,23 +205,32 @@ class UtilitiesTest extends TestCase
     }
 
     /**
-     * Test the user endpoint with invalid token throws UnauthorizedException.
+     * Test that client initialization with invalid token throws UnauthorizedException.
+     *
+     * With the new token validation behavior, an invalid token should cause
+     * UnauthorizedException to be thrown during construction, preventing client creation.
      *
      * @return void
      */
     public function testUser_invalidToken_throwsUnauthorizedException()
     {
-        $client = new Client('invalid_token_12345');
-        
+        // Expect UnauthorizedException to be thrown during construction
         $this->expectException(UnauthorizedException::class);
         $this->expectExceptionCode(401);
         
         try {
-            $client->utilities->user();
+            // Create client with invalid token - should throw during construction
+            $client = new Client('invalid_token_12345');
+            
+            // If we get here, the exception wasn't thrown (unexpected)
+            $this->fail('Expected UnauthorizedException to be thrown during client construction');
         } catch (UnauthorizedException $e) {
+            // Verify exception details
             $this->assertEquals(401, $e->getCode());
             $this->assertNotNull($e->getResponse());
             $this->assertEquals(401, $e->getResponse()->getStatusCode());
+            
+            // Re-throw to satisfy expectException
             throw $e;
         }
     }
