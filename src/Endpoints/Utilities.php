@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
+use MarketDataApp\Endpoints\Responses\Utilities\User;
 use MarketDataApp\Exceptions\ApiException;
 
 /**
@@ -61,5 +62,34 @@ class Utilities
     public function headers(): Headers
     {
         return new Headers($this->client->execute("headers/"));
+    }
+
+    /**
+     * Retrieve rate limit information for the current user.
+     *
+     * This endpoint returns rate limit information from response headers, including:
+     * - The maximum number of requests permitted (per day for Free/Starter/Trader plans or per minute for Prime users)
+     * - The number of requests remaining in the current rate period
+     * - The quantity of requests consumed in the current request (not cumulative)
+     * - When the current rate limit window resets (UTC epoch seconds)
+     *
+     * @return User The user/rate limit information.
+     * @throws GuzzleException|ApiException
+     */
+    public function user(): User
+    {
+        $response = $this->client->makeRawRequest("user/");
+        
+        // Validate response status code
+        $this->client->validateResponseStatusCode($response, true);
+        
+        // Extract rate limits from response headers
+        $rateLimits = $this->client->extractRateLimitsFromResponse($response);
+        
+        if ($rateLimits === null) {
+            throw new ApiException("Rate limit headers not found in response", 0, null, $response);
+        }
+        
+        return new User($rateLimits);
     }
 }

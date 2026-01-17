@@ -7,6 +7,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
+use MarketDataApp\Endpoints\Responses\Utilities\User;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -67,5 +68,138 @@ class UtilitiesTest extends TestCase
     {
         $response = $this->client->utilities->headers();
         $this->assertInstanceOf(Headers::class, $response);
+    }
+
+    /**
+     * Test the user endpoint.
+     *
+     * @return void
+     */
+    public function testUser_success()
+    {
+        $response = $this->client->utilities->user();
+        $this->assertInstanceOf(User::class, $response);
+        $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $response->rate_limits);
+
+        // Verify rate limit fields are present and have correct types
+        $this->assertIsInt($response->rate_limits->requests_limit);
+        $this->assertIsInt($response->rate_limits->requests_remaining);
+        $this->assertIsInt($response->rate_limits->requests_consumed);
+        $this->assertInstanceOf(Carbon::class, $response->rate_limits->requests_reset);
+
+        // Verify values are reasonable (limit should be positive, remaining should be <= limit, etc.)
+        $this->assertGreaterThan(0, $response->rate_limits->requests_limit);
+        $this->assertGreaterThanOrEqual(0, $response->rate_limits->requests_remaining);
+        $this->assertLessThanOrEqual($response->rate_limits->requests_limit, $response->rate_limits->requests_remaining);
+        $this->assertGreaterThanOrEqual(0, $response->rate_limits->requests_consumed);
+    }
+
+    /**
+     * Test whether the /user/ endpoint consumes a rate limit request.
+     *
+     * This test verifies whether calling the user() endpoint itself consumes
+     * a rate limit request. According to API docs, X-Api-Ratelimit-Consumed
+     * is the quantity consumed in the current request (not cumulative).
+     *
+     * @return void
+     */
+    public function testUser_endpoint_consumesRequest()
+    {
+        // Get rate limits from user() endpoint
+        // Note: consumed is the quantity consumed in THIS request, not cumulative
+        $rateLimits = $this->client->utilities->user();
+
+        // Verify rate limit structure is valid
+        $this->assertInstanceOf(User::class, $rateLimits);
+        $this->assertGreaterThan(0, $rateLimits->rate_limits->requests_limit, 
+            'Rate limit should be positive');
+
+        // Check if this request consumed any credits
+        // consumed = quantity consumed in THIS request (0 if free, >0 if paid)
+        $consumedInThisRequest = $rateLimits->rate_limits->requests_consumed;
+        
+        // The test passes regardless - we're just checking behavior
+        // consumed will be 0 if /user/ doesn't consume, >0 if it does
+        $this->assertGreaterThanOrEqual(0, $consumedInThisRequest,
+            'Consumed should be >= 0 (quantity consumed in this request)');
+        
+        $this->assertTrue(true, 
+            $consumedInThisRequest > 0
+                ? 'The /user/ endpoint consumes a rate limit request (consumed: ' . $consumedInThisRequest . ')'
+                : 'The /user/ endpoint does not consume a rate limit request (consumed: 0)'
+        );
+    }
+
+    /**
+     * Test rate limits after making a real stock quote call.
+     *
+     * This test verifies that rate limits are correctly returned and reflect
+     * the consumed request after making an actual API call. Uses SPY (not a free
+     * trial symbol) to ensure the request actually consumes a rate limit.
+     *
+     * According to API docs:
+     * - X-Api-Ratelimit-Consumed: quantity consumed in the CURRENT request (not cumulative)
+     * - X-Api-Ratelimit-Remaining: requests remaining in current rate period
+     * - X-Api-Ratelimit-Limit: maximum requests permitted
+     *
+     * @return void
+     */
+    public function testUser_afterStockQuote_reflectsConsumedRequest()
+    {
+        // Get initial rate limits (before SPY quote)
+        $initialRateLimits = $this->client->utilities->user();
+        $initialLimit = $initialRateLimits->rate_limits->requests_limit;
+        $initialRemaining = $initialRateLimits->rate_limits->requests_remaining;
+        $initialReset = $initialRateLimits->rate_limits->requests_reset;
+
+        // Make a real API call to get stock quote for SPY (not a free trial symbol, will consume a request)
+        $quote = $this->client->stocks->quote('SPY');
+        $this->assertNotNull($quote);
+        $this->assertEquals('SPY', $quote->symbol);
+
+        // Get rate limits after the API call
+        // Note: consumed in this response is for the /user/ call, not the SPY quote
+        // But remaining should have decreased due to the SPY quote
+        $afterRateLimits = $this->client->utilities->user();
+        
+        // Verify rate limits structure
+        $this->assertInstanceOf(User::class, $afterRateLimits);
+        $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $afterRateLimits->rate_limits);
+
+        // Verify requests_limit remains constant
+        $this->assertEquals($initialLimit, $afterRateLimits->rate_limits->requests_limit, 
+            'Rate limit should remain constant');
+
+        // Verify requests_remaining decreased (SPY quote consumed at least 1 request)
+        // remaining should be less than initial because SPY quote consumed credits
+        $this->assertLessThan(
+            $initialRemaining,
+            $afterRateLimits->rate_limits->requests_remaining,
+            'Requests remaining should have decreased after SPY quote call (SPY is not free)'
+        );
+
+        // Verify consumed is >= 0 (quantity consumed in the /user/ request itself)
+        // This tells us if /user/ consumes credits, but doesn't tell us about SPY
+        $this->assertGreaterThanOrEqual(
+            0,
+            $afterRateLimits->rate_limits->requests_consumed,
+            'Consumed should be >= 0 (quantity consumed in this /user/ request)'
+        );
+
+        // Verify requests_reset is a valid future timestamp (should be same or later)
+        $this->assertGreaterThanOrEqual(
+            $initialReset->timestamp,
+            $afterRateLimits->rate_limits->requests_reset->timestamp,
+            'Reset timestamp should be same or later than initial'
+        );
+
+        // Verify reset timestamp is in the future (reasonable check - within next 24 hours)
+        $now = Carbon::now();
+        $oneDayFromNow = $now->copy()->addDay();
+        $this->assertLessThanOrEqual(
+            $oneDayFromNow->timestamp,
+            $afterRateLimits->rate_limits->requests_reset->timestamp,
+            'Reset timestamp should be within the next 24 hours'
+        );
     }
 }

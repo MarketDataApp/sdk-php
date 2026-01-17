@@ -8,6 +8,8 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
+use MarketDataApp\Endpoints\Responses\Utilities\User;
+use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
@@ -107,5 +109,218 @@ class UtilitiesTest extends TestCase
         foreach ($mocked_response as $key => $value) {
             $this->assertEquals($value, $response->{$key});
         }
+    }
+
+    /**
+     * Test the user endpoint for a successful response.
+     *
+     * @return void
+     */
+    public function testUser_success()
+    {
+        $resetTimestamp = 1734567890;
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => ['60'],
+            'x-api-ratelimit-remaining' => ['59'],
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+            'x-api-ratelimit-consumed'  => ['1'],
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $response = $this->client->utilities->user();
+        $this->assertInstanceOf(User::class, $response);
+        $this->assertInstanceOf(\MarketDataApp\RateLimits::class, $response->rate_limits);
+
+        // Verify all rate limit fields are correctly extracted and converted
+        $this->assertEquals(60, $response->rate_limits->requests_limit);
+        $this->assertEquals(59, $response->rate_limits->requests_remaining);
+        $this->assertEquals(1, $response->rate_limits->requests_consumed);
+        
+        // Verify that requests_reset is properly converted to Carbon datetime
+        $this->assertInstanceOf(Carbon::class, $response->rate_limits->requests_reset);
+        $this->assertEquals(
+            Carbon::createFromTimestamp($resetTimestamp),
+            $response->rate_limits->requests_reset
+        );
+    }
+
+    /**
+     * Test the user endpoint with missing rate limit headers.
+     *
+     * @return void
+     */
+    public function testUser_missingHeaders_throwsException()
+    {
+        // Response with no rate limit headers
+        $this->setMockResponses([new Response(200, [], json_encode([]))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage("Rate limit headers not found in response");
+        
+        $this->client->utilities->user();
+    }
+
+    /**
+     * Test the user endpoint with partial rate limit headers.
+     *
+     * @return void
+     */
+    public function testUser_partialHeaders_throwsException()
+    {
+        // Response with only some headers (missing x-api-ratelimit-reset)
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => ['60'],
+            'x-api-ratelimit-remaining' => ['59'],
+            'x-api-ratelimit-consumed'  => ['1'],
+            // Missing x-api-ratelimit-reset
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage("Rate limit headers not found in response");
+        
+        $this->client->utilities->user();
+    }
+
+    /**
+     * Test the user endpoint with invalid non-numeric header values.
+     *
+     * @return void
+     */
+    public function testUser_invalidNumericHeaders_throwsException()
+    {
+        // Headers with non-numeric values
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => ['abc'], // Invalid
+            'x-api-ratelimit-remaining' => ['59'],
+            'x-api-ratelimit-reset'     => ['1734567890'],
+            'x-api-ratelimit-consumed'  => ['1'],
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage("Rate limit headers not found in response");
+        
+        $this->client->utilities->user();
+    }
+
+    /**
+     * Test the user endpoint with empty header values.
+     *
+     * @return void
+     */
+    public function testUser_emptyHeaderValues_throwsException()
+    {
+        // Headers present but with empty string values
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => [''],
+            'x-api-ratelimit-remaining' => ['59'],
+            'x-api-ratelimit-reset'     => ['1734567890'],
+            'x-api-ratelimit-consumed'  => ['1'],
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage("Rate limit headers not found in response");
+        
+        $this->client->utilities->user();
+    }
+
+    /**
+     * Test the user endpoint with case-insensitive header matching.
+     *
+     * @return void
+     */
+    public function testUser_caseInsensitiveHeaders_success()
+    {
+        $resetTimestamp = 1734567890;
+        // Headers with different case
+        $mocked_headers = [
+            'X-Api-Ratelimit-Limit'     => ['60'], // Different case
+            'X-API-RATELIMIT-REMAINING' => ['59'], // All uppercase
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp], // Lowercase
+            'X-Api-Ratelimit-Consumed'  => ['1'], // Mixed case
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $response = $this->client->utilities->user();
+        $this->assertInstanceOf(User::class, $response);
+        $this->assertEquals(60, $response->rate_limits->requests_limit);
+        $this->assertEquals(59, $response->rate_limits->requests_remaining);
+        $this->assertEquals(1, $response->rate_limits->requests_consumed);
+    }
+
+    /**
+     * Test the user endpoint with different numeric formats.
+     *
+     * @return void
+     */
+    public function testUser_differentNumericFormats_success()
+    {
+        $resetTimestamp = 1734567890;
+        // Headers with string numbers that can be converted
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => [' 60 '], // With spaces
+            'x-api-ratelimit-remaining' => ['059'], // With leading zero
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+            'x-api-ratelimit-consumed'  => ['1'],
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $response = $this->client->utilities->user();
+        $this->assertInstanceOf(User::class, $response);
+        // Should convert correctly to integers (spaces trimmed, leading zeros handled)
+        $this->assertEquals(60, $response->rate_limits->requests_limit);
+        $this->assertEquals(59, $response->rate_limits->requests_remaining); // Leading zero removed
+    }
+
+    /**
+     * Test the user endpoint with invalid timestamp format.
+     *
+     * @return void
+     */
+    public function testUser_invalidTimestamp_throwsException()
+    {
+        // Invalid timestamp (non-numeric)
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => ['60'],
+            'x-api-ratelimit-remaining' => ['59'],
+            'x-api-ratelimit-reset'     => ['invalid'], // Invalid timestamp
+            'x-api-ratelimit-consumed'  => ['1'],
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage("Rate limit headers not found in response");
+        
+        $this->client->utilities->user();
+    }
+
+    /**
+     * Test the user endpoint with boundary values.
+     *
+     * @return void
+     */
+    public function testUser_boundaryValues_success()
+    {
+        $resetTimestamp = 2147483647; // Max 32-bit timestamp (year 2038)
+        // Boundary values: zero and large numbers
+        $mocked_headers = [
+            'x-api-ratelimit-limit'     => ['0'], // Zero limit
+            'x-api-ratelimit-remaining' => ['0'], // Zero remaining
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+            'x-api-ratelimit-consumed'  => ['0'], // Zero consumed
+        ];
+        $this->setMockResponses([new Response(200, $mocked_headers, json_encode([]))]);
+
+        $response = $this->client->utilities->user();
+        $this->assertInstanceOf(User::class, $response);
+        $this->assertEquals(0, $response->rate_limits->requests_limit);
+        $this->assertEquals(0, $response->rate_limits->requests_remaining);
+        $this->assertEquals(0, $response->rate_limits->requests_consumed);
+        $this->assertEquals(
+            Carbon::createFromTimestamp($resetTimestamp),
+            $response->rate_limits->requests_reset
+        );
     }
 }

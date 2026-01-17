@@ -348,7 +348,7 @@ abstract class ClientBase
      * @throws RequestError
      * @throws BadStatusCodeError
      */
-    protected function validateResponseStatusCode($response, bool $raiseForStatus = true): void
+    public function validateResponseStatusCode($response, bool $raiseForStatus = true): void
     {
         if (!$response) {
             return;
@@ -397,6 +397,71 @@ abstract class ClientBase
         } catch (\Exception $e) {
             return "Request failed with status code: " . $response->getStatusCode();
         }
+    }
+
+    /**
+     * Extract rate limit information from response headers.
+     *
+     * This method extracts rate limit data from API response headers and returns
+     * a RateLimits object. Returns null if headers are missing, allowing
+     * graceful degradation. This method is designed to be reusable for future
+     * automatic rate limit tracking across all API requests.
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
+     *
+     * @return RateLimits|null The rate limit information, or null if headers are missing.
+     */
+    public function extractRateLimitsFromResponse($response): ?RateLimits
+    {
+        if (!$response) {
+            return null;
+        }
+
+        $headers = $response->getHeaders();
+        
+        // Helper function to get header value (case-insensitive)
+        $getHeader = function($name) use ($headers) {
+            $nameLower = strtolower($name);
+            foreach ($headers as $key => $values) {
+                if (strtolower($key) === $nameLower && !empty($values)) {
+                    return $values[0];
+                }
+            }
+            return null;
+        };
+
+        // Extract rate limit headers
+        $limitHeader = $getHeader('x-api-ratelimit-limit');
+        $remainingHeader = $getHeader('x-api-ratelimit-remaining');
+        $resetHeader = $getHeader('x-api-ratelimit-reset');
+        $consumedHeader = $getHeader('x-api-ratelimit-consumed');
+
+        // If any required header is missing, return null
+        if ($limitHeader === null || $remainingHeader === null || 
+            $resetHeader === null || $consumedHeader === null) {
+            return null;
+        }
+
+        // Validate that header values are numeric
+        if (!is_numeric($limitHeader) || !is_numeric($remainingHeader) || 
+            !is_numeric($resetHeader) || !is_numeric($consumedHeader)) {
+            return null;
+        }
+
+        // Convert to integers
+        $requests_limit = (int)$limitHeader;
+        $requests_remaining = (int)$remainingHeader;
+        $requests_consumed = (int)$consumedHeader;
+        
+        // Convert reset timestamp to Carbon datetime
+        $requests_reset = \Carbon\Carbon::createFromTimestamp((int)$resetHeader);
+
+        return new RateLimits(
+            $requests_limit,
+            $requests_remaining,
+            $requests_reset,
+            $requests_consumed
+        );
     }
 
     /**
@@ -467,5 +532,25 @@ abstract class ClientBase
             },
             'Authorization' => "Bearer $this->token",
         ];
+    }
+
+    /**
+     * Make a raw API request and return the response object.
+     *
+     * This method is useful for endpoints that need access to response headers,
+     * such as the /user/ endpoint for rate limit information.
+     *
+     * @param string $method    The API method to call (no API version prefix).
+     * @param array  $arguments Optional query parameters.
+     *
+     * @return \Psr\Http\Message\ResponseInterface The HTTP response.
+     * @throws GuzzleException
+     */
+    public function makeRawRequest(string $method, array $arguments = []): \Psr\Http\Message\ResponseInterface
+    {
+        return $this->guzzle->get($method, [
+            'headers' => $this->headers('json'),
+            'query'   => $arguments,
+        ]);
     }
 }
