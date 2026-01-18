@@ -19,6 +19,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -864,5 +865,126 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Quote::class, $quotes->quotes[0]);
         $this->assertEquals('ok', $quotes->quotes[0]->status);
         $this->assertEquals($human_readable_response['Symbol'][0], $quotes->quotes[0]->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with mode=LIVE.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testQuote_modeLive_success()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::LIVE)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with mode=CACHED.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testQuote_modeCached_success()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::CACHED)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with mode=DELAYED.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testQuote_modeDelayed_success()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::DELAYED)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with mode=null (should not include mode parameter).
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testQuote_modeNull_notIncluded()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: null)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quotes endpoint (parallel) with mode parameter.
+     *
+     * @return void
+     * @throws \Throwable
+     */
+    public function testQuotes_mode_success()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quotes = $this->client->stocks->quotes(
+            ['AAPL'],
+            false,
+            new Parameters(mode: Mode::LIVE)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertCount(1, $quotes->quotes);
+        $this->assertInstanceOf(Quote::class, $quotes->quotes[0]);
+        $this->assertEquals('ok', $quotes->quotes[0]->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quotes->quotes[0]->symbol);
     }
 }

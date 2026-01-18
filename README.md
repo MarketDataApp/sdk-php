@@ -137,8 +137,38 @@ $option_chain = $client->options->option_chain(
 
 ## Testing
 
+### Running Tests Locally
+
+Run all tests with PHPUnit:
+
 ```bash
 ./vendor/bin/phpunit
+```
+
+### Testing Across PHP Versions
+
+To test the SDK across all supported PHP versions (8.2, 8.3, 8.4, 8.5), use the provided script:
+
+```bash
+# Test all PHP versions (8.2, 8.3, 8.4, 8.5) with both prefer-lowest and prefer-stable
+./test-with-act.sh
+
+# Quick test: Test a specific PHP version only (prefer-stable)
+./test-with-act.sh 8.5
+./test-with-act.sh 8.4
+./test-with-act.sh 8.3
+./test-with-act.sh 8.2
+```
+
+**Note:** This script uses [act](https://github.com/nektos/act) to run the GitHub Actions workflow locally. It requires:
+- Docker installed and running
+- `act` installed (`brew install act` on macOS, or see [act installation guide](https://github.com/nektos/act#installation))
+
+**Integration Tests:** Set the `MARKETDATA_TOKEN` environment variable before running to include integration tests:
+
+```bash
+export MARKETDATA_TOKEN=your_token_here
+./test-with-act.sh
 ```
 
 ## Changelog

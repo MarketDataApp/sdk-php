@@ -14,6 +14,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\UnauthorizedException;
 use PHPUnit\Framework\TestCase;
@@ -413,5 +414,74 @@ class StocksTest extends TestCase
         $this->assertEquals('string', gettype($response->content));
         $this->assertEquals('string', gettype($response->source));
         $this->assertInstanceOf(Carbon::class, $response->publication_date);
+    }
+
+    /**
+     * Test stocks quote with mode=LIVE.
+     * Verifies that the API accepts and processes the mode parameter with LIVE value.
+     */
+    public function testQuote_modeLive_success()
+    {
+        $response = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::LIVE)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+        $this->assertEquals('double', gettype($response->bid));
+        $this->assertEquals('integer', gettype($response->bid_size));
+        $this->assertEquals('double', gettype($response->mid));
+        $this->assertEquals('double', gettype($response->last));
+    }
+
+    /**
+     * Test stocks quote with mode=CACHED.
+     * Verifies that the API accepts and processes the mode parameter with CACHED value.
+     */
+    public function testQuote_modeCached_success()
+    {
+        $response = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::CACHED)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+        $this->assertEquals('double', gettype($response->bid));
+        $this->assertEquals('integer', gettype($response->bid_size));
+        $this->assertEquals('double', gettype($response->mid));
+        $this->assertEquals('double', gettype($response->last));
+    }
+
+    /**
+     * Test stocks quote with mode=DELAYED.
+     * Verifies that the API accepts and processes the mode parameter with DELAYED value.
+     */
+    public function testQuote_modeDelayed_success()
+    {
+        $response = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(mode: Mode::DELAYED)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+        $this->assertEquals('double', gettype($response->bid));
+        $this->assertEquals('integer', gettype($response->bid_size));
+        $this->assertEquals('double', gettype($response->mid));
+        $this->assertEquals('double', gettype($response->last));
     }
 }

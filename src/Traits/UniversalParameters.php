@@ -36,6 +36,10 @@ trait UniversalParameters
             $universalParams['human'] = $parameters->use_human_readable ? 'true' : 'false';
         }
 
+        if ($parameters->mode !== null) {
+            $universalParams['mode'] = $parameters->mode->value;
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
             array_merge($arguments, $universalParams)
         );
@@ -62,6 +66,10 @@ trait UniversalParameters
             
             if ($parameters->use_human_readable !== null) {
                 $calls[$i][1]['human'] = $parameters->use_human_readable ? 'true' : 'false';
+            }
+
+            if ($parameters->mode !== null) {
+                $calls[$i][1]['mode'] = $parameters->mode->value;
             }
         }
 
