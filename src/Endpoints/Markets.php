@@ -62,10 +62,10 @@ class Markets
      */
     public function status(
         string $country = "US",
-        string $date = null,
-        string $from = null,
-        string $to = null,
-        int $countback = null,
+        ?string $date = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $countback = null,
         ?Parameters $parameters = null
     ): Statuses {
         return new Statuses($this->execute("status/",

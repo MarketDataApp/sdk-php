@@ -9,4 +9,9 @@ phpunit.xml
 psalm.xml
 vendor
 .php-cs-fixer.cache
-
+test-output.tmp
+test-results.tmp
+act-test-results.log
+.cursorrules
+*.log
+*.tmp

@@ -70,8 +70,8 @@ class Options
      */
     public function expirations(
         string $symbol,
-        int $strike = null,
-        string $date = null,
+        ?int $strike = null,
+        ?string $date = null,
         ?Parameters $parameters = null
     ): Expirations {
         return new Expirations($this->execute("expirations/$symbol",
@@ -123,8 +123,8 @@ class Options
      */
     public function strikes(
         string $symbol,
-        string $expiration = null,
-        string $date = null,
+        ?string $expiration = null,
+        ?string $date = null,
         ?Parameters $parameters = null
     ): Strikes {
         return new Strikes($this->execute("strikes/$symbol",
@@ -282,30 +282,30 @@ class Options
      */
     public function option_chain(
         string $symbol,
-        string $date = null,
+        ?string $date = null,
         string|Expiration $expiration = Expiration::ALL,
-        string $from = null,
-        string $to = null,
-        int $month = null,
-        int $year = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $month = null,
+        ?int $year = null,
         bool $weekly = true,
         bool $monthly = true,
         bool $quarterly = true,
         bool $non_standard = true,
-        int $dte = null,
-        float $delta = null,
-        Side $side = null,
+        ?int $dte = null,
+        ?float $delta = null,
+        ?Side $side = null,
         Range $range = Range::ALL,
-        string $strike = null,
-        int $strike_limit = null,
-        float $min_bid = null,
-        float $max_bid = null,
-        float $min_ask = null,
-        float $max_ask = null,
-        float $min_bid_ask_spread = null,
-        float $max_bid_ask_spread_pct = null,
-        int $min_open_interest = null,
-        int $min_volume = null,
+        ?string $strike = null,
+        ?int $strike_limit = null,
+        ?float $min_bid = null,
+        ?float $max_bid = null,
+        ?float $min_ask = null,
+        ?float $max_ask = null,
+        ?float $min_bid_ask_spread = null,
+        ?float $max_bid_ask_spread_pct = null,
+        ?int $min_open_interest = null,
+        ?int $min_volume = null,
         ?Parameters $parameters = null
     ): OptionChains {
         return new OptionChains($this->execute("chain/$symbol", [
@@ -370,9 +370,9 @@ class Options
      */
     public function quotes(
         string $option_symbol,
-        string $date = null,
-        string $from = null,
-        string $to = null,
+        ?string $date = null,
+        ?string $from = null,
+        ?string $to = null,
         ?Parameters $parameters = null
     ): Quotes {
         return new Quotes($this->execute("quotes/$option_symbol/",

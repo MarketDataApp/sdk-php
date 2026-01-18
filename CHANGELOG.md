@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.8.0-beta
+
+**Added PHP 8.5 Support**
+
+- Added official support for PHP 8.5
+- Updated test matrix to include PHP 8.5 (8.2, 8.3, 8.4, 8.5)
+- Fixed PHP 8.5 compatibility issues:
+  - Resolved 64 implicit nullable parameter deprecations
+  - Removed deprecated `ReflectionProperty::setAccessible()` and `ReflectionMethod::setAccessible()` calls
+  - Added `#[\AllowDynamicProperties]` attribute to Headers class
+- Fixed integration test skipping issue in PHP 8.5 (environment variable cleanup in SettingsTest)
+- Updated GitHub Actions workflow to test on PHP 8.5
+- Added comprehensive testing strategy documentation (`TESTING_STRATEGY.md`)
+- Updated README badge to reflect PHP 8.5 support
+
 ## v0.7.0-beta
 
 **BREAKING CHANGE**: PHP 8.1 support has been dropped. The SDK now requires PHP 8.2 or higher.

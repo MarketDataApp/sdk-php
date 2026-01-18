@@ -93,4 +93,30 @@ class MarketsTest extends TestCase
         $this->assertInstanceOf(Statuses::class, $response);
         $this->assertEquals($mocked_response, $response->getCsv());
     }
+
+    /**
+     * Test the status endpoint with human-readable format.
+     *
+     * @return void
+     */
+    public function testStatus_humanReadable_success()
+    {
+        $mocked_response = [
+            'Date' => 1680580800,
+            'Status' => 'open'
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            date: '1680580800',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->statuses);
+        $this->assertInstanceOf(Status::class, $response->statuses[0]);
+        $this->assertEquals(Carbon::parse($mocked_response['Date']), $response->statuses[0]->date);
+        $this->assertEquals($mocked_response['Status'], $response->statuses[0]->status);
+    }
 }

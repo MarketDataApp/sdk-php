@@ -10,7 +10,9 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
+use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
+use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\UnauthorizedException;
@@ -38,8 +40,12 @@ class StocksTest extends TestCase
     protected function setUp(): void
     {
         error_reporting(E_ALL);
-        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
-        if ($token === 'your_api_token') {
+        // Use the same robust token detection as Settings class
+        $token = getenv('MARKETDATA_TOKEN');
+        if ($token === false || $token === '') {
+            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
+        }
+        if ($token === null || $token === '') {
             $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
         }
         $client = new Client($token);
@@ -253,5 +259,159 @@ class StocksTest extends TestCase
             $this->assertEquals(401, $e->getResponse()->getStatusCode());
             throw $e;
         }
+    }
+
+    /**
+     * Test stocks quote with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testQuote_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+        $this->assertEquals('double', gettype($response->bid));
+        $this->assertEquals('integer', gettype($response->bid_size));
+        $this->assertEquals('double', gettype($response->mid));
+        $this->assertEquals('double', gettype($response->last));
+        $this->assertTrue(in_array(gettype($response->change), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->change_percent), ['double', 'NULL']));
+        $this->assertEquals('integer', gettype($response->volume));
+        $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+    /**
+     * Test stocks quote with human_readable=false.
+     * Verifies that the API returns regular JSON keys.
+     */
+    public function testQuote_humanReadableFalse_returnsRegularKeys()
+    {
+        $response = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(use_human_readable: false)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('double', gettype($response->ask));
+        $this->assertEquals('integer', gettype($response->ask_size));
+    }
+
+    /**
+     * Test stocks quotes (parallel) with human-readable format.
+     * Verifies that the API returns human-readable JSON keys for parallel requests.
+     */
+    public function testQuotes_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->quotes(
+            ['AAPL'],
+            false,
+            new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertNotEmpty($response->quotes);
+        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertEquals('ok', $response->quotes[0]->status);
+        $this->assertEquals('string', gettype($response->quotes[0]->symbol));
+        $this->assertEquals('double', gettype($response->quotes[0]->ask));
+    }
+
+    /**
+     * Test stocks candles with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testCandles_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2024-01-01',
+            to: '2024-01-05',
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->candles);
+        $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $this->assertEquals('double', gettype($response->candles[0]->open));
+        $this->assertEquals('double', gettype($response->candles[0]->high));
+        $this->assertEquals('double', gettype($response->candles[0]->low));
+        $this->assertEquals('double', gettype($response->candles[0]->close));
+        $this->assertEquals('integer', gettype($response->candles[0]->volume));
+        $this->assertInstanceOf(Carbon::class, $response->candles[0]->timestamp);
+    }
+
+    /**
+     * Test stocks bulkCandles with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testBulkCandles_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ["AAPL"],
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->candles);
+        $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $this->assertEquals('double', gettype($response->candles[0]->open));
+        $this->assertEquals('double', gettype($response->candles[0]->close));
+    }
+
+    /**
+     * Test stocks earnings with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testEarnings_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->earnings);
+        $this->assertEquals('string', gettype($response->earnings[0]->symbol));
+        $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_year));
+        $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_quarter));
+        $this->assertInstanceOf(Carbon::class, $response->earnings[0]->date);
+    }
+
+    /**
+     * Test stocks news with human-readable format.
+     * Verifies that the API returns human-readable JSON keys (mixed format).
+     */
+    public function testNews_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(News::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertEquals('string', gettype($response->headline));
+        $this->assertEquals('string', gettype($response->content));
+        $this->assertEquals('string', gettype($response->source));
+        $this->assertInstanceOf(Carbon::class, $response->publication_date);
     }
 }

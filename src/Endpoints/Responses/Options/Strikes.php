@@ -59,25 +59,52 @@ class Strikes extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        switch ($this->status) {
-            case 'ok':
-                foreach ($response as $key => $value) {
-                    if (in_array($key, ['s', 'updated'])) {
-                        continue;
+        // Determine if this is human-readable format (has "Date" key but no "s" status) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Date']) && !isset($responseArray['s']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+            
+            foreach ($responseArray as $key => $value) {
+                if ($key === 'Date') {
+                    $this->updated = Carbon::parse($value);
+                    continue;
+                }
+                // All other keys are date keys with strike arrays
+                $this->dates[$key] = $value;
+            }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            switch ($this->status) {
+                case 'ok':
+                    foreach ($response as $key => $value) {
+                        if (in_array($key, ['s', 'updated'])) {
+                            if ($key === 'updated') {
+                                $this->updated = Carbon::parse($value);
+                            }
+                            continue;
+                        }
+
+                        $this->dates[$key] = $value;
+                    }
+                    break;
+
+                case 'no_data':
+                    if (isset($response->nextTime)) {
+                        $this->next_time = Carbon::parse($response->nextTime);
                     }
 
-                    $this->dates[$key] = $value;
-                }
-                $this->updated = Carbon::parse($response->updated);
-                break;
-
-            case 'no_data' && isset($response->nextTime):
-                $this->next_time = Carbon::parse($response->nextTime);
-                $this->prev_time = Carbon::parse($response->prevTime);
-                break;
+                    if (isset($response->prevTime)) {
+                        $this->prev_time = Carbon::parse($response->prevTime);
+                    }
+                    break;
+            }
         }
     }
 }

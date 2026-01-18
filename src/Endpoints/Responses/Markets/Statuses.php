@@ -36,15 +36,39 @@ class Statuses extends ResponseBase
         if (!$this->isJson()) {
             return;
         }
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        if ($this->status === 'ok') {
-            for ($i = 0; $i < count($response->date); $i++) {
-                $this->statuses[] = new Status(
-                    Carbon::parse($response->date[$i]),
-                    $response->status[$i],
-                );
+        // Determine if this is human-readable format (has "Status" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Status']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field, single status object
+            $this->status = 'ok';
+            // Handle Date field - ensure it's a string (may be array when object is cast to array)
+            $dateValue = $responseArray['Date'];
+            if (is_array($dateValue)) {
+                $dateValue = !empty($dateValue) ? $dateValue[0] : '';
+            }
+            // Parse date - handle both Unix timestamps and date strings
+            $date = is_numeric($dateValue) 
+                ? Carbon::createFromTimestamp((int) $dateValue)
+                : Carbon::parse($dateValue);
+            $this->statuses[] = new Status(
+                $date,
+                is_array($responseArray['Status']) ? ($responseArray['Status'][0] ?? null) : ($responseArray['Status'] ?? null),
+            );
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            if ($this->status === 'ok') {
+                for ($i = 0; $i < count($response->date); $i++) {
+                    $this->statuses[] = new Status(
+                        Carbon::parse($response->date[$i]),
+                        $response->status[$i] ?? null,
+                    );
+                }
             }
         }
     }

@@ -23,7 +23,7 @@ class BadStatusCodeError extends \Exception
      * @param \Exception|null $previous The previous exception used for exception chaining.
      * @param mixed           $response The API response associated with this exception.
      */
-    public function __construct($message = "", $code = 0, \Exception $previous = null, $response = null)
+    public function __construct($message = "", $code = 0, ?\Exception $previous = null, $response = null)
     {
         parent::__construct($message, $code, $previous);
         $this->response = $response;

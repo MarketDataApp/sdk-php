@@ -38,8 +38,12 @@ class OptionsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $token = getenv('MARKETDATA_TOKEN') ?: 'your_api_token';
-        if ($token === 'your_api_token') {
+        // Use the same robust token detection as Settings class
+        $token = getenv('MARKETDATA_TOKEN');
+        if ($token === false || $token === '') {
+            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
+        }
+        if ($token === null || $token === '') {
             $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
         }
         $client = new Client($token);
@@ -80,10 +84,10 @@ class OptionsTest extends TestCase
      */
     public function testLookup_success()
     {
-        $response = $this->client->options->lookup('AAPL 7/28/23 $200 Call');
+        $response = $this->client->options->lookup('AAPL 12/15/28 $400 Call');
 
         $this->assertInstanceOf(Lookup::class, $response);
-        $this->assertEquals('AAPL230728C00200000', $response->option_symbol);
+        $this->assertEquals('AAPL281215C00400000', $response->option_symbol);
     }
 
     /**
@@ -276,5 +280,192 @@ class OptionsTest extends TestCase
         $this->assertTrue(in_array(gettype($option_strike->theta), ['double', 'NULL']));
         $this->assertTrue(in_array(gettype($option_strike->vega), ['double', 'NULL']));
         $this->assertEquals('double', gettype($option_strike->underlying_price));
+    }
+
+    /**
+     * Test options chain with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testOptionChain_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: '2028-12-15',
+            side: Side::CALL,
+            strike_limit: 5,
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->option_chains);
+        $option_chain = array_pop($response->option_chains);
+        $this->assertNotEmpty($option_chain);
+
+        $option_strike = array_pop($option_chain);
+        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertEquals('string', gettype($option_strike->option_symbol));
+        $this->assertEquals('string', gettype($option_strike->underlying));
+        $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
+        $this->assertInstanceOf(Side::class, $option_strike->side);
+        $this->assertEquals('double', gettype($option_strike->strike));
+        $this->assertInstanceOf(Carbon::class, $option_strike->first_traded);
+        $this->assertEquals('integer', gettype($option_strike->dte));
+        $this->assertInstanceOf(Carbon::class, $option_strike->updated);
+        $this->assertEquals('double', gettype($option_strike->bid));
+        $this->assertEquals('integer', gettype($option_strike->bid_size));
+        $this->assertEquals('double', gettype($option_strike->mid));
+        $this->assertEquals('double', gettype($option_strike->ask));
+        $this->assertEquals('integer', gettype($option_strike->ask_size));
+    }
+
+    /**
+     * Test options chain with human_readable=false.
+     * Verifies that the API returns regular JSON keys.
+     */
+    public function testOptionChain_humanReadableFalse_returnsRegularKeys()
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: '2028-12-15',
+            side: Side::CALL,
+            strike_limit: 5,
+            parameters: new Parameters(use_human_readable: false)
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->option_chains);
+        $option_chain = array_pop($response->option_chains);
+        $this->assertNotEmpty($option_chain);
+
+        $option_strike = array_pop($option_chain);
+        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertEquals('string', gettype($option_strike->option_symbol));
+        $this->assertEquals('string', gettype($option_strike->underlying));
+    }
+
+    /**
+     * Test options expirations with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testExpirations_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->expirations);
+        $this->assertInstanceOf(Carbon::class, $response->expirations[0]);
+        $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+    /**
+     * Test options strikes with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testStrikes_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            date: '2024-01-03',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->dates);
+        $this->assertInstanceOf(Carbon::class, $response->updated);
+    }
+
+    /**
+     * Test options lookup with human-readable format.
+     * Verifies that the API returns human-readable JSON keys.
+     */
+    public function testLookup_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->options->lookup(
+            input: 'AAPL 12/15/28 $400 Call',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Lookup::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->option_symbol));
+        $this->assertEquals('AAPL281215C00400000', $response->option_symbol);
+        $this->assertNotEmpty($response->option_symbol);
+    }
+
+    /**
+     * Test options lookup with human_readable=false.
+     * Verifies that the API returns regular JSON keys.
+     */
+    public function testLookup_humanReadableFalse_returnsRegularKeys()
+    {
+        $response = $this->client->options->lookup(
+            input: 'AAPL 12/15/28 $400 Call',
+            parameters: new Parameters(use_human_readable: false)
+        );
+
+        $this->assertInstanceOf(Lookup::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('string', gettype($response->option_symbol));
+        $this->assertEquals('AAPL281215C00400000', $response->option_symbol);
+        $this->assertNotEmpty($response->option_symbol);
+    }
+
+    /**
+     * Test options quotes with human-readable format.
+     * Verifies that the API returns human-readable JSON keys with spaces.
+     */
+    public function testQuotes_humanReadable_returnsHumanReadableKeys()
+    {
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL281215C00400000',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->quotes);
+        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
+        $this->assertEquals('double', gettype($response->quotes[0]->ask));
+        $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
+        $this->assertEquals('double', gettype($response->quotes[0]->bid));
+        $this->assertEquals('integer', gettype($response->quotes[0]->bid_size));
+        $this->assertEquals('double', gettype($response->quotes[0]->mid));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->last), ['double', 'NULL']));
+        $this->assertEquals('integer', gettype($response->quotes[0]->volume));
+        $this->assertEquals('integer', gettype($response->quotes[0]->open_interest));
+        $this->assertEquals('boolean', gettype($response->quotes[0]->in_the_money));
+        $this->assertEquals('double', gettype($response->quotes[0]->underlying_price));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->implied_volatility), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->delta), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->gamma), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->theta), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->quotes[0]->vega), ['double', 'NULL']));
+        $this->assertInstanceOf(Carbon::class, $response->quotes[0]->updated);
+    }
+
+    /**
+     * Test options quotes with human_readable=false.
+     * Verifies that the API returns regular JSON keys.
+     */
+    public function testQuotes_humanReadableFalse_returnsRegularKeys()
+    {
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL281215C00400000',
+            parameters: new Parameters(use_human_readable: false)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->quotes);
+        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
     }
 }

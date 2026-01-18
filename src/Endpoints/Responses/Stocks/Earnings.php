@@ -39,25 +39,54 @@ class Earnings extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        if ($this->status === 'ok') {
-            for ($i = 0; $i < count($response->symbol); $i++) {
+        // Determine if this is human-readable format (has "Symbol" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Symbol']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+            
+            $count = count($responseArray['Symbol']);
+            for ($i = 0; $i < $count; $i++) {
                 $this->earnings[] = new Earning(
-                    symbol: $response->symbol[$i],
-                    fiscal_year: $response->fiscalYear[$i],
-                    fiscal_quarter: $response->fiscalQuarter[$i],
-                    date: Carbon::parse($response->date[$i]),
-                    report_date: Carbon::parse($response->reportDate[$i]),
-                    report_time: $response->reportTime[$i],
-                    currency: $response->currency[$i] ?? null,
-                    reported_eps: $response->reportedEPS[$i],
-                    estimated_eps: $response->estimatedEPS[$i],
-                    surprise_eps: $response->surpriseEPS[$i],
-                    surprise_eps_pct: $response->surpriseEPSpct[$i],
-                    updated: Carbon::parse($response->updated[$i]),
+                    symbol: $responseArray['Symbol'][$i],
+                    fiscal_year: $responseArray['Fiscal Year'][$i],
+                    fiscal_quarter: $responseArray['Fiscal Quarter'][$i],
+                    date: Carbon::parse($responseArray['Date'][$i]),
+                    report_date: Carbon::parse($responseArray['Report Date'][$i]),
+                    report_time: $responseArray['Report Time'][$i],
+                    currency: $responseArray['Currency'][$i] ?? null,
+                    reported_eps: $responseArray['Reported EPS'][$i],
+                    estimated_eps: $responseArray['Estimated EPS'][$i],
+                    surprise_eps: $responseArray['Surprise EPS'][$i],
+                    surprise_eps_pct: $responseArray['Surprise EPS %'][$i],
+                    updated: Carbon::parse($responseArray['Updated'][$i]),
                 );
+            }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            if ($this->status === 'ok') {
+                for ($i = 0; $i < count($response->symbol); $i++) {
+                    $this->earnings[] = new Earning(
+                        symbol: $response->symbol[$i],
+                        fiscal_year: $response->fiscalYear[$i],
+                        fiscal_quarter: $response->fiscalQuarter[$i],
+                        date: Carbon::parse($response->date[$i]),
+                        report_date: Carbon::parse($response->reportDate[$i]),
+                        report_time: $response->reportTime[$i],
+                        currency: $response->currency[$i] ?? null,
+                        reported_eps: $response->reportedEPS[$i],
+                        estimated_eps: $response->estimatedEPS[$i],
+                        surprise_eps: $response->surpriseEPS[$i],
+                        surprise_eps_pct: $response->surpriseEPSpct[$i],
+                        updated: Carbon::parse($response->updated[$i]),
+                    );
+                }
             }
         }
     }

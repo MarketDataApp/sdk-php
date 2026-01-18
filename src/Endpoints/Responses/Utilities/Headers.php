@@ -5,6 +5,7 @@ namespace MarketDataApp\Endpoints\Responses\Utilities;
 /**
  * Represents the headers of an API response.
  */
+#[\AllowDynamicProperties]
 class Headers
 {
 

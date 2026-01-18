@@ -60,26 +60,41 @@ class Expirations extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        switch ($this->status) {
-            case 'ok':
-                $this->expirations = array_map(function ($expiration) {
-                    return Carbon::parse($expiration);
-                }, $response->expirations);
-                $this->updated = Carbon::parse($response->updated);
-                break;
+        // Determine if this is human-readable format (has "Expirations" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Expirations']);
 
-            case 'no_data':
-                if (isset($response->nextTime)) {
-                    $this->next_time = Carbon::parse($response->nextTime);
-                }
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+            $this->expirations = array_map(function ($expiration) {
+                return Carbon::parse($expiration);
+            }, $responseArray['Expirations']);
+            $this->updated = Carbon::parse($responseArray['Date']);
+        } else {
+            // Regular format
+            $this->status = $response->s;
 
-                if (isset($response->prevTime)) {
-                    $this->prev_time = Carbon::parse($response->prevTime);
-                }
-                break;
+            switch ($this->status) {
+                case 'ok':
+                    $this->expirations = array_map(function ($expiration) {
+                        return Carbon::parse($expiration);
+                    }, $response->expirations);
+                    $this->updated = Carbon::parse($response->updated);
+                    break;
+
+                case 'no_data':
+                    if (isset($response->nextTime)) {
+                        $this->next_time = Carbon::parse($response->nextTime);
+                    }
+
+                    if (isset($response->prevTime)) {
+                        $this->prev_time = Carbon::parse($response->prevTime);
+                    }
+                    break;
+            }
         }
     }
 }

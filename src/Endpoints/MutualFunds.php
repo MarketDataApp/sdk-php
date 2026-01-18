@@ -63,9 +63,9 @@ class MutualFunds
     public function candles(
         string $symbol,
         string $from,
-        string $to = null,
+        ?string $to = null,
         string $resolution = 'D',
-        int $countback = null,
+        ?int $countback = null,
         ?Parameters $parameters = null
     ): Candles {
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/",

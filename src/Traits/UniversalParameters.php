@@ -28,10 +28,16 @@ trait UniversalParameters
             $parameters = new Parameters();
         }
 
+        $universalParams = [
+            'format' => $parameters->format->value
+        ];
+
+        if ($parameters->use_human_readable !== null) {
+            $universalParams['human'] = $parameters->use_human_readable ? 'true' : 'false';
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
-            array_merge($arguments, [
-                'format' => $parameters->format->value
-            ])
+            array_merge($arguments, $universalParams)
         );
     }
 
@@ -53,6 +59,10 @@ trait UniversalParameters
         for ($i = 0; $i < count($calls); $i++) {
             $calls[$i][0] = self::BASE_URL . $calls[$i][0];
             $calls[$i][1]['format'] = $parameters->format->value;
+            
+            if ($parameters->use_human_readable !== null) {
+                $calls[$i][1]['human'] = $parameters->use_human_readable ? 'true' : 'false';
+            }
         }
 
         return $this->client->execute_in_parallel($calls);

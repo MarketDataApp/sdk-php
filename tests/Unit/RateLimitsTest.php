@@ -58,7 +58,6 @@ class RateLimitsTest extends TestCase
         if ($rateLimits !== null) {
             $reflection = new \ReflectionClass($this->client);
             $property = $reflection->getProperty('rate_limits');
-            $property->setAccessible(true);
             $property->setValue($this->client, $rateLimits);
         }
     }
@@ -130,7 +129,6 @@ class RateLimitsTest extends TestCase
         // Try to initialize rate limits - should fail gracefully
         $reflection = new \ReflectionClass($this->client);
         $method = $reflection->getMethod('_setup_rate_limits');
-        $method->setAccessible(true);
         $method->invoke($this->client);
         
         // Verify rate limits are null

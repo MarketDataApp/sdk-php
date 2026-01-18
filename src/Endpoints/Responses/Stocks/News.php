@@ -71,15 +71,36 @@ class News extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        if ($this->status === 'ok') {
-            $this->symbol = $response->symbol;
-            $this->headline = $response->headline;
-            $this->content = $response->content;
-            $this->source = $response->source;
-            $this->publication_date = Carbon::parse($response->publicationDate);
+        // Determine if this is human-readable format (has "Symbol" key) or regular format (has "s" status)
+        // Note: News human-readable format has mixed keys - some lowercase (headline, content, source, publicationDate) and some capitalized (Symbol, Date)
+        $isHumanReadable = isset($responseArray['Symbol']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            // Note: News endpoint returns arrays for all fields, even for single items
+            $this->status = 'ok';
+            $this->symbol = is_array($responseArray['Symbol']) ? $responseArray['Symbol'][0] : $responseArray['Symbol'];
+            $this->headline = is_array($responseArray['headline']) ? $responseArray['headline'][0] : $responseArray['headline'];
+            $this->content = is_array($responseArray['content']) ? $responseArray['content'][0] : $responseArray['content'];
+            $this->source = is_array($responseArray['source']) ? $responseArray['source'][0] : $responseArray['source'];
+            $publicationDate = is_array($responseArray['publicationDate']) ? $responseArray['publicationDate'][0] : $responseArray['publicationDate'];
+            $this->publication_date = Carbon::parse($publicationDate);
+        } else {
+            // Regular format
+            // Note: News endpoint returns arrays for all fields, even for single items
+            $this->status = $response->s;
+
+            if ($this->status === 'ok') {
+                $this->symbol = is_array($response->symbol) ? $response->symbol[0] : $response->symbol;
+                $this->headline = is_array($response->headline) ? $response->headline[0] : $response->headline;
+                $this->content = is_array($response->content) ? $response->content[0] : $response->content;
+                $this->source = is_array($response->source) ? $response->source[0] : $response->source;
+                $publicationDate = is_array($response->publicationDate) ? $response->publicationDate[0] : $response->publicationDate;
+                $this->publication_date = Carbon::parse($publicationDate);
+            }
         }
     }
 }

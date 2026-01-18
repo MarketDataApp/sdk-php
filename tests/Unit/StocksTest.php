@@ -164,6 +164,44 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the candles endpoint with human-readable format.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_humanReadable_success()
+    {
+        $mocked_response = [
+            'Date' => [1659326400, 1659412800],
+            'Open' => [22.41, 24.08],
+            'High' => [23.27, 24.68],
+            'Low' => [22.26, 22.67],
+            'Close' => [22.84, 23.93],
+            'Volume' => [123123, 66959442]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->candles);
+        $this->assertEquals($mocked_response['Open'][0], $response->candles[0]->open);
+        $this->assertEquals($mocked_response['High'][0], $response->candles[0]->high);
+        $this->assertEquals($mocked_response['Low'][0], $response->candles[0]->low);
+        $this->assertEquals($mocked_response['Close'][0], $response->candles[0]->close);
+        $this->assertEquals($mocked_response['Volume'][0], $response->candles[0]->volume);
+        $this->assertEquals(Carbon::parse($mocked_response['Date'][0]), $response->candles[0]->timestamp);
+    }
+
+    /**
      * Test the candles endpoint for a successful 'no data' response.
      *
      * @return void
@@ -278,6 +316,35 @@ class StocksTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test the bulkCandles endpoint with human-readable format.
+     *
+     * @return void
+     */
+    public function testBulkCandles_humanReadable_success()
+    {
+        $mocked_response = [
+            'Date' => [1659326400, 1659412800],
+            'Open' => [22.41, 24.08],
+            'High' => [23.27, 24.68],
+            'Low' => [22.26, 22.67],
+            'Close' => [22.84, 23.93],
+            'Volume' => [123123, 66959442]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ["AAPL", "MSFT"],
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->candles);
+        $this->assertEquals($mocked_response['Open'][0], $response->candles[0]->open);
     }
 
     /**
@@ -517,6 +584,42 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the earnings endpoint with human-readable format.
+     *
+     * @return void
+     */
+    public function testEarnings_humanReadable_success()
+    {
+        $mocked_response = [
+            'Symbol' => ['AAPL', 'AAPL'],
+            'Fiscal Year' => [2023, 2023],
+            'Fiscal Quarter' => [1, 2],
+            'Date' => [1672462800, 1672562800],
+            'Report Date' => [1675314000, 1675414000],
+            'Report Time' => ['before market open', 'after market close'],
+            'Currency' => ['USD', 'USD'],
+            'Reported EPS' => [1.88, 1.92],
+            'Estimated EPS' => [1.94, 1.9],
+            'Surprise EPS' => [-0.06, 0.02],
+            'Surprise EPS %' => [-3.0928, 0.2308],
+            'Updated' => [1701690000, 1701690000]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2023-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->earnings);
+        $this->assertEquals($mocked_response['Symbol'][0], $response->earnings[0]->symbol);
+        $this->assertEquals($mocked_response['Fiscal Year'][0], $response->earnings[0]->fiscal_year);
+        $this->assertEquals($mocked_response['Fiscal Quarter'][0], $response->earnings[0]->fiscal_quarter);
+    }
+
+    /**
      * Test the earnings endpoint for an exception when neither 'from' nor 'countback' is provided.
      *
      * @return void
@@ -576,6 +679,37 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the news endpoint with human-readable format.
+     *
+     * @return void
+     */
+    public function testNews_humanReadable_success()
+    {
+        $mocked_response = [
+            'headline' => 'Test Headline',
+            'content' => 'Test Content',
+            'source' => 'https://example.com',
+            'publicationDate' => 1703041200,
+            'Symbol' => 'AAPL',
+            'Date' => 1703041200
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2023-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals('ok', $news->status);
+        $this->assertEquals($mocked_response['Symbol'], $news->symbol);
+        $this->assertEquals($mocked_response['headline'], $news->headline);
+        $this->assertEquals($mocked_response['content'], $news->content);
+        $this->assertEquals($mocked_response['source'], $news->source);
+        $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
+    }
+
+    /**
      * Test the news endpoint for an exception when neither 'from' nor 'countback' is provided.
      *
      * @return void
@@ -605,5 +739,130 @@ class StocksTest extends TestCase
         // After retries are exhausted, RequestError is thrown (not GuzzleException)
         $this->expectException(\MarketDataApp\Exceptions\RequestError::class);
         $response = $this->client->stocks->quote("INVALID");
+    }
+
+    /**
+     * Test the quote endpoint with human-readable format.
+     *
+     * @return void
+     */
+    public function testQuote_humanReadable_success()
+    {
+        $mocked_response = [
+            'Symbol' => ['AAPL'],
+            'Ask' => [149.08],
+            'Ask Size' => [200],
+            'Bid' => [149.07],
+            'Bid Size' => [600],
+            'Mid' => [149.075],
+            'Last' => [149.09],
+            'Change $' => [0.01],
+            'Change %' => [0.0001],
+            'Volume' => [66959442],
+            'Date' => [1663958092]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('ok', $quote->status);
+        $this->assertEquals($mocked_response['Symbol'][0], $quote->symbol);
+        $this->assertEquals($mocked_response['Ask'][0], $quote->ask);
+        $this->assertEquals($mocked_response['Ask Size'][0], $quote->ask_size);
+        $this->assertEquals($mocked_response['Bid'][0], $quote->bid);
+        $this->assertEquals($mocked_response['Bid Size'][0], $quote->bid_size);
+        $this->assertEquals($mocked_response['Mid'][0], $quote->mid);
+        $this->assertEquals($mocked_response['Last'][0], $quote->last);
+        $this->assertEquals($mocked_response['Change $'][0], $quote->change);
+        $this->assertEquals($mocked_response['Change %'][0], $quote->change_percent);
+        $this->assertEquals($mocked_response['Volume'][0], $quote->volume);
+        $this->assertEquals(Carbon::parse($mocked_response['Date'][0]), $quote->updated);
+    }
+
+    /**
+     * Test the quote endpoint with human_readable=false.
+     *
+     * @return void
+     */
+    public function testQuote_humanReadableFalse_success()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(use_human_readable: false)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with human_readable=null (should use regular format).
+     *
+     * @return void
+     */
+    public function testQuote_humanReadableNull_usesRegularFormat()
+    {
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            false,
+            new Parameters(use_human_readable: null)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quotes endpoint (parallel) with human-readable format.
+     *
+     * @return void
+     * @throws \Throwable
+     */
+    public function testQuotes_humanReadable_success()
+    {
+        $human_readable_response = [
+            'Symbol' => ['AAPL'],
+            'Ask' => [149.08],
+            'Ask Size' => [200],
+            'Bid' => [149.07],
+            'Bid Size' => [600],
+            'Mid' => [149.075],
+            'Last' => [149.09],
+            'Change $' => [0.01],
+            'Change %' => [0.0001],
+            'Volume' => [66959442],
+            'Date' => [1663958092]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($human_readable_response)),
+        ]);
+        $quotes = $this->client->stocks->quotes(
+            ['AAPL'],
+            false,
+            new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertCount(1, $quotes->quotes);
+        $this->assertInstanceOf(Quote::class, $quotes->quotes[0]);
+        $this->assertEquals('ok', $quotes->quotes[0]->status);
+        $this->assertEquals($human_readable_response['Symbol'][0], $quotes->quotes[0]->symbol);
     }
 }

@@ -127,24 +127,59 @@ class Quote extends ResponseBase
             return;
         }
 
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
+
+        // Determine if this is human-readable format (has "Symbol" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Symbol']);
+
         // Convert the response to this object.
-        $this->status = $response->s;
-        $this->symbol = $response->symbol[0];
-        $this->ask = $response->ask[0];
-        $this->ask_size = $response->askSize[0];
-        $this->bid = $response->bid[0];
-        $this->bid_size = $response->bidSize[0];
-        $this->mid = $response->mid[0];
-        $this->last = $response->last[0];
-        $this->change = $response->change[0];
-        $this->change_percent = $response->changepct[0];
-        if (isset($response->{'52weekHigh'}[0])) {
-            $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
+        // Check for human-readable keys first (with spaces), then fall back to regular keys
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok'; // Human-readable format always returns data when successful
+            $this->symbol = $responseArray['Symbol'][0];
+            $this->ask = $responseArray['Ask'][0];
+            $this->ask_size = $responseArray['Ask Size'][0];
+            $this->bid = $responseArray['Bid'][0];
+            $this->bid_size = $responseArray['Bid Size'][0];
+            $this->mid = $responseArray['Mid'][0];
+            $this->last = $responseArray['Last'][0];
+            $this->change = $responseArray['Change $'][0];
+            $this->change_percent = $responseArray['Change %'][0];
+            $this->volume = $responseArray['Volume'][0];
+            $this->updated = Carbon::parse($responseArray['Date'][0]);
+            
+            // 52-week high/low may not be present in human-readable format
+            // Check if they exist
+            if (isset($responseArray['52week High'][0])) {
+                $this->fifty_two_week_high = $responseArray['52week High'][0];
+            }
+            if (isset($responseArray['52week Low'][0])) {
+                $this->fifty_two_week_low = $responseArray['52week Low'][0];
+            }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+            $this->symbol = $response->symbol[0];
+            $this->ask = $response->ask[0];
+            $this->ask_size = $response->askSize[0];
+            $this->bid = $response->bid[0];
+            $this->bid_size = $response->bidSize[0];
+            $this->mid = $response->mid[0];
+            $this->last = $response->last[0];
+            $this->change = $response->change[0];
+            $this->change_percent = $response->changepct[0];
+            $this->volume = $response->volume[0];
+            $this->updated = Carbon::parse($response->updated[0]);
+            
+            // Handle 52-week high/low
+            if (isset($response->{'52weekHigh'}[0])) {
+                $this->fifty_two_week_high = $response->{'52weekHigh'}[0];
+            }
+            if (isset($response->{'52weekLow'}[0])) {
+                $this->fifty_two_week_low = $response->{'52weekLow'}[0];
+            }
         }
-        if (isset($response->{'52weekLow'}[0])) {
-            $this->fifty_two_week_low = $response->{'52weekLow'}[0];
-        }
-        $this->volume = $response->volume[0];
-        $this->updated = Carbon::parse($response->updated[0]);
     }
 }

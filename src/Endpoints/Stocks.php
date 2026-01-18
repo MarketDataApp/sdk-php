@@ -75,7 +75,7 @@ class Stocks
         array $symbols = [],
         string $resolution = 'D',
         bool $snapshot = false,
-        string $date = null,
+        ?string $date = null,
         bool $adjust_splits = false,
         ?Parameters $parameters = null
     ): BulkCandles {
@@ -150,12 +150,12 @@ class Stocks
     public function candles(
         string $symbol,
         string $from,
-        string $to = null,
+        ?string $to = null,
         string $resolution = 'D',
-        int $countback = null,
-        string $exchange = null,
+        ?int $countback = null,
+        ?string $exchange = null,
         bool $extended = false,
-        string $country = null,
+        ?string $country = null,
         bool $adjust_splits = false,
         bool $adjust_dividends = false,
         ?Parameters $parameters = null
@@ -243,11 +243,11 @@ class Stocks
      */
     public function earnings(
         string $symbol,
-        string $from = null,
-        string $to = null,
-        int $countback = null,
-        string $date = null,
-        string $datekey = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $countback = null,
+        ?string $date = null,
+        ?string $datekey = null,
         ?Parameters $parameters = null
     ): Earnings {
         if (is_null($from) && (is_null($countback) || is_null($to))) {
@@ -282,10 +282,10 @@ class Stocks
      */
     public function news(
         string $symbol,
-        string $from = null,
-        string $to = null,
-        int $countback = null,
-        string $date = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $countback = null,
+        ?string $date = null,
         ?Parameters $parameters = null
     ): News {
         if (is_null($from) && (is_null($countback) || is_null($to))) {
