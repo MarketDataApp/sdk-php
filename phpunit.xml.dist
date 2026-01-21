@@ -16,7 +16,18 @@
     backupStaticProperties="false"
 >
     <testsuites>
-        <testsuite name="MarketDataApp Test Suite">
+        <!-- Unit tests (fast, use mocks) - run by default -->
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        
+        <!-- Integration tests (slow, make real API calls) - opt-in -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        
+        <!-- All tests - only run when explicitly requested -->
+        <testsuite name="All">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
