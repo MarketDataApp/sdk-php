@@ -15,6 +15,7 @@ use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * Class Options
@@ -25,6 +26,7 @@ class Options
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /**
      * The MarketDataApp API client instance.
@@ -74,6 +76,10 @@ class Options
         ?string $date = null,
         ?Parameters $parameters = null
     ): Expirations {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $this->validatePositiveInteger($strike, 'strike');
+
         return new Expirations($this->execute("expirations/$symbol",
             compact('strike', 'date'), $parameters));
     }
@@ -97,6 +103,9 @@ class Options
      */
     public function lookup(string $input, ?Parameters $parameters = null): Lookup
     {
+        // Validate input
+        $this->validateNonEmptyString($input, 'input');
+
         return new Lookup($this->execute("lookup/" . $input, [], $parameters));
     }
 
@@ -127,6 +136,9 @@ class Options
         ?string $date = null,
         ?Parameters $parameters = null
     ): Strikes {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+
         return new Strikes($this->execute("strikes/$symbol",
             compact('expiration', 'date'), $parameters));
     }
@@ -308,6 +320,26 @@ class Options
         ?int $min_volume = null,
         ?Parameters $parameters = null
     ): OptionChains {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        
+        // Validate date range
+        $this->validateDateRange($from, $to);
+        
+        // Validate numeric ranges
+        if ($month !== null && ($month < 1 || $month > 12)) {
+            throw new \InvalidArgumentException("`month` must be between 1 and 12. Got: {$month}");
+        }
+        $this->validatePositiveInteger($year, 'year');
+        $this->validatePositiveInteger($dte, 'dte');
+        $this->validatePositiveInteger($strike_limit, 'strike_limit');
+        $this->validatePositiveInteger($min_open_interest, 'min_open_interest');
+        $this->validatePositiveInteger($min_volume, 'min_volume');
+        
+        // Validate min/max ranges
+        $this->validateNumericRange($min_bid, $max_bid, 'min_bid', 'max_bid');
+        $this->validateNumericRange($min_ask, $max_ask, 'min_ask', 'max_ask');
+
         return new OptionChains($this->execute("chain/$symbol", [
             'date'               => $date,
             'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
@@ -375,6 +407,12 @@ class Options
         ?string $to = null,
         ?Parameters $parameters = null
     ): Quotes {
+        // Validate inputs
+        $this->validateNonEmptyString($option_symbol, 'option_symbol');
+        
+        // Validate date range
+        $this->validateDateRange($from, $to);
+
         return new Quotes($this->execute("quotes/$option_symbol/",
             compact('date', 'from', 'to'), $parameters));
     }

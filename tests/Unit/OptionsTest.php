@@ -804,4 +804,85 @@ class OptionsTest extends TestCase
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertTrue($response->isCsv());
     }
+
+    /**
+     * Test expirations endpoint with invalid strike (zero).
+     */
+    public function testExpirations_invalidStrike_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a positive integer');
+
+        $this->client->options->expirations('AAPL', strike: 0);
+    }
+
+    /**
+     * Test lookup endpoint with empty input.
+     */
+    public function testLookup_emptyInput_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        $this->client->options->lookup('');
+    }
+
+    /**
+     * Test option_chain endpoint with invalid date range.
+     */
+    public function testOptionChain_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->options->option_chain(
+            symbol: 'AAPL',
+            from: '2024-01-31',
+            to: '2024-01-01'
+        );
+    }
+
+    /**
+     * Test option_chain endpoint with invalid month.
+     */
+    public function testOptionChain_invalidMonth_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`month` must be between 1 and 12');
+
+        $this->client->options->option_chain(
+            symbol: 'AAPL',
+            month: 13
+        );
+    }
+
+    /**
+     * Test option_chain endpoint with invalid numeric ranges.
+     */
+    public function testOptionChain_invalidNumericRanges_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be less than');
+
+        $this->client->options->option_chain(
+            symbol: 'AAPL',
+            min_bid: 100.0,
+            max_bid: 50.0
+        );
+    }
+
+    /**
+     * Test quotes endpoint with invalid date range.
+     */
+    public function testQuotes_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->options->quotes(
+            option_symbol: 'AAPL250117C00150000',
+            from: '2024-01-31',
+            to: '2024-01-01'
+        );
+    }
 }

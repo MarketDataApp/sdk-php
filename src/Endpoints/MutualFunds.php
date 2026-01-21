@@ -8,6 +8,7 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * MutualFunds class for handling mutual fund-related API endpoints.
@@ -16,6 +17,7 @@ class MutualFunds
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /** @var Client The Market Data API client instance. */
     private Client $client;
@@ -68,6 +70,11 @@ class MutualFunds
         ?int $countback = null,
         ?Parameters $parameters = null
     ): Candles {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $this->validateResolution($resolution);
+        $this->validateDateRange($from, $to, $countback);
+
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/",
             compact('from', 'to', 'countback'), $parameters
         ));

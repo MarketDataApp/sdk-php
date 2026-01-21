@@ -9,6 +9,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candle;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
+use InvalidArgumentException;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Tests\Traits\MockResponses;
@@ -165,5 +166,52 @@ class MutualFundsTest extends TestCase
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEquals($mocked_response['nextTime'], $response->next_time);
         $this->assertEmpty($response->candles);
+    }
+
+    /**
+     * Test candles endpoint with invalid date range.
+     */
+    public function testCandles_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2024-01-31',
+            to: '2024-01-01',
+            resolution: 'D'
+        );
+    }
+
+    /**
+     * Test candles endpoint with invalid resolution.
+     */
+    public function testCandles_invalidResolution_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid resolution format');
+
+        $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2024-01-01',
+            resolution: 'invalid'
+        );
+    }
+
+    /**
+     * Test candles endpoint with invalid countback.
+     */
+    public function testCandles_invalidCountback_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`countback` must be a positive integer');
+
+        $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2024-01-01',
+            resolution: 'D',
+            countback: -5
+        );
     }
 }

@@ -8,6 +8,7 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Markets\Statuses;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * Markets class for handling market-related API endpoints.
@@ -16,6 +17,7 @@ class Markets
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /** @var Client The Market Data API client instance. */
     private Client $client;
@@ -68,6 +70,10 @@ class Markets
         ?int $countback = null,
         ?Parameters $parameters = null
     ): Statuses {
+        // Validate inputs
+        $this->validateCountryCode($country);
+        $this->validateDateRange($from, $to, $countback);
+
         return new Statuses($this->execute("status/",
             compact('country', 'date', 'from', 'to', 'countback'), $parameters));
     }

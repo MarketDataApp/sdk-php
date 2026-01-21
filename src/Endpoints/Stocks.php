@@ -14,6 +14,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * Stocks class for handling stock-related API endpoints.
@@ -22,6 +23,7 @@ class Stocks
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /** @var Client The Market Data API client instance. */
     private Client $client;
@@ -83,6 +85,9 @@ class Stocks
         if (empty($symbols) && !$snapshot) {
             throw new \InvalidArgumentException('Either symbols or snapshot must be set');
         }
+
+        // Validate resolution
+        $this->validateResolution($resolution);
 
         $symbols = implode(',', array_map('trim', $symbols));
 
@@ -161,6 +166,11 @@ class Stocks
         bool $adjust_dividends = false,
         ?Parameters $parameters = null
     ): Candles {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $this->validateResolution($resolution);
+        $this->validateDateRange($from, $to, $countback);
+
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/", [
                 'from'            => $from,
                 'to'              => $to,
@@ -189,6 +199,9 @@ class Stocks
      */
     public function quote(string $symbol, bool $fifty_two_week = false, ?Parameters $parameters = null): Quote
     {
+        // Validate symbol
+        $this->validateNonEmptyString($symbol, 'symbol');
+
         return new Quote($this->execute("quotes/{$symbol}",
             ['52week' => $fifty_two_week], $parameters));
     }
@@ -206,6 +219,9 @@ class Stocks
      */
     public function quotes(array $symbols, bool $fifty_two_week = false, ?Parameters $parameters = null): Quotes
     {
+        // Validate symbols array
+        $this->validateSymbols($symbols);
+
         // Execute standard quotes in parallel
         $calls = [];
         foreach ($symbols as $symbol) {
@@ -237,6 +253,13 @@ class Stocks
      */
     public function prices(string|array $symbols, bool $extended = true, ?Parameters $parameters = null): Prices
     {
+        // Validate symbols
+        if (is_string($symbols)) {
+            $this->validateNonEmptyString($symbols, 'symbols');
+        } else {
+            $this->validateSymbols($symbols);
+        }
+
         $arguments = ['extended' => $extended];
 
         if (is_string($symbols)) {
@@ -286,9 +309,15 @@ class Stocks
         ?string $datekey = null,
         ?Parameters $parameters = null
     ): Earnings {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }
+
+        // Validate date range and countback
+        $this->validateDateRange($from, $to, $countback);
 
         return new Earnings($this->execute("earnings/{$symbol}",
             compact('from', 'to', 'countback', 'date', 'datekey'), $parameters));
@@ -324,9 +353,15 @@ class Stocks
         ?string $date = null,
         ?Parameters $parameters = null
     ): News {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }
+
+        // Validate date range and countback
+        $this->validateDateRange($from, $to, $countback);
 
         return new News($this->execute("news/{$symbol}",
             compact('from', 'to', 'countback', 'date'), $parameters));

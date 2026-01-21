@@ -173,4 +173,51 @@ class MarketsTest extends TestCase
         $this->assertInstanceOf(Statuses::class, $response);
         $this->assertTrue($response->isCsv());
     }
+
+    /**
+     * Test status endpoint with invalid country code (lowercase).
+     */
+    public function testStatus_invalidCountryCode_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid country code');
+
+        $this->client->markets->status(country: 'us');
+    }
+
+    /**
+     * Test status endpoint with invalid country code (wrong length).
+     */
+    public function testStatus_invalidCountryCodeLength_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid country code');
+
+        $this->client->markets->status(country: 'USA');
+    }
+
+    /**
+     * Test status endpoint with invalid date range.
+     */
+    public function testStatus_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->markets->status(
+            from: '2024-01-31',
+            to: '2024-01-01'
+        );
+    }
+
+    /**
+     * Test status endpoint with invalid countback.
+     */
+    public function testStatus_invalidCountback_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`countback` must be a positive integer');
+
+        $this->client->markets->status(countback: -5);
+    }
 }

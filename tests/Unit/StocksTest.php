@@ -1393,4 +1393,175 @@ class StocksTest extends TestCase
 
         $this->client->stocks->prices('INVALID');
     }
+
+    /**
+     * Test candles endpoint with invalid date range (from > to).
+     */
+    public function testCandles_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2024-01-31',
+            to: '2024-01-01',
+            resolution: 'D'
+        );
+    }
+
+    /**
+     * Test candles endpoint with relative dates (should not throw exception).
+     */
+    public function testCandles_relativeDates_noException(): void
+    {
+        $this->setMockResponses([
+            new Response(200, [], json_encode(['s' => 'ok', 't' => [], 'o' => [], 'h' => [], 'l' => [], 'c' => [], 'v' => []])),
+        ]);
+
+        // Relative dates should pass through without validation
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: 'today',
+            to: 'yesterday',
+            resolution: 'D'
+        );
+
+        $this->assertTrue(true); // If we get here, no exception was thrown
+    }
+
+    /**
+     * Test candles endpoint with invalid countback (zero).
+     */
+    public function testCandles_invalidCountback_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`countback` must be a positive integer');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            resolution: 'D',
+            countback: 0
+        );
+    }
+
+    /**
+     * Test candles endpoint with invalid resolution.
+     */
+    public function testCandles_invalidResolution_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid resolution format');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            resolution: 'invalid'
+        );
+    }
+
+    /**
+     * Test quote endpoint with empty symbol.
+     */
+    public function testQuote_emptySymbol_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        $this->client->stocks->quote('');
+    }
+
+    /**
+     * Test quotes endpoint with empty array.
+     */
+    public function testQuotes_emptyArray_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a non-empty array');
+
+        $this->client->stocks->quotes([]);
+    }
+
+    /**
+     * Test prices endpoint with empty string symbol.
+     */
+    public function testPrices_emptyStringSymbol_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        $this->client->stocks->prices('');
+    }
+
+    /**
+     * Test prices endpoint with empty array.
+     */
+    public function testPrices_emptyArray_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a non-empty array');
+
+        $this->client->stocks->prices([]);
+    }
+
+    /**
+     * Test earnings endpoint with invalid date range.
+     */
+    public function testEarnings_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-31',
+            to: '2024-01-01'
+        );
+    }
+
+    /**
+     * Test earnings endpoint with invalid countback.
+     */
+    public function testEarnings_invalidCountback_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`countback` must be a positive integer');
+
+        $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            to: '2024-01-31',
+            countback: -5
+        );
+    }
+
+    /**
+     * Test news endpoint with invalid date range.
+     */
+    public function testNews_invalidDateRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+
+        $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-31',
+            to: '2024-01-01'
+        );
+    }
+
+    /**
+     * Test bulkCandles endpoint with invalid resolution.
+     */
+    public function testBulkCandles_invalidResolution_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid resolution format');
+
+        $this->client->stocks->bulkCandles(
+            symbols: ['AAPL'],
+            resolution: 'invalid'
+        );
+    }
 }
