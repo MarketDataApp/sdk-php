@@ -34,6 +34,11 @@ abstract class ClientBase
     public const API_HOST = "api.marketdata.app";
 
     /**
+     * SDK version for User-Agent header.
+     */
+    public const VERSION = '0.8.0';
+
+    /**
      * @var GuzzleClient The Guzzle HTTP client instance.
      */
     protected GuzzleClient $guzzle;
@@ -668,6 +673,7 @@ abstract class ClientBase
     {
         return [
             'Host'          => self::API_HOST,
+            'User-Agent'    => 'marketdata-sdk-php/' . self::VERSION,
             'Accept'        => match ($format) {
                 'json' => 'application/json',
                 'csv' => 'text/csv',
