@@ -767,4 +767,160 @@ class StocksTest extends TestCase
         $csv = $response->getCsv();
         $this->assertNotEmpty($csv);
     }
+
+    /**
+     * Test quote endpoint with CSV format and add_headers=true.
+     * Verifies that the CSV response includes header row.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_addHeadersTrue_includesHeaders(): void
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, add_headers: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $this->assertGreaterThanOrEqual(2, count($lines), 'CSV should have at least header row and one data row');
+
+        // First line should be headers
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+        $this->assertNotEmpty($headerRow);
+        $this->assertContains('symbol', $headerRow, 'Header row should contain "symbol" column');
+    }
+
+    /**
+     * Test quote endpoint with CSV format and add_headers=false.
+     * Verifies that the CSV response does NOT include header row.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_addHeadersFalse_excludesHeaders(): void
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $this->assertGreaterThanOrEqual(1, count($lines), 'CSV should have at least one data row');
+
+        // First line should be data, not headers
+        $firstRow = str_getcsv($lines[0], ',', '"', '\\');
+        $this->assertNotEmpty($firstRow);
+        
+        // If first row contains "symbol" as a value (not header), it's likely data
+        // If it contains column names like "symbol", "ask", "bid" as headers, that's wrong
+        // We check that the first value is not "symbol" (which would indicate it's a header)
+        // Actually, let's check if the first row looks like data (contains AAPL) vs headers
+        if (count($lines) > 0) {
+            $firstValue = $firstRow[0] ?? '';
+            // If headers are present, first row would start with column names
+            // If no headers, first row should start with actual data (like "AAPL")
+            // We verify that the first row does NOT look like a header row
+            // by checking if it contains the symbol value or numeric values
+            $hasNumericValues = false;
+            foreach ($firstRow as $value) {
+                if (is_numeric($value)) {
+                    $hasNumericValues = true;
+                    break;
+                }
+            }
+            // If we have numeric values in the first row, it's likely data, not headers
+            $this->assertTrue(
+                $firstValue === 'AAPL' || $hasNumericValues,
+                'First row should be data (contain symbol or numeric values), not headers'
+            );
+        }
+    }
+
+    /**
+     * Test quotes endpoint (parallel) with CSV format and add_headers=true.
+     * Verifies that the CSV response includes header row for parallel requests.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuotes_csv_addHeadersTrue_includesHeaders(): void
+    {
+        $response = $this->client->stocks->quotes(
+            symbols: ['AAPL'],
+            parameters: new Parameters(format: Format::CSV, add_headers: true)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertNotEmpty($response->quotes);
+
+        $quote = $response->quotes[0];
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertTrue($quote->isCsv());
+
+        $csv = $quote->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $this->assertGreaterThanOrEqual(2, count($lines), 'CSV should have at least header row and one data row');
+
+        // First line should be headers
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+        $this->assertNotEmpty($headerRow);
+        $this->assertContains('symbol', $headerRow, 'Header row should contain "symbol" column');
+    }
+
+    /**
+     * Test quotes endpoint (parallel) with CSV format and add_headers=false.
+     * Verifies that the CSV response does NOT include header row for parallel requests.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuotes_csv_addHeadersFalse_excludesHeaders(): void
+    {
+        $response = $this->client->stocks->quotes(
+            symbols: ['AAPL'],
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertNotEmpty($response->quotes);
+
+        $quote = $response->quotes[0];
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertTrue($quote->isCsv());
+
+        $csv = $quote->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $this->assertGreaterThanOrEqual(1, count($lines), 'CSV should have at least one data row');
+
+        // First line should be data, not headers
+        $firstRow = str_getcsv($lines[0], ',', '"', '\\');
+        $this->assertNotEmpty($firstRow);
+        
+        $firstValue = $firstRow[0] ?? '';
+        $hasNumericValues = false;
+        foreach ($firstRow as $value) {
+            if (is_numeric($value)) {
+                $hasNumericValues = true;
+                break;
+            }
+        }
+        // If we have numeric values in the first row, it's likely data, not headers
+        $this->assertTrue(
+            $firstValue === 'AAPL' || $hasNumericValues,
+            'First row should be data (contain symbol or numeric values), not headers'
+        );
+    }
 }

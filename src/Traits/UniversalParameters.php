@@ -51,6 +51,11 @@ trait UniversalParameters
             $universalParams['columns'] = implode(',', $parameters->columns);
         }
 
+        // headers can only be used with CSV or HTML format
+        if ($parameters->add_headers !== null && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
+            $universalParams['headers'] = $parameters->add_headers ? 'true' : 'false';
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
             array_merge($arguments, $universalParams)
         );
@@ -91,6 +96,11 @@ trait UniversalParameters
             // columns can only be used with CSV or HTML format
             if ($parameters->columns !== null && !empty($parameters->columns) && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
                 $calls[$i][1]['columns'] = implode(',', $parameters->columns);
+            }
+
+            // headers can only be used with CSV or HTML format
+            if ($parameters->add_headers !== null && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
+                $calls[$i][1]['headers'] = $parameters->add_headers ? 'true' : 'false';
             }
         }
 

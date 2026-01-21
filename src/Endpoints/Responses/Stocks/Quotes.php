@@ -22,8 +22,11 @@ class Quotes
      */
     public function __construct(array $quotes)
     {
+        $this->quotes = [];
         foreach ($quotes as $quote) {
-            $this->quotes[] = new Quote($quote);
+            if ($quote !== null) {
+                $this->quotes[] = new Quote($quote);
+            }
         }
     }
 }

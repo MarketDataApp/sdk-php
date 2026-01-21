@@ -316,4 +316,109 @@ class ParametersTest extends TestCase
         $this->assertEquals(DateFormat::UNIX, $params->date_format);
         $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
     }
+
+    /**
+     * Test that add_headers can be used with CSV format.
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_withCsv_success(): void
+    {
+        $params1 = new Parameters(format: Format::CSV, add_headers: true);
+        $this->assertEquals(Format::CSV, $params1->format);
+        $this->assertTrue($params1->add_headers);
+
+        $params2 = new Parameters(format: Format::CSV, add_headers: false);
+        $this->assertEquals(Format::CSV, $params2->format);
+        $this->assertFalse($params2->add_headers);
+    }
+
+    /**
+     * Test that add_headers can be used with HTML format.
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_withHtml_success(): void
+    {
+        $params1 = new Parameters(format: Format::HTML, add_headers: true);
+        $this->assertEquals(Format::HTML, $params1->format);
+        $this->assertTrue($params1->add_headers);
+
+        $params2 = new Parameters(format: Format::HTML, add_headers: false);
+        $this->assertEquals(Format::HTML, $params2->format);
+        $this->assertFalse($params2->add_headers);
+    }
+
+    /**
+     * Test that add_headers with JSON format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('add_headers parameter can only be used with CSV or HTML format');
+
+        new Parameters(format: Format::JSON, add_headers: true);
+    }
+
+    /**
+     * Test that null add_headers with CSV is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_null_withCsv_success(): void
+    {
+        $params = new Parameters(format: Format::CSV, add_headers: null);
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    /**
+     * Test that null add_headers with HTML is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_null_withHtml_success(): void
+    {
+        $params = new Parameters(format: Format::HTML, add_headers: null);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    /**
+     * Test that null add_headers with JSON is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_null_withJson_success(): void
+    {
+        $params = new Parameters(format: Format::JSON, add_headers: null);
+        $this->assertEquals(Format::JSON, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    /**
+     * Test that add_headers combined with other parameters works.
+     *
+     * @return void
+     */
+    public function testParameters_addHeaders_withOtherParameters_success(): void
+    {
+        $params = new Parameters(
+            format: Format::CSV,
+            use_human_readable: true,
+            mode: Mode::LIVE,
+            date_format: DateFormat::UNIX,
+            columns: ['symbol', 'ask', 'bid'],
+            add_headers: true
+        );
+
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertTrue($params->use_human_readable);
+        $this->assertEquals(Mode::LIVE, $params->mode);
+        $this->assertEquals(DateFormat::UNIX, $params->date_format);
+        $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
+        $this->assertTrue($params->add_headers);
+    }
 }

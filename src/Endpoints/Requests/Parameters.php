@@ -20,8 +20,10 @@ class Parameters
      * @param Mode|null $mode The data feed mode to use. Defaults to null.
      * @param DateFormat|null $date_format The date format for CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
      * @param array|null $columns The columns to include in CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
+     * @param bool|null $add_headers Whether to add headers to CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
      * @throws \InvalidArgumentException If date_format is set but format is not CSV or HTML.
      * @throws \InvalidArgumentException If columns is set but format is not CSV or HTML.
+     * @throws \InvalidArgumentException If add_headers is set but format is not CSV or HTML.
      * @throws \InvalidArgumentException If columns contains non-string elements.
      */
     public function __construct(
@@ -31,6 +33,7 @@ class Parameters
         public ?Mode $mode = null,
         public ?DateFormat $date_format = null,
         public ?array $columns = null,
+        public ?bool $add_headers = null,
     ) {
         // Validate that date_format can only be used with CSV or HTML format
         if ($date_format !== null && $format !== Format::CSV && $format !== Format::HTML) {
@@ -58,6 +61,14 @@ class Parameters
                     );
                 }
             }
+        }
+
+        // Validate that add_headers can only be used with CSV or HTML format
+        if ($add_headers !== null && $format !== Format::CSV && $format !== Format::HTML) {
+            throw new \InvalidArgumentException(
+                'add_headers parameter can only be used with CSV or HTML format. ' .
+                'Current format: ' . $format->value
+            );
         }
     }
 }

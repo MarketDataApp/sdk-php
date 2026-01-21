@@ -132,9 +132,14 @@ abstract class ClientBase
         }
         $responses = Promise\Utils::unwrap($promises);
 
-        return array_map(function ($response) {
-            return json_decode((string)$response->getBody());
-        }, $responses);
+        return array_map(function ($response, $index) use ($calls) {
+            // Extract format from the call arguments, default to 'json'
+            $format = $calls[$index][1]['format'] ?? 'json';
+            $arguments = $calls[$index][1];
+            
+            // Use processResponse to handle CSV/HTML/JSON formats correctly
+            return $this->processResponse($response, $format, $arguments);
+        }, $responses, array_keys($responses));
     }
 
     /**
