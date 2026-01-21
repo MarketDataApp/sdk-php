@@ -56,6 +56,11 @@ trait UniversalParameters
             $universalParams['headers'] = $parameters->add_headers ? 'true' : 'false';
         }
 
+        // Pass filename through via _filename key (won't be sent to API)
+        if ($parameters->filename !== null) {
+            $arguments['_filename'] = $parameters->filename;
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
             array_merge($arguments, $universalParams)
         );
@@ -74,6 +79,15 @@ trait UniversalParameters
     {
         if (is_null($parameters)) {
             $parameters = new Parameters();
+        }
+
+        // Validate that filename is not provided with parallel requests
+        if ($parameters->filename !== null) {
+            throw new \InvalidArgumentException(
+                'filename parameter cannot be used with parallel requests. ' .
+                'Each parallel response would conflict writing to the same file. ' .
+                'Use filename only with single requests, or use saveToFile() method on individual response objects.'
+            );
         }
 
         for ($i = 0; $i < count($calls); $i++) {

@@ -16,6 +16,9 @@ class ResponseBase
     /** @var string The HTML content of the response. */
     protected string $html;
 
+    /** @var string|null The filename where the response was saved (if filename parameter was used). */
+    public ?string $_saved_filename = null;
+
     /**
      * ResponseBase constructor.
      *
@@ -29,6 +32,11 @@ class ResponseBase
 
         if (isset($response->html)) {
             $this->html = $response->html;
+        }
+
+        // Copy _saved_filename if it exists (only set when filename parameter was used)
+        if (isset($response->_saved_filename) && $response->_saved_filename !== null) {
+            $this->_saved_filename = $response->_saved_filename;
         }
     }
 
@@ -80,5 +88,55 @@ class ResponseBase
     public function isCsv(): bool
     {
         return !empty($this->csv);
+    }
+
+    /**
+     * Save CSV/HTML content to a file.
+     *
+     * @param string $filename The file path to save to.
+     * @return string The absolute path of the saved file.
+     * @throws \InvalidArgumentException If filename is invalid (wrong extension, etc.).
+     * @throws \RuntimeException If file writing fails.
+     */
+    public function saveToFile(string $filename): string
+    {
+        // Determine content and expected extension
+        if ($this->isCsv()) {
+            $content = $this->getCsv();
+            $expectedExtension = '.csv';
+        } elseif ($this->isHtml()) {
+            $content = $this->getHtml();
+            $expectedExtension = '.html';
+        } else {
+            throw new \InvalidArgumentException(
+                'saveToFile() can only be used with CSV or HTML responses. ' .
+                'Current response is in JSON format.'
+            );
+        }
+
+        // Validate filename extension
+        if (!str_ends_with($filename, $expectedExtension)) {
+            throw new \InvalidArgumentException(
+                "filename must end with {$expectedExtension}. Got: {$filename}"
+            );
+        }
+
+        // Create directory if needed
+        $directory = dirname($filename);
+        if ($directory !== '.' && $directory !== '' && !is_dir($directory)) {
+            if (!mkdir($directory, 0755, true)) {
+                throw new \RuntimeException("Failed to create directory: {$directory}");
+            }
+        }
+
+        // Write file
+        $bytesWritten = file_put_contents($filename, $content);
+        if ($bytesWritten === false) {
+            throw new \RuntimeException("Failed to write file: {$filename}");
+        }
+
+        // Return absolute path
+        $absolutePath = realpath($filename);
+        return $absolutePath ?: $filename;
     }
 }

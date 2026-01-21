@@ -421,4 +421,278 @@ class ParametersTest extends TestCase
         $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
         $this->assertTrue($params->add_headers);
     }
+
+    /**
+     * Test that filename can be used with CSV format.
+     *
+     * @return void
+     */
+    public function testParameters_filename_withCsv_success(): void
+    {
+        // Create a temporary directory for testing
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+
+        $params = new Parameters(format: Format::CSV, filename: $testFile);
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertEquals($testFile, $params->filename);
+    }
+
+    /**
+     * Test that filename can be used with HTML format.
+     *
+     * @return void
+     */
+    public function testParameters_filename_withHtml_success(): void
+    {
+        // Create a temporary directory for testing
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.html';
+
+        $params = new Parameters(format: Format::HTML, filename: $testFile);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertEquals($testFile, $params->filename);
+    }
+
+    /**
+     * Test that filename with JSON format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_filename_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter can only be used with CSV or HTML format');
+
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+
+        new Parameters(format: Format::JSON, filename: $testFile);
+    }
+
+    /**
+     * Test that filename with invalid extension throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_filename_invalidExtension_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename must end with .csv');
+
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.txt';
+
+        new Parameters(format: Format::CSV, filename: $testFile);
+    }
+
+    /**
+     * Test that filename with HTML format requires .html extension.
+     *
+     * @return void
+     */
+    public function testParameters_filename_htmlFormatRequiresHtmlExtension_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename must end with .html');
+
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+
+        new Parameters(format: Format::HTML, filename: $testFile);
+    }
+
+    /**
+     * Test that filename with non-existent directory throws InvalidArgumentException.
+     * Note: The validation walks up the directory tree to find any existing parent.
+     * For absolute paths, root (/) always exists, so they're allowed.
+     * For relative paths, if current directory exists, single-level subdirectories are allowed.
+     * This test verifies that a relative path with no existing parent in the chain fails.
+     *
+     * @return void
+     */
+    public function testParameters_filename_nonExistentDirectory_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No existing parent directory found');
+
+        // Use a relative path where we change to a temp directory first
+        // Then use a path that doesn't have an existing parent in the relative chain
+        $tempDir = sys_get_temp_dir() . '/test_' . uniqid();
+        mkdir($tempDir, 0755, true);
+        $originalCwd = getcwd();
+        chdir($tempDir);
+
+        try {
+            // This path has no existing parent in the relative chain
+            // (the directory itself doesn't exist, and we're testing the validation)
+            $nonExistentDir = 'nonexistent_' . uniqid();
+            $testFile = $nonExistentDir . '/subdir/test.csv';
+            
+            new Parameters(format: Format::CSV, filename: $testFile);
+        } finally {
+            chdir($originalCwd);
+            if (is_dir($tempDir)) {
+                rmdir($tempDir);
+            }
+        }
+    }
+
+    /**
+     * Test that filename with existing file throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_filename_existingFile_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('File already exists');
+
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+        
+        // Create the file first
+        file_put_contents($testFile, 'test content');
+        
+        try {
+            new Parameters(format: Format::CSV, filename: $testFile);
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
+    }
+
+    /**
+     * Test that filename with relative path works.
+     *
+     * @return void
+     */
+    public function testParameters_filename_relativePath_success(): void
+    {
+        // Create a temporary directory and change to it
+        $tempDir = sys_get_temp_dir() . '/test_' . uniqid();
+        mkdir($tempDir, 0755, true);
+        $originalCwd = getcwd();
+        chdir($tempDir);
+
+        try {
+            $testFile = 'test.csv';
+            $params = new Parameters(format: Format::CSV, filename: $testFile);
+            $this->assertEquals($testFile, $params->filename);
+        } finally {
+            chdir($originalCwd);
+            if (is_dir($tempDir)) {
+                rmdir($tempDir);
+            }
+        }
+    }
+
+    /**
+     * Test that filename with absolute path works.
+     *
+     * @return void
+     */
+    public function testParameters_filename_absolutePath_success(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+
+        $params = new Parameters(format: Format::CSV, filename: $testFile);
+        $this->assertEquals($testFile, $params->filename);
+    }
+
+    /**
+     * Test that filename with nested directory path works.
+     *
+     * @return void
+     */
+    public function testParameters_filename_nestedDirectory_success(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $nestedDir = $tempDir . '/nested_' . uniqid();
+        mkdir($nestedDir, 0755, true);
+        $testFile = $nestedDir . '/test.csv';
+
+        try {
+            $params = new Parameters(format: Format::CSV, filename: $testFile);
+            $this->assertEquals($testFile, $params->filename);
+        } finally {
+            if (is_dir($nestedDir)) {
+                rmdir($nestedDir);
+            }
+        }
+    }
+
+    /**
+     * Test that null filename with CSV is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_filename_null_withCsv_success(): void
+    {
+        $params = new Parameters(format: Format::CSV, filename: null);
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertNull($params->filename);
+    }
+
+    /**
+     * Test that null filename with HTML is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_filename_null_withHtml_success(): void
+    {
+        $params = new Parameters(format: Format::HTML, filename: null);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertNull($params->filename);
+    }
+
+    /**
+     * Test that null filename with JSON is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_filename_null_withJson_success(): void
+    {
+        $params = new Parameters(format: Format::JSON, filename: null);
+        $this->assertEquals(Format::JSON, $params->format);
+        $this->assertNull($params->filename);
+    }
+
+    /**
+     * Test that filename combined with other parameters works.
+     *
+     * @return void
+     */
+    public function testParameters_filename_withOtherParameters_success(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_' . uniqid() . '.csv';
+
+        $params = new Parameters(
+            format: Format::CSV,
+            use_human_readable: true,
+            mode: Mode::LIVE,
+            date_format: DateFormat::UNIX,
+            columns: ['symbol', 'ask', 'bid'],
+            add_headers: true,
+            filename: $testFile
+        );
+
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertTrue($params->use_human_readable);
+        $this->assertEquals(Mode::LIVE, $params->mode);
+        $this->assertEquals(DateFormat::UNIX, $params->date_format);
+        $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
+        $this->assertTrue($params->add_headers);
+        $this->assertEquals($testFile, $params->filename);
+    }
+
+    /**
+     * Test that execute_in_parallel with filename parameter throws exception.
+     * Note: This test is moved to integration tests since execute_in_parallel is protected
+     * and can only be tested through actual endpoint methods like quotes().
+     */
 }

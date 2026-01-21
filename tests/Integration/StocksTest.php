@@ -923,4 +923,232 @@ class StocksTest extends TestCase
             'First row should be data (contain symbol or numeric values), not headers'
         );
     }
+
+    /**
+     * Test quote endpoint with CSV format and filename parameter.
+     * Verifies that the CSV file is created and contains correct data.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_withFilename_createsFile(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_quote_' . uniqid() . '.csv';
+
+        try {
+            $response = $this->client->stocks->quote(
+                symbol: 'AAPL',
+                parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            );
+
+            $this->assertInstanceOf(Quote::class, $response);
+            $this->assertTrue($response->isCsv());
+
+            // Verify file was created
+            $this->assertFileExists($testFile, 'CSV file should be created');
+
+            // Verify file contains data
+            $fileContent = file_get_contents($testFile);
+            $this->assertNotEmpty($fileContent, 'CSV file should contain data');
+            $this->assertStringContainsString('AAPL', $fileContent, 'CSV file should contain symbol');
+
+            // Verify getCsv() still works
+            $csvString = $response->getCsv();
+            $this->assertNotEmpty($csvString);
+            $this->assertEquals($fileContent, $csvString, 'getCsv() should return same content as file');
+
+            // Verify _saved_filename property exists
+            $this->assertObjectHasProperty('_saved_filename', $response);
+            $this->assertEquals($testFile, $response->_saved_filename);
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
+    }
+
+    /**
+     * Test quote endpoint with CSV format without filename parameter.
+     * Verifies backward compatibility - object is returned without file creation.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_withoutFilename_returnsObject(): void
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csvString = $response->getCsv();
+        $this->assertNotEmpty($csvString);
+        $this->assertStringContainsString('AAPL', $csvString);
+
+        // Verify no file was created (_saved_filename should be null)
+        $this->assertNull($response->_saved_filename ?? null, '_saved_filename should be null when no filename parameter is provided');
+    }
+
+    /**
+     * Test quote endpoint with CSV format and nested directory path.
+     * Verifies that directory is created automatically.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_nestedDirectory_createsDirectory(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $nestedDir = $tempDir . '/test_nested_' . uniqid();
+        // Create the parent directory first (validation requires it to exist)
+        mkdir($nestedDir, 0755, true);
+        $testFile = $nestedDir . '/subdir/test.csv';
+
+        try {
+            $response = $this->client->stocks->quote(
+                symbol: 'AAPL',
+                parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            );
+
+            $this->assertInstanceOf(Quote::class, $response);
+            $this->assertTrue($response->isCsv());
+
+            // Verify directory was created
+            $this->assertDirectoryExists(dirname($testFile), 'Nested directory should be created');
+
+            // Verify file was created
+            $this->assertFileExists($testFile, 'CSV file should be created in nested directory');
+
+            // Verify file contains data
+            $fileContent = file_get_contents($testFile);
+            $this->assertNotEmpty($fileContent);
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+            $subdir = dirname($testFile);
+            if (is_dir($subdir)) {
+                rmdir($subdir);
+            }
+            if (is_dir($nestedDir)) {
+                rmdir($nestedDir);
+            }
+        }
+    }
+
+    /**
+     * Test quote endpoint with CSV format and existing file.
+     * Verifies that exception is thrown to prevent overwriting.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_existingFile_throwsException(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_existing_' . uniqid() . '.csv';
+
+        // Create the file first
+        file_put_contents($testFile, 'existing content');
+
+        try {
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('File already exists');
+
+            $this->client->stocks->quote(
+                symbol: 'AAPL',
+                parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            );
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
+    }
+
+    /**
+     * Test quote endpoint with CSV format and invalid extension.
+     * Verifies that exception is thrown for invalid extension.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_invalidExtension_throwsException(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_invalid_' . uniqid() . '.txt';
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename must end with .csv');
+
+        $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, filename: $testFile)
+        );
+    }
+
+    /**
+     * Test saveToFile() method on response object.
+     * Verifies that saveToFile() works correctly.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_saveToFile_works(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_savetofile_' . uniqid() . '.csv';
+
+        try {
+            // Get response without filename
+            $response = $this->client->stocks->quote(
+                symbol: 'AAPL',
+                parameters: new Parameters(format: Format::CSV)
+            );
+
+            $this->assertInstanceOf(Quote::class, $response);
+            $this->assertTrue($response->isCsv());
+
+            // Use saveToFile() method
+            $savedPath = $response->saveToFile($testFile);
+
+            // Verify file was created
+            $this->assertFileExists($testFile, 'File should be created by saveToFile()');
+            $this->assertFileExists($savedPath, 'Returned path should exist');
+
+            // Verify file contains data
+            $fileContent = file_get_contents($testFile);
+            $this->assertNotEmpty($fileContent);
+            $this->assertStringContainsString('AAPL', $fileContent);
+
+            // Verify content matches getCsv()
+            $this->assertEquals($response->getCsv(), $fileContent);
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
+    }
+
+    /**
+     * Test quotes endpoint (parallel) with filename parameter.
+     * Verifies that exception is thrown for parallel requests with filename.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuotes_csv_withFilename_throwsException(): void
+    {
+        $tempDir = sys_get_temp_dir();
+        $testFile = $tempDir . '/test_parallel_' . uniqid() . '.csv';
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+
+        $this->client->stocks->quotes(
+            symbols: ['AAPL'],
+            parameters: new Parameters(format: Format::CSV, filename: $testFile)
+        );
+    }
 }

@@ -425,9 +425,34 @@ abstract class ClientBase
         switch ($format) {
             case 'csv':
             case 'html':
-                return (object)array(
-                    $arguments['format'] => (string)$response->getBody()
+                $content = (string)$response->getBody();
+                $responseObject = (object)array(
+                    $arguments['format'] => $content
                 );
+
+                // If filename is provided, write to file
+                if (isset($arguments['_filename']) && $arguments['_filename'] !== null) {
+                    $filename = $arguments['_filename'];
+                    $directory = dirname($filename);
+
+                    // Create directory if it doesn't exist (for relative paths)
+                    if ($directory !== '.' && $directory !== '' && !is_dir($directory)) {
+                        if (!mkdir($directory, 0755, true)) {
+                            throw new \RuntimeException("Failed to create directory: {$directory}");
+                        }
+                    }
+
+                    // Write content to file
+                    $bytesWritten = file_put_contents($filename, $content);
+                    if ($bytesWritten === false) {
+                        throw new \RuntimeException("Failed to write file: {$filename}");
+                    }
+
+                    // Store saved filename in response object for reference
+                    $responseObject->_saved_filename = $filename;
+                }
+
+                return $responseObject;
 
             case 'json':
             default:
