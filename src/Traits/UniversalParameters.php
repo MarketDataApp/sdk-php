@@ -15,6 +15,95 @@ trait UniversalParameters
 {
 
     /**
+     * Merge method-level parameters with client default parameters.
+     *
+     * Priority order (highest to lowest):
+     * 1. Method-level parameters (if provided)
+     * 2. Client default parameters ($this->client->default_params)
+     * 3. Default Parameters() values
+     *
+     * @param Parameters|null $methodParams Method-level parameters, or null to use only client defaults.
+     *
+     * @return Parameters Merged parameters instance.
+     */
+    protected function mergeParameters(?Parameters $methodParams): Parameters
+    {
+        // Start with client defaults (which already include env vars from construction)
+        $merged = clone $this->client->default_params;
+
+        // Override with method-level parameters
+        if ($methodParams !== null) {
+            // Format always overrides (it's required)
+            $merged->format = $methodParams->format;
+
+            // Optional parameters: override if method param is not null
+            // Note: In PHP, we can't distinguish "not set" from "explicitly null" for optional parameters.
+            // So we only override when the value is not null. This means:
+            // - new Parameters(mode: Mode::LIVE) -> overrides client default
+            // - new Parameters() -> uses client default (mode not overridden)
+            // - new Parameters(mode: null) -> doesn't override (PHP limitation, can't distinguish from "not set")
+            if ($methodParams->use_human_readable !== null) {
+                $merged->use_human_readable = $methodParams->use_human_readable;
+            }
+
+            if ($methodParams->mode !== null) {
+                $merged->mode = $methodParams->mode;
+            }
+
+            // CSV/HTML-only parameters: override if method param is not null
+            if ($methodParams->date_format !== null) {
+                $merged->date_format = $methodParams->date_format;
+            }
+
+            if ($methodParams->columns !== null) {
+                $merged->columns = $methodParams->columns;
+            }
+
+            if ($methodParams->add_headers !== null) {
+                $merged->add_headers = $methodParams->add_headers;
+            }
+
+            if ($methodParams->filename !== null) {
+                $merged->filename = $methodParams->filename;
+            }
+        }
+
+        // Validate merged parameters: CSV/HTML-only params cannot be used with JSON format
+        // This catches cases where client defaults have CSV-only params and method params change format to JSON
+        if ($merged->format !== Format::CSV && $merged->format !== Format::HTML) {
+            if ($merged->date_format !== null) {
+                throw new \InvalidArgumentException(
+                    'date_format parameter can only be used with CSV or HTML format. ' .
+                    'Current format: ' . $merged->format->value
+                );
+            }
+
+            if ($merged->columns !== null) {
+                throw new \InvalidArgumentException(
+                    'columns parameter can only be used with CSV or HTML format. ' .
+                    'Current format: ' . $merged->format->value
+                );
+            }
+
+            if ($merged->add_headers !== null) {
+                throw new \InvalidArgumentException(
+                    'add_headers parameter can only be used with CSV or HTML format. ' .
+                    'Current format: ' . $merged->format->value
+                );
+            }
+
+            if ($merged->filename !== null) {
+                throw new \InvalidArgumentException(
+                    'filename parameter can only be used with CSV or HTML format. ' .
+                    'Current format: ' . $merged->format->value
+                );
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
      * Execute a single API request with universal parameters.
      *
      * @param string          $method     The API method to call.
@@ -25,9 +114,8 @@ trait UniversalParameters
      */
     protected function execute(string $method, $arguments, ?Parameters $parameters): object
     {
-        if (is_null($parameters)) {
-            $parameters = new Parameters();
-        }
+        // Merge method parameters with client defaults
+        $parameters = $this->mergeParameters($parameters);
 
         $universalParams = [
             'format' => $parameters->format->value
@@ -77,9 +165,8 @@ trait UniversalParameters
      */
     protected function execute_in_parallel(array $calls, ?Parameters $parameters = null): array
     {
-        if (is_null($parameters)) {
-            $parameters = new Parameters();
-        }
+        // Merge method parameters with client defaults
+        $parameters = $this->mergeParameters($parameters);
 
         // Validate that filename is not provided with parallel requests
         if ($parameters->filename !== null) {

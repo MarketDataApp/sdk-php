@@ -3,6 +3,10 @@
 namespace MarketDataApp;
 
 use Dotenv\Dotenv;
+use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Enums\DateFormat;
+use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 
 /**
  * Settings class for MarketDataApp SDK.
@@ -147,5 +151,205 @@ class Settings
             $dir = $parentDir;
             $levels++;
         }
+    }
+
+    /**
+     * Get default universal parameters from environment variables and .env file.
+     *
+     * Reads universal parameters from environment variables with the following precedence:
+     * 1. Environment variables (getenv, $_ENV, $_SERVER)
+     * 2. .env file (loaded via Dotenv)
+     * 3. Default values (null or Format::JSON for format)
+     *
+     * @return Parameters Parameters instance with values from environment, or defaults if not set.
+     */
+    public static function getDefaultParameters(): Parameters
+    {
+        $format = self::getEnvFormat();
+        $useHumanReadable = self::getEnvBool('MARKETDATA_USE_HUMAN_READABLE');
+        $mode = self::getEnvMode();
+
+        // CSV/HTML-only parameters: only set if format is CSV or HTML
+        $dateFormat = null;
+        $columns = null;
+        $addHeaders = null;
+
+        if ($format === Format::CSV || $format === Format::HTML) {
+            $dateFormat = self::getEnvDateFormat();
+            $columns = self::getEnvColumns();
+            $addHeaders = self::getEnvBool('MARKETDATA_ADD_HEADERS');
+        }
+
+        return new Parameters(
+            format: $format,
+            date_format: $dateFormat,
+            columns: $columns,
+            add_headers: $addHeaders,
+            use_human_readable: $useHumanReadable,
+            mode: $mode
+        );
+    }
+
+    /**
+     * Get format from environment variable MARKETDATA_OUTPUT_FORMAT.
+     *
+     * @return Format Format enum value, or Format::JSON if not set or invalid.
+     */
+    private static function getEnvFormat(): Format
+    {
+        $value = self::getEnvValue('MARKETDATA_OUTPUT_FORMAT');
+        if ($value === null) {
+            return Format::JSON;
+        }
+
+        $value = strtolower(trim($value));
+        return match ($value) {
+            'json' => Format::JSON,
+            'csv' => Format::CSV,
+            'html' => Format::HTML,
+            default => Format::JSON, // Default on invalid value
+        };
+    }
+
+    /**
+     * Get date format from environment variable MARKETDATA_DATE_FORMAT.
+     *
+     * @return DateFormat|null DateFormat enum value, or null if not set or invalid.
+     */
+    private static function getEnvDateFormat(): ?DateFormat
+    {
+        $value = self::getEnvValue('MARKETDATA_DATE_FORMAT');
+        if ($value === null) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+        return match ($value) {
+            'timestamp' => DateFormat::TIMESTAMP,
+            'unix' => DateFormat::UNIX,
+            'spreadsheet' => DateFormat::SPREADSHEET,
+            default => null, // Invalid values return null
+        };
+    }
+
+    /**
+     * Get mode from environment variable MARKETDATA_MODE.
+     *
+     * @return Mode|null Mode enum value, or null if not set or invalid.
+     */
+    private static function getEnvMode(): ?Mode
+    {
+        $value = self::getEnvValue('MARKETDATA_MODE');
+        if ($value === null) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+        return match ($value) {
+            'live' => Mode::LIVE,
+            'cached' => Mode::CACHED,
+            'delayed' => Mode::DELAYED,
+            default => null, // Invalid values return null
+        };
+    }
+
+    /**
+     * Get columns array from environment variable MARKETDATA_COLUMNS.
+     *
+     * Expects comma-separated string, e.g., "symbol,ask,bid"
+     *
+     * @return array|null Array of column names, or null if not set or empty.
+     */
+    private static function getEnvColumns(): ?array
+    {
+        $value = self::getEnvValue('MARKETDATA_COLUMNS');
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        // Split by comma and trim each value
+        $columns = array_map('trim', explode(',', $value));
+        // Filter out empty strings
+        $columns = array_filter($columns, fn($col) => $col !== '');
+
+        return empty($columns) ? null : array_values($columns);
+    }
+
+    /**
+     * Get boolean value from environment variable.
+     *
+     * Accepts: "true", "false", "1", "0" (case-insensitive)
+     *
+     * @param string $varName Environment variable name.
+     *
+     * @return bool|null Boolean value, or null if not set or invalid.
+     */
+    private static function getEnvBool(string $varName): ?bool
+    {
+        $value = self::getEnvValue($varName);
+        if ($value === null) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+        return match ($value) {
+            'true', '1', 'yes', 'on' => true,
+            'false', '0', 'no', 'off' => false,
+            default => null, // Invalid values return null
+        };
+    }
+
+    /**
+     * Get environment variable value from multiple sources.
+     *
+     * Checks in order:
+     * 1. getenv()
+     * 2. $_ENV
+     * 3. $_SERVER
+     * 4. .env file (via Dotenv, which populates $_ENV/$_SERVER)
+     *
+     * @param string $varName Environment variable name.
+     *
+     * @return string|null Environment variable value, or null if not found.
+     */
+    private static function getEnvValue(string $varName): ?string
+    {
+        // Try getenv() first
+        $value = getenv($varName);
+        if ($value !== false && $value !== '') {
+            return $value;
+        }
+
+        // Try $_ENV
+        if (isset($_ENV[$varName]) && $_ENV[$varName] !== '') {
+            return $_ENV[$varName];
+        }
+
+        // Try $_SERVER
+        if (isset($_SERVER[$varName]) && $_SERVER[$varName] !== '') {
+            return $_SERVER[$varName];
+        }
+
+        // Try loading .env file (if not already loaded)
+        if (!self::$dotenvLoaded) {
+            self::loadDotenv();
+            self::$dotenvLoaded = true;
+
+            // Check again after loading .env
+            $value = getenv($varName);
+            if ($value !== false && $value !== '') {
+                return $value;
+            }
+
+            if (isset($_ENV[$varName]) && $_ENV[$varName] !== '') {
+                return $_ENV[$varName];
+            }
+
+            if (isset($_SERVER[$varName]) && $_SERVER[$varName] !== '') {
+                return $_SERVER[$varName];
+            }
+        }
+
+        return null;
     }
 }

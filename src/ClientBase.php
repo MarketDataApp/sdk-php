@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
@@ -49,6 +50,13 @@ abstract class ClientBase
     public ?RateLimits $rate_limits = null;
 
     /**
+     * @var Parameters Default universal parameters for all API requests.
+     *                 Can be modified programmatically: $client->default_params->format = Format::CSV;
+     *                 Method-level parameters override these defaults.
+     */
+    public Parameters $default_params;
+
+    /**
      * ClientBase constructor.
      *
      * @param string|null $token The API token for authentication. If not provided, the token will be
@@ -62,6 +70,7 @@ abstract class ClientBase
     {
         $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
         $this->token = Settings::getToken($token);
+        $this->default_params = Settings::getDefaultParameters();
         $this->_setup_rate_limits();
     }
 
