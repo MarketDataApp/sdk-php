@@ -8,6 +8,7 @@ use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
+use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\UnauthorizedException;
 use PHPUnit\Framework\TestCase;
 
@@ -62,6 +63,80 @@ class UtilitiesTest extends TestCase
         $this->assertEquals('double', gettype($response->services[0]->uptime_percentage_30d));
         $this->assertEquals('double', gettype($response->services[0]->uptime_percentage_90d));
         $this->assertInstanceOf(Carbon::class, $response->services[0]->updated);
+        $this->assertIsBool($response->services[0]->online);
+    }
+
+    /**
+     * Test the API status endpoint parses online field.
+     *
+     * @return void
+     */
+    public function testApiStatus_parsesOnlineField()
+    {
+        $response = $this->client->utilities->api_status();
+        $this->assertInstanceOf(ApiStatus::class, $response);
+
+        // Verify online field is present and is boolean
+        foreach ($response->services as $service) {
+            $this->assertIsBool($service->online);
+        }
+    }
+
+    /**
+     * Test getServiceStatus returns valid status.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_returnsValidStatus()
+    {
+        $status = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertInstanceOf(ApiStatusResult::class, $status);
+        $this->assertContains($status, [ApiStatusResult::ONLINE, ApiStatusResult::OFFLINE, ApiStatusResult::UNKNOWN]);
+    }
+
+    /**
+     * Test getServiceStatus returns UNKNOWN for invalid service.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_invalidService_returnsUnknown()
+    {
+        $status = $this->client->utilities->getServiceStatus('/v1/invalid/service/');
+        $this->assertEquals(ApiStatusResult::UNKNOWN, $status);
+    }
+
+    /**
+     * Test refreshApiStatus with blocking mode.
+     *
+     * @return void
+     */
+    public function testRefreshApiStatus_blocking_success()
+    {
+        $result = $this->client->utilities->refreshApiStatus(true);
+        $this->assertTrue($result);
+        
+        // Verify cache was updated by checking getServiceStatus works
+        $status = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertInstanceOf(ApiStatusResult::class, $status);
+    }
+
+    /**
+     * Test refreshApiStatus with async mode.
+     *
+     * @return void
+     */
+    public function testRefreshApiStatus_async_returnsImmediately()
+    {
+        // Async mode should return immediately
+        $result = $this->client->utilities->refreshApiStatus(false);
+        $this->assertIsBool($result);
+        
+        // Give async request a moment to complete
+        usleep(100000); // 100ms
+        
+        // Verify we can still get status (cache should be available)
+        $status = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertInstanceOf(ApiStatusResult::class, $status);
     }
 
     /**

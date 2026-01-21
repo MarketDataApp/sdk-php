@@ -6,11 +6,14 @@ use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
+use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
+use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\UnauthorizedException;
+use MarketDataApp\Settings;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
@@ -44,6 +47,9 @@ class UtilitiesTest extends TestCase
         $token = '';
         $client = new Client($token);
         $this->client = $client;
+        
+        // Clear API status cache before each test to ensure fresh state
+        \MarketDataApp\Endpoints\Utilities::clearApiStatusCache();
     }
 
     /**
@@ -74,6 +80,7 @@ class UtilitiesTest extends TestCase
             $this->assertInstanceOf(ServiceStatus::class, $response->services[$i]);
             $this->assertEquals($mocked_response['service'][$i], $response->services[$i]->service);
             $this->assertEquals($mocked_response['status'][$i], $response->services[$i]->status);
+            $this->assertEquals($mocked_response['online'][$i], $response->services[$i]->online);
             $this->assertEquals($mocked_response['uptimePct30d'][$i], $response->services[$i]->uptime_percentage_30d);
             $this->assertEquals($mocked_response['uptimePct90d'][$i], $response->services[$i]->uptime_percentage_90d);
             $this->assertEquals(Carbon::createFromTimestamp($mocked_response['updated'][$i]),
@@ -394,5 +401,214 @@ class UtilitiesTest extends TestCase
             // Re-throw to satisfy expectException
             throw $e;
         }
+    }
+
+    /**
+     * Test the API status endpoint parses online field correctly.
+     *
+     * @return void
+     */
+    public function testApiStatus_parsesOnlineField()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['Test Service'],
+            'status'       => ['online'],
+            'online'       => [false], // Service is offline
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [1708972840]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->utilities->api_status();
+        $this->assertInstanceOf(ApiStatus::class, $response);
+        $this->assertCount(1, $response->services);
+        $this->assertFalse($response->services[0]->online);
+    }
+
+    /**
+     * Test the API status endpoint handles missing online field (backward compatibility).
+     *
+     * @return void
+     */
+    public function testApiStatus_missingOnlineField_defaultsToTrue()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['Test Service'],
+            'status'       => ['online'],
+            // 'online' field missing
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [1708972840]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->utilities->api_status();
+        $this->assertInstanceOf(ApiStatus::class, $response);
+        $this->assertCount(1, $response->services);
+        // Should default to true for backward compatibility
+        $this->assertTrue($response->services[0]->online);
+    }
+
+    /**
+     * Test getServiceStatus returns ONLINE for online service.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_onlineService_returnsOnline()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $status = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertEquals(ApiStatusResult::ONLINE, $status);
+    }
+
+    /**
+     * Test getServiceStatus returns OFFLINE for offline service.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_offlineService_returnsOffline()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['offline'],
+            'online'       => [false],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $status = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertEquals(ApiStatusResult::OFFLINE, $status);
+    }
+
+    /**
+     * Test getServiceStatus returns UNKNOWN for unknown service.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_unknownService_returnsUnknown()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $status = $this->client->utilities->getServiceStatus('/v1/unknown/service/');
+        $this->assertEquals(ApiStatusResult::UNKNOWN, $status);
+    }
+
+    /**
+     * Test refreshApiStatus with blocking mode.
+     *
+     * @return void
+     */
+    public function testRefreshApiStatus_blocking_success()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $result = $this->client->utilities->refreshApiStatus(true);
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Test refreshApiStatus with async mode.
+     *
+     * @return void
+     */
+    public function testRefreshApiStatus_async_returnsImmediately()
+    {
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // Async mode should return immediately (true if cache exists, false if no cache)
+        $result = $this->client->utilities->refreshApiStatus(false);
+        // Since we don't have cache initially, it should return false
+        $this->assertIsBool($result);
+    }
+
+    /**
+     * Test ApiStatusData cache validity checking.
+     *
+     * @return void
+     */
+    public function testApiStatusData_isValid()
+    {
+        $data = new ApiStatusData();
+        $this->assertFalse($data->isValid()); // No cache initially
+
+        $mocked_response = (object)[
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $data->update($mocked_response);
+        $this->assertTrue($data->isValid()); // Cache is fresh
+    }
+
+    /**
+     * Test ApiStatusData refresh window checking.
+     *
+     * @return void
+     */
+    public function testApiStatusData_inRefreshWindow()
+    {
+        $data = new ApiStatusData();
+        $this->assertFalse($data->inRefreshWindow()); // No cache initially
+
+        $mocked_response = (object)[
+            's'            => 'ok',
+            'service'      => ['/v1/stocks/quotes/'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $data->update($mocked_response);
+        
+        // Fresh cache should not be in refresh window
+        $this->assertFalse($data->inRefreshWindow());
     }
 }

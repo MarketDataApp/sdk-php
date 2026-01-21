@@ -35,9 +35,15 @@ class ApiStatus
         $this->status = $response->s;
 
         for ($i = 0; $i < count($response->service); $i++) {
+            // Handle online field - default to true if missing for backward compatibility
+            $online = isset($response->online) && is_array($response->online) 
+                ? (bool)$response->online[$i] 
+                : true;
+
             $this->services[] = new ServiceStatus(
                 $response->service[$i],
                 $response->status[$i],
+                $online,
                 $response->{'uptimePct30d'}[$i],
                 $response->{'uptimePct90d'}[$i],
                 Carbon::parse($response->updated[$i]),

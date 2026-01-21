@@ -352,4 +352,24 @@ class Settings
 
         return null;
     }
+
+    /**
+     * Refresh interval for API status cache.
+     *
+     * Cache should be refreshed when this interval has elapsed (4 minutes 30 seconds).
+     * This is the window before cache expiration where we trigger async refresh.
+     *
+     * @var int Refresh interval in seconds.
+     */
+    public const REFRESH_API_STATUS_INTERVAL = 270; // 4 minutes 30 seconds
+
+    /**
+     * Cache validity period for API status.
+     *
+     * Cache is considered valid for this duration (5 minutes).
+     * After this time, cache is stale and blocking refresh is required.
+     *
+     * @var int Cache validity in seconds.
+     */
+    public const API_STATUS_CACHE_VALIDITY = 300; // 5 minutes
 }
