@@ -419,7 +419,6 @@ class ValidatesInputsTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->testClass);
         $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
         return $method->invokeArgs($this->testClass, $parameters);
     }
 }
