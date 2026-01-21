@@ -762,7 +762,7 @@ class OptionsTest extends TestCase
     public function testParameters_dateFormat_withJson_throwsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV or HTML format');
 
         new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
     }

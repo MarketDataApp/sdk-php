@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Test case for the Parameters class.
  *
- * This class tests parameter validation, especially the date_format CSV-only restriction.
+ * This class tests parameter validation, especially the date_format CSV and HTML restriction.
  */
 class ParametersTest extends TestCase
 {
@@ -39,6 +39,27 @@ class ParametersTest extends TestCase
     }
 
     /**
+     * Test that date_format can be used with HTML format.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withHtml_success(): void
+    {
+        // Test all DateFormat enum values with HTML
+        $params1 = new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
+        $this->assertEquals(Format::HTML, $params1->format);
+        $this->assertEquals(DateFormat::TIMESTAMP, $params1->date_format);
+
+        $params2 = new Parameters(format: Format::HTML, date_format: DateFormat::UNIX);
+        $this->assertEquals(Format::HTML, $params2->format);
+        $this->assertEquals(DateFormat::UNIX, $params2->date_format);
+
+        $params3 = new Parameters(format: Format::HTML, date_format: DateFormat::SPREADSHEET);
+        $this->assertEquals(Format::HTML, $params3->format);
+        $this->assertEquals(DateFormat::SPREADSHEET, $params3->date_format);
+    }
+
+    /**
      * Test that date_format with JSON format throws InvalidArgumentException.
      *
      * @return void
@@ -46,22 +67,9 @@ class ParametersTest extends TestCase
     public function testParameters_dateFormat_withJson_throwsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV or HTML format');
 
         new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
-    }
-
-    /**
-     * Test that date_format with HTML format throws InvalidArgumentException.
-     *
-     * @return void
-     */
-    public function testParameters_dateFormat_withHtml_throwsException(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
-
-        new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
     }
 
     /**
@@ -73,6 +81,18 @@ class ParametersTest extends TestCase
     {
         $params = new Parameters(format: Format::CSV, date_format: null);
         $this->assertEquals(Format::CSV, $params->format);
+        $this->assertNull($params->date_format);
+    }
+
+    /**
+     * Test that null date_format with HTML is valid (backward compatibility).
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_null_withHtml_success(): void
+    {
+        $params = new Parameters(format: Format::HTML, date_format: null);
+        $this->assertEquals(Format::HTML, $params->format);
         $this->assertNull($params->date_format);
     }
 

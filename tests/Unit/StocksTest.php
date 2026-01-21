@@ -1021,22 +1021,47 @@ class StocksTest extends TestCase
     public function testParameters_dateFormat_withJson_throwsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV or HTML format');
 
         new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
     }
 
     /**
-     * Test that date_format parameter with HTML format throws InvalidArgumentException.
+     * Test that date_format parameter can be used with HTML format.
      *
      * @return void
      */
-    public function testParameters_dateFormat_withHtml_throwsException(): void
+    public function testParameters_dateFormat_withHtml_success(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+        $params = new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertEquals(DateFormat::TIMESTAMP, $params->date_format);
+    }
 
-        new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
+    /**
+     * Test candles endpoint with HTML format and dateformat=unix.
+     * Verifies that the HTML response is returned and dateformat parameter is passed.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_html_withDateFormat_unix(): void
+    {
+        $mocked_response = "<table><tr><th>Date</th></tr><tr><td>1234567890</td></tr></table>";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::HTML, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isHtml());
+        $this->assertEquals($mocked_response, $response->getHtml());
     }
 
     /**

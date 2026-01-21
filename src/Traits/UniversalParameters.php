@@ -41,8 +41,8 @@ trait UniversalParameters
             $universalParams['mode'] = $parameters->mode->value;
         }
 
-        // dateformat can only be used with CSV format
-        if ($parameters->date_format !== null && $parameters->format === Format::CSV) {
+        // dateformat can only be used with CSV or HTML format
+        if ($parameters->date_format !== null && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
             $universalParams['dateformat'] = $parameters->date_format->value;
         }
 
@@ -78,8 +78,8 @@ trait UniversalParameters
                 $calls[$i][1]['mode'] = $parameters->mode->value;
             }
 
-            // dateformat can only be used with CSV format
-            if ($parameters->date_format !== null && $parameters->format === Format::CSV) {
+            // dateformat can only be used with CSV or HTML format
+            if ($parameters->date_format !== null && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
                 $calls[$i][1]['dateformat'] = $parameters->date_format->value;
             }
         }
