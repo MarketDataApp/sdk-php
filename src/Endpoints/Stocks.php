@@ -9,6 +9,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
+use MarketDataApp\Endpoints\Responses\Stocks\Prices;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
@@ -212,6 +213,41 @@ class Stocks
         }
 
         return new Quotes($this->execute_in_parallel($calls, $parameters));
+    }
+
+    /**
+     * Get real-time midpoint prices for one or more stocks.
+     *
+     * This endpoint returns real-time prices for stocks, using the SmartMid model.
+     * The endpoint supports both single symbol (path parameter) and multiple symbols (query parameter) formats.
+     *
+     * @param string|array    $symbols     The ticker symbol(s). Can be a single string or an array of strings.
+     * @param bool            $extended    Control the inclusion of extended hours data in the price output.
+     *                                     Defaults to true if omitted.
+     *                                     - When set to true, the most recent price is always returned, without regard
+     *                                       to whether the market is open for primary trading or extended hours trading.
+     *                                     - When set to false, only prices from the primary trading session are returned.
+     *                                       When the market is closed or in extended hours, a historical price from the
+     *                                       last closing bell of the primary trading session is returned instead of an
+     *                                       extended hours price.
+     * @param Parameters|null $parameters  Universal parameters for all methods (such as format).
+     *
+     * @return Prices
+     * @throws GuzzleException|ApiException
+     */
+    public function prices(string|array $symbols, bool $extended = true, ?Parameters $parameters = null): Prices
+    {
+        $arguments = ['extended' => $extended];
+
+        if (is_string($symbols)) {
+            // Single symbol: use path format prices/{symbol}/
+            return new Prices($this->execute("prices/{$symbols}/", $arguments, $parameters));
+        } else {
+            // Multiple symbols: use query format prices/?symbols={comma-separated}
+            $symbolsString = implode(',', array_map('trim', $symbols));
+            $arguments['symbols'] = $symbolsString;
+            return new Prices($this->execute("prices/", $arguments, $parameters));
+        }
     }
 
     /**

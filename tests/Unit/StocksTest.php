@@ -16,6 +16,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earning;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
+use MarketDataApp\Endpoints\Responses\Stocks\Prices;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Enums\DateFormat;
@@ -1161,5 +1162,235 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertTrue($response->isCsv());
         $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test the prices endpoint for a successful response with single symbol.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_singleSymbol_success()
+    {
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [149.07],
+            'change' => [-2.052],
+            'changepct' => [-0.0088],
+            'updated' => [1663958092]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices('AAPL');
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->symbols);
+        $this->assertEquals('AAPL', $response->symbols[0]);
+        $this->assertCount(1, $response->mid);
+        $this->assertEquals(149.07, $response->mid[0]);
+        $this->assertCount(1, $response->change);
+        $this->assertEquals(-2.052, $response->change[0]);
+        $this->assertCount(1, $response->changepct);
+        $this->assertEquals(-0.0088, $response->changepct[0]);
+        $this->assertCount(1, $response->updated);
+        $this->assertInstanceOf(Carbon::class, $response->updated[0]);
+        $this->assertEquals(Carbon::parse(1663958092), $response->updated[0]);
+    }
+
+    /**
+     * Test the prices endpoint for a successful response with multiple symbols.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_multipleSymbols_success()
+    {
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'META', 'MSFT'],
+            'mid' => [149.07, 320.45, 380.12],
+            'change' => [-2.052, 1.23, -0.85],
+            'changepct' => [-0.0088, 0.0039, -0.0022],
+            'updated' => [1663958092, 1663958092, 1663958092]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices(['AAPL', 'META', 'MSFT']);
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(3, $response->symbols);
+        $this->assertEquals(['AAPL', 'META', 'MSFT'], $response->symbols);
+        $this->assertCount(3, $response->mid);
+        $this->assertEquals([149.07, 320.45, 380.12], $response->mid);
+        $this->assertCount(3, $response->change);
+        $this->assertEquals([-2.052, 1.23, -0.85], $response->change);
+        $this->assertCount(3, $response->changepct);
+        $this->assertEquals([-0.0088, 0.0039, -0.0022], $response->changepct);
+        $this->assertCount(3, $response->updated);
+        foreach ($response->updated as $updated) {
+            $this->assertInstanceOf(Carbon::class, $updated);
+        }
+    }
+
+    /**
+     * Test the prices endpoint with extended=true parameter.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_extendedTrue_success()
+    {
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [149.07],
+            'change' => [-2.052],
+            'changepct' => [-0.0088],
+            'updated' => [1663958092]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices('AAPL', extended: true);
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->symbols);
+    }
+
+    /**
+     * Test the prices endpoint with extended=false parameter.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_extendedFalse_success()
+    {
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [149.07],
+            'change' => [-2.052],
+            'changepct' => [-0.0088],
+            'updated' => [1663958092]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices('AAPL', extended: false);
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->symbols);
+    }
+
+    /**
+     * Test the prices endpoint for a successful CSV response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_csv_success()
+    {
+        $mocked_response = "s, symbol, mid, change, changepct, updated";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->prices(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test the prices endpoint with human-readable format.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_humanReadable_success()
+    {
+        $mocked_response = [
+            'Symbol' => ['AAPL', 'META'],
+            'Mid' => [149.07, 320.45],
+            'Change $' => [-2.052, 1.23],
+            'Change %' => [-0.0088, 0.0039],
+            'Date' => [1663958092, 1663958092]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices(
+            ['AAPL', 'META'],
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->symbols);
+        $this->assertEquals(['AAPL', 'META'], $response->symbols);
+        $this->assertCount(2, $response->mid);
+        $this->assertEquals([149.07, 320.45], $response->mid);
+        $this->assertCount(2, $response->change);
+        $this->assertEquals([-2.052, 1.23], $response->change);
+        $this->assertCount(2, $response->changepct);
+        $this->assertEquals([-0.0088, 0.0039], $response->changepct);
+        $this->assertCount(2, $response->updated);
+        foreach ($response->updated as $updated) {
+            $this->assertInstanceOf(Carbon::class, $updated);
+        }
+    }
+
+    /**
+     * Test the prices endpoint for a successful 'no data' response.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_noData_success()
+    {
+        $mocked_response = [
+            's' => 'no_data',
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->prices('INVALID');
+
+        $this->assertInstanceOf(Prices::class, $response);
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEmpty($response->symbols);
+        $this->assertEmpty($response->mid);
+        $this->assertEmpty($response->change);
+        $this->assertEmpty($response->changepct);
+        $this->assertEmpty($response->updated);
+    }
+
+    /**
+     * Test the prices endpoint for an error response.
+     *
+     * @return void
+     * @throws GuzzleException
+     */
+    public function testPrices_errorResponse_throwsApiException()
+    {
+        $mocked_response = [
+            's' => 'error',
+            'errmsg' => 'Invalid request'
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Invalid request');
+
+        $this->client->stocks->prices('INVALID');
     }
 }
