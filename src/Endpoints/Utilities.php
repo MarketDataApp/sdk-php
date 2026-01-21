@@ -42,7 +42,7 @@ class Utilities
      *
      * @return ApiStatusData The singleton instance
      */
-    private static function getApiStatusData(): ApiStatusData
+    public static function getApiStatusData(): ApiStatusData
     {
         if (self::$apiStatusData === null) {
             self::$apiStatusData = new ApiStatusData();
@@ -179,6 +179,7 @@ class Utilities
     public function getServiceStatus(string $service): ApiStatusResult
     {
         $apiStatusData = self::getApiStatusData();
+        // Client extends ClientBase, so this works
         return $apiStatusData->getApiStatus($this->client, $service);
     }
 

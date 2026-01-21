@@ -25,11 +25,6 @@
         <testsuite name="Integration">
             <directory>tests/Integration</directory>
         </testsuite>
-        
-        <!-- All tests - only run when explicitly requested -->
-        <testsuite name="All">
-            <directory>tests</directory>
-        </testsuite>
     </testsuites>
     <coverage>
         <report>

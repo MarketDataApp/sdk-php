@@ -5,6 +5,7 @@ namespace MarketDataApp\Endpoints\Responses\Utilities;
 use Carbon\Carbon;
 use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Client;
+use MarketDataApp\ClientBase;
 use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
@@ -121,11 +122,11 @@ class ApiStatusData
     /**
      * Fetch fresh status from API.
      *
-     * @param Client $client The API client instance.
+     * @param ClientBase $client The API client instance (ClientBase or Client).
      * @param bool $blocking Whether to wait for response (true) or trigger async refresh (false).
      * @return bool True on success, false on failure (only meaningful for blocking mode)
      */
-    public function refresh(Client $client, bool $blocking = false): bool
+    public function refresh(ClientBase $client, bool $blocking = false): bool
     {
         if ($blocking) {
             return $this->refreshBlocking($client);
@@ -139,10 +140,10 @@ class ApiStatusData
     /**
      * Blocking refresh - wait for response.
      *
-     * @param Client $client The API client instance.
+     * @param ClientBase $client The API client instance (ClientBase or Client).
      * @return bool True on success, false on failure
      */
-    private function refreshBlocking(Client $client): bool
+    private function refreshBlocking(ClientBase $client): bool
     {
         try {
             $response = $client->execute("status/");
@@ -161,10 +162,10 @@ class ApiStatusData
     /**
      * Trigger non-blocking async refresh.
      *
-     * @param Client $client The API client instance.
+     * @param ClientBase $client The API client instance (ClientBase or Client).
      * @return void
      */
-    public function refreshAsync(Client $client): void
+    public function refreshAsync(ClientBase $client): void
     {
         // Prevent duplicate concurrent refreshes
         if ($this->refreshPromise !== null) {
@@ -173,21 +174,21 @@ class ApiStatusData
 
         // Use reflection to access protected methods for async request
         $reflection = new \ReflectionClass($client);
-        $parentClass = $reflection->getParentClass();
         
-        $guzzleProperty = $parentClass->getProperty('guzzle');
+        $guzzleProperty = $reflection->getProperty('guzzle');
         $guzzleClient = $guzzleProperty->getValue($client);
         
-        $headersMethod = $parentClass->getMethod('headers');
+        $headersMethod = $reflection->getMethod('headers');
         $headers = $headersMethod->invoke($client, 'json');
         
         $this->refreshPromise = $guzzleClient->getAsync("status/", [
             'headers' => $headers,
         ])->then(
-            function ($response) use ($client, $parentClass) {
+            function ($response) use ($client) {
                 try {
                     // Validate response status code
-                    $validateMethod = $parentClass->getMethod('validateResponseStatusCode');
+                    $reflection = new \ReflectionClass($client);
+                    $validateMethod = $reflection->getMethod('validateResponseStatusCode');
                     $validateMethod->invoke($client, $response, true);
                     
                     // Process response
@@ -218,11 +219,12 @@ class ApiStatusData
     /**
      * Get status for specific service.
      *
-     * @param Client $client The API client instance.
+     * @param ClientBase $client The API client instance (ClientBase or Client).
      * @param string $service The service path to check (e.g., "/v1/stocks/quotes/").
+     * @param bool $skipBlockingRefresh If true, return UNKNOWN instead of blocking on refresh when cache is stale.
      * @return ApiStatusResult The status result (ONLINE, OFFLINE, or UNKNOWN)
      */
-    public function getApiStatus(Client $client, string $service): ApiStatusResult
+    public function getApiStatus(ClientBase $client, string $service, bool $skipBlockingRefresh = false): ApiStatusResult
     {
         // If cache is fresh (< 4min30sec): Return immediately, no async update
         if ($this->lastRefreshed !== null) {
@@ -238,8 +240,15 @@ class ApiStatusData
             }
         }
 
-        // If cache is stale (> 5min): Block and wait for fresh data
+        // If cache is stale (> 5min) or empty
         if (!$this->isValid()) {
+            // During retry logic, skip blocking refresh to avoid extra API calls
+            // Return UNKNOWN which allows retry to continue
+            if ($skipBlockingRefresh) {
+                return ApiStatusResult::UNKNOWN;
+            }
+            
+            // Normal behavior: block and wait for fresh data
             $this->refresh($client, true);
             return $this->getServiceStatus($service);
         }

@@ -7,6 +7,9 @@ use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
+use MarketDataApp\Endpoints\Utilities;
+use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
@@ -40,6 +43,9 @@ class RetryTest extends TestCase
     {
         // Use empty token for unit tests to skip validation (tests use mocks anyway)
         $this->client = new Client("");
+        
+        // Clear API status cache before each test to ensure fresh state
+        Utilities::clearApiStatusCache();
     }
 
     // ========== Sync Request Retry Tests ==========
@@ -585,5 +591,199 @@ class RetryTest extends TestCase
             $this->assertInstanceOf(UnauthorizedException::class, $e);
             $this->assertInstanceOf(BadStatusCodeError::class, $e); // Should extend BadStatusCodeError
         }
+    }
+
+    // ========== Intelligent Retry with API Status Checking Tests ==========
+
+    /**
+     * Test retry when service is ONLINE - should retry normally.
+     *
+     * @return void
+     */
+    public function testRetryWithServiceOnline_retriesNormally(): void
+    {
+        // Set up API status cache with service online
+        $statusResponse = (object)[
+            's' => 'ok',
+            'service' => ['/v1/stocks/quotes/'],
+            'status' => ['online'],
+            'online' => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $apiStatusData = Utilities::getApiStatusData();
+        $apiStatusData->update($statusResponse);
+
+        // Mock server error then success
+        $this->setMockResponses([
+            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
+        ]);
+
+        $result = $this->client->stocks->quote('AAPL');
+        $this->assertNotNull($result);
+    }
+
+    /**
+     * Test retry when service is OFFLINE - should skip retries and throw immediately.
+     *
+     * @return void
+     */
+    public function testRetryWithServiceOffline_skipsRetries(): void
+    {
+        // Set up API status cache with service offline
+        $statusResponse = (object)[
+            's' => 'ok',
+            'service' => ['/v1/stocks/quotes/'],
+            'status' => ['offline'],
+            'online' => [false],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $apiStatusData = Utilities::getApiStatusData();
+        $apiStatusData->update($statusResponse);
+
+        // Mock server error - should NOT retry, throw immediately
+        $this->setMockResponses([
+            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+        ]);
+
+        $this->expectException(RequestError::class);
+        $this->expectExceptionMessage('Server Error');
+
+        // Should throw immediately without retrying
+        $this->client->stocks->quote('AAPL');
+    }
+
+    /**
+     * Test retry when service is UNKNOWN - should retry normally.
+     *
+     * @return void
+     */
+    public function testRetryWithServiceUnknown_retriesNormally(): void
+    {
+        // Set up API status cache but with a different service (so our service is UNKNOWN)
+        $statusResponse = (object)[
+            's' => 'ok',
+            'service' => ['/v1/options/chain/'], // Different service
+            'status' => ['online'],
+            'online' => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $apiStatusData = Utilities::getApiStatusData();
+        $apiStatusData->update($statusResponse);
+
+        // Mock server error then success
+        // Service /v1/stocks/quotes/ will be UNKNOWN (not in cache), so should retry
+        $this->setMockResponses([
+            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
+        ]);
+
+        $result = $this->client->stocks->quote('AAPL');
+        $this->assertNotNull($result);
+    }
+
+    /**
+     * Test service path mapping for various endpoints.
+     *
+     * @return void
+     */
+    public function testServicePathMapping_variousEndpoints(): void
+    {
+        $reflection = new \ReflectionClass($this->client);
+        $parentClass = $reflection->getParentClass();
+        $method = $parentClass->getMethod('getServicePath');
+
+        // Test various method paths
+        $this->assertEquals('/v1/stocks/quotes/', $method->invoke($this->client, 'v1/stocks/quotes/AAPL'));
+        $this->assertEquals('/v1/stocks/candles/', $method->invoke($this->client, 'v1/stocks/candles/D/AAPL/'));
+        $this->assertEquals('/v1/options/chain/', $method->invoke($this->client, 'v1/options/chain/AAPL'));
+        $this->assertEquals('/v1/stocks/earnings/', $method->invoke($this->client, 'v1/stocks/earnings/AAPL'));
+        $this->assertEquals('/v1/stocks/news/', $method->invoke($this->client, 'v1/stocks/news/AAPL'));
+        $this->assertEquals('/v1/options/quotes/', $method->invoke($this->client, 'v1/options/quotes/AAPL230728C00200000'));
+        
+        // Test status endpoint returns null
+        $this->assertNull($method->invoke($this->client, 'status/'));
+        
+        // Test unknown service returns null
+        $this->assertNull($method->invoke($this->client, 'v1/unknown/service/'));
+    }
+
+    /**
+     * Test status endpoint doesn't check its own status (no infinite loop).
+     *
+     * @return void
+     */
+    public function testStatusEndpoint_doesNotCheckOwnStatus(): void
+    {
+        // Set up API status cache with status endpoint offline
+        $statusResponse = (object)[
+            's' => 'ok',
+            'service' => ['/status/'],
+            'status' => ['offline'],
+            'online' => [false],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $apiStatusData = Utilities::getApiStatusData();
+        $apiStatusData->update($statusResponse);
+
+        // Mock status endpoint error - should retry normally (not skip due to offline status)
+        // because status endpoint ("status/") doesn't check its own status
+        $this->setMockResponses([
+            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'service' => ['/status/'],
+                'status' => ['online'],
+                'online' => [true],
+                'uptimePct30d' => [0.99],
+                'uptimePct90d' => [0.98],
+                'updated' => [time()]
+            ])),
+        ]);
+
+        // Status endpoint should retry normally (doesn't check its own status)
+        $result = $this->client->utilities->api_status();
+        $this->assertNotNull($result);
+    }
+
+    /**
+     * Test async retry with service offline - should skip retries.
+     *
+     * @return void
+     */
+    public function testAsyncRetryWithServiceOffline_skipsRetries(): void
+    {
+        // Set up API status cache with service offline
+        $statusResponse = (object)[
+            's' => 'ok',
+            'service' => ['/v1/stocks/quotes/'],
+            'status' => ['offline'],
+            'online' => [false],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $apiStatusData = Utilities::getApiStatusData();
+        $apiStatusData->update($statusResponse);
+
+        // Mock server error - should NOT retry
+        $this->setMockResponses([
+            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+        ]);
+
+        $this->expectException(\Throwable::class);
+
+        // Should throw immediately without retrying
+        $this->client->execute_in_parallel([
+            ['v1/stocks/quotes/AAPL', []],
+        ]);
     }
 }

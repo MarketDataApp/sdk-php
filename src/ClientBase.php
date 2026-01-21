@@ -8,6 +8,9 @@ use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
+use MarketDataApp\Endpoints\Utilities;
+use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
@@ -180,9 +183,9 @@ abstract class ClientBase
             ]);
         };
 
-        $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+        $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
             return $promise->then(
-                function($response) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+                function($response) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
                     // Validate status code
                     try {
                         $this->validateResponseStatusCode($response, true);
@@ -195,7 +198,11 @@ abstract class ClientBase
                         
                         return $response;
                     } catch (RequestError $e) {
-                        // Retryable error (5xx)
+                        // Retryable error (5xx) - check if service is offline
+                        if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                            throw $e;
+                        }
+                        
                         $attempt++;
                         if ($attempt < $maxAttempts) {
                             $delay = $this->calculateBackoffDelay($attempt);
@@ -211,11 +218,21 @@ abstract class ClientBase
                         throw $e;
                     }
                 },
-                function($reason) use (&$attempt, $maxAttempts, $makeRequest, &$retry) {
+                function($reason) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
                     // Handle ServerException (5xx)
                     if ($reason instanceof \GuzzleHttp\Exception\ServerException) {
                         $statusCode = $reason->getResponse()->getStatusCode();
                         if (RetryConfig::isRetryableStatusCode($statusCode)) {
+                            // Check if service is offline - skip retries if offline
+                            if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                                throw new RequestError(
+                                    $this->getErrorMessage($reason->getResponse()),
+                                    $statusCode,
+                                    $reason,
+                                    $reason->getResponse()
+                                );
+                            }
+                            
                             $attempt++;
                             if ($attempt < $maxAttempts) {
                                 $delay = $this->calculateBackoffDelay($attempt);
@@ -373,6 +390,16 @@ abstract class ClientBase
                 // Server errors (5xx) - check if retryable
                 $statusCode = $e->getResponse()->getStatusCode();
                 if (RetryConfig::isRetryableStatusCode($statusCode)) {
+                    // Check if service is offline - skip retries if offline
+                    if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                        throw new RequestError(
+                            $this->getErrorMessage($e->getResponse()),
+                            $statusCode,
+                            $e,
+                            $e->getResponse()
+                        );
+                    }
+                    
                     $attempt++;
                     if ($attempt < $maxAttempts) {
                         $this->waitForRetry($attempt);
@@ -408,6 +435,11 @@ abstract class ClientBase
                 // RequestError from validateResponseStatusCode - retry if retryable
                 $response = $e->getResponse();
                 if ($response && RetryConfig::isRetryableStatusCode($response->getStatusCode())) {
+                    // Check if service is offline - skip retries if offline
+                    if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                        throw $e;
+                    }
+                    
                     $attempt++;
                     if ($attempt < $maxAttempts) {
                         $this->waitForRetry($attempt);
@@ -660,6 +692,89 @@ abstract class ClientBase
     {
         $delay = $this->calculateBackoffDelay($attempt);
         usleep((int)($delay * 1000000)); // Convert seconds to microseconds
+    }
+
+    /**
+     * Get service path from method path using hardcoded mapping.
+     *
+     * Maps method paths like "v1/stocks/quotes/AAPL" to service paths like "/v1/stocks/quotes/".
+     * Returns null for status endpoint (to avoid checking its own status) or unknown services.
+     *
+     * @param string $method The method path (e.g., "v1/stocks/quotes/AAPL").
+     * @return string|null The service path (e.g., "/v1/stocks/quotes/") or null if not found/special case.
+     */
+    protected function getServicePath(string $method): ?string
+    {
+        // Skip status checking for status endpoint itself (would cause infinite loop)
+        if ($method === 'status/' || str_starts_with($method, 'status/')) {
+            return null;
+        }
+
+        // Hardcoded mapping based on known services from API status response
+        // Match method paths that start with these prefixes
+        $serviceMappings = [
+            'v1/stocks/quotes' => '/v1/stocks/quotes/',
+            'v1/stocks/candles' => '/v1/stocks/candles/',
+            'v1/stocks/bulkcandles' => '/v1/stocks/bulkcandles/',
+            'v1/stocks/bulkquotes' => '/v1/stocks/bulkquotes/',
+            'v1/stocks/earnings' => '/v1/stocks/earnings/',
+            'v1/stocks/news' => '/v1/stocks/news/',
+            'v1/options/chain' => '/v1/options/chain/',
+            'v1/options/expirations' => '/v1/options/expirations/',
+            'v1/options/lookup' => '/v1/options/lookup/',
+            'v1/options/quotes' => '/v1/options/quotes/',
+            'v1/options/strikes' => '/v1/options/strikes/',
+            'v1/markets/status' => '/v1/markets/status/',
+        ];
+
+        // Remove query string if present
+        $methodPath = strtok($method, '?');
+
+        // Check each mapping
+        foreach ($serviceMappings as $prefix => $servicePath) {
+            if (str_starts_with($methodPath, $prefix)) {
+                return $servicePath;
+            }
+        }
+
+        // No mapping found - return null (will default to retrying - UNKNOWN behavior)
+        return null;
+    }
+
+    /**
+     * Check if service is offline and should skip retries.
+     *
+     * @param string $method The method path being called.
+     * @return bool True if service is offline (should skip retries), false otherwise.
+     */
+    protected function shouldSkipRetryDueToOfflineService(string $method): bool
+    {
+        $servicePath = $this->getServicePath($method);
+        
+        // If no service path found, default to retrying (UNKNOWN behavior)
+        if ($servicePath === null) {
+            return false;
+        }
+
+        try {
+            // Get ApiStatusData singleton instance
+            // Use reflection to access Utilities::getApiStatusData() since ClientBase doesn't have direct access
+            $utilitiesReflection = new \ReflectionClass(Utilities::class);
+            $getApiStatusDataMethod = $utilitiesReflection->getMethod('getApiStatusData');
+            $apiStatusData = $getApiStatusDataMethod->invoke(null);
+            
+            // Check service status
+            // Skip blocking refresh during retry logic to avoid extra API calls
+            // If cache is stale/empty, return UNKNOWN (allows retry)
+            $status = $apiStatusData->getApiStatus($this, $servicePath, true);
+            
+            // Skip retries if service is offline
+            return $status === ApiStatusResult::OFFLINE;
+        } catch (\Exception $e) {
+            // If status check fails, default to retrying (UNKNOWN behavior)
+            // This ensures we don't break existing functionality
+            return false;
+        }
     }
 
     /**

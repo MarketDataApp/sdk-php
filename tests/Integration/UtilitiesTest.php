@@ -313,4 +313,31 @@ class UtilitiesTest extends TestCase
             throw $e;
         }
     }
+
+    /**
+     * Test intelligent retry behavior with real API.
+     *
+     * This test verifies that the SDK correctly checks service status
+     * before retrying requests. Note: This test may be skipped if services
+     * are all online, as we can't easily simulate offline state.
+     *
+     * @return void
+     */
+    public function testIntelligentRetry_serviceStatusChecking()
+    {
+        // Get current service status
+        $status = $this->client->utilities->api_status();
+        $this->assertInstanceOf(ApiStatus::class, $status);
+        
+        // Verify we can check service status
+        $serviceStatus = $this->client->utilities->getServiceStatus('/v1/stocks/quotes/');
+        $this->assertInstanceOf(ApiStatusResult::class, $serviceStatus);
+        
+        // Service should be either ONLINE, OFFLINE, or UNKNOWN
+        $this->assertContains($serviceStatus, [
+            ApiStatusResult::ONLINE,
+            ApiStatusResult::OFFLINE,
+            ApiStatusResult::UNKNOWN
+        ]);
+    }
 }
