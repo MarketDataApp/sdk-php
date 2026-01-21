@@ -177,6 +177,108 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test quote endpoint with CSV format and columns parameter (single column).
+     * Verifies that the CSV response contains only the requested column.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_columns_singleColumn_returnsFilteredCsv(): void
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(
+                format: Format::CSV,
+                columns: ['symbol']
+            )
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+
+        // Verify only requested columns are present
+        $this->assertEquals(['symbol'], $headerRow);
+
+        // Verify data row exists and has correct number of columns
+        if (count($lines) > 1) {
+            $dataRow = str_getcsv($lines[1], ',', '"', '\\');
+            $this->assertCount(1, $dataRow);
+            $this->assertEquals('AAPL', $dataRow[0]);
+        }
+    }
+
+    /**
+     * Test quote endpoint with CSV format and columns parameter (multiple columns).
+     * Verifies that the CSV response contains only the requested columns in the correct order.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_columns_multipleColumns_returnsFilteredCsv(): void
+    {
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(
+                format: Format::CSV,
+                columns: ['symbol', 'ask', 'bid', 'last']
+            )
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+
+        // Verify only requested columns are present in the correct order
+        $this->assertEquals(['symbol', 'ask', 'bid', 'last'], $headerRow);
+
+        // Verify data row exists and has correct number of columns
+        if (count($lines) > 1) {
+            $dataRow = str_getcsv($lines[1], ',', '"', '\\');
+            $this->assertCount(4, $dataRow);
+            $this->assertEquals('AAPL', $dataRow[0]);
+        }
+    }
+
+    /**
+     * Test quote endpoint with CSV format and columns parameter verifies column order.
+     * Verifies that columns appear in the order specified in the request.
+     *
+     * @throws GuzzleException|ApiException
+     */
+    public function testQuote_csv_columns_verifiesColumnOrder(): void
+    {
+        // Test with different column order
+        $response = $this->client->stocks->quote(
+            symbol: 'AAPL',
+            parameters: new Parameters(
+                format: Format::CSV,
+                columns: ['bid', 'ask', 'symbol']
+            )
+        );
+
+        $this->assertInstanceOf(Quote::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+
+        $lines = explode("\n", trim($csv));
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+
+        // Verify columns appear in the exact order specified
+        $this->assertEquals(['bid', 'ask', 'symbol'], $headerRow);
+    }
+
+    /**
      * Test successful retrieval of multiple stock quotes.
      */
     public function testQuotes_success()

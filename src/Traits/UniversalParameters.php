@@ -46,6 +46,11 @@ trait UniversalParameters
             $universalParams['dateformat'] = $parameters->date_format->value;
         }
 
+        // columns can only be used with CSV or HTML format
+        if ($parameters->columns !== null && !empty($parameters->columns) && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
+            $universalParams['columns'] = implode(',', $parameters->columns);
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
             array_merge($arguments, $universalParams)
         );
@@ -81,6 +86,11 @@ trait UniversalParameters
             // dateformat can only be used with CSV or HTML format
             if ($parameters->date_format !== null && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
                 $calls[$i][1]['dateformat'] = $parameters->date_format->value;
+            }
+
+            // columns can only be used with CSV or HTML format
+            if ($parameters->columns !== null && !empty($parameters->columns) && ($parameters->format === Format::CSV || $parameters->format === Format::HTML)) {
+                $calls[$i][1]['columns'] = implode(',', $parameters->columns);
             }
         }
 
