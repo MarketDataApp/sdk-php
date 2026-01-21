@@ -18,6 +18,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Mode;
 use MarketDataApp\Exceptions\ApiException;
@@ -986,5 +987,154 @@ class StocksTest extends TestCase
         $this->assertInstanceOf(Quote::class, $quotes->quotes[0]);
         $this->assertEquals('ok', $quotes->quotes[0]->status);
         $this->assertEquals($mocked_response['symbol'][0], $quotes->quotes[0]->symbol);
+    }
+
+    /**
+     * Test that date_format parameter can be used with CSV format.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testParameters_dateFormat_withCsv_success(): void
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test that date_format parameter with JSON format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+
+        new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
+    }
+
+    /**
+     * Test that date_format parameter with HTML format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withHtml_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+
+        new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
+    }
+
+    /**
+     * Test that null date_format with CSV is valid (backward compatibility).
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testParameters_dateFormat_null_withCsv_success(): void
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: null)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test candles endpoint with CSV format and dateformat=unix.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_csv_withDateFormat_unix(): void
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test candles endpoint with CSV format and dateformat=timestamp.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_csv_withDateFormat_timestamp(): void
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test candles endpoint with CSV format and dateformat=spreadsheet.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_csv_withDateFormat_spreadsheet(): void
+    {
+        $mocked_response = "s, c, h, l, o, v, t";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+        $this->assertEquals($mocked_response, $response->getCsv());
     }
 }

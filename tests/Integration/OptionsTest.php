@@ -12,6 +12,7 @@ use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Expiration;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
@@ -467,5 +468,64 @@ class OptionsTest extends TestCase
         $this->assertNotEmpty($response->quotes);
         $this->assertInstanceOf(Quote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
+    }
+
+    /**
+     * Test options expirations endpoint with CSV format and dateformat=unix.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testExpirations_csv_dateFormat_unix_returnsCsv(): void
+    {
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+    }
+
+    /**
+     * Test options quotes endpoint with CSV format and dateformat=timestamp.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testQuotes_csv_dateFormat_timestamp_returnsCsv(): void
+    {
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+    }
+
+    /**
+     * Test options strikes endpoint with CSV format and dateformat=spreadsheet.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testStrikes_csv_dateFormat_spreadsheet_returnsCsv(): void
+    {
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: '2024-01-19',
+            date: '2024-01-15',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET)
+        );
+
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
     }
 }

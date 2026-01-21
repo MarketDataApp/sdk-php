@@ -2,6 +2,7 @@
 
 namespace MarketDataApp\Traits;
 
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Endpoints\Requests\Parameters;
 
 /**
@@ -40,6 +41,11 @@ trait UniversalParameters
             $universalParams['mode'] = $parameters->mode->value;
         }
 
+        // dateformat can only be used with CSV format
+        if ($parameters->date_format !== null && $parameters->format === Format::CSV) {
+            $universalParams['dateformat'] = $parameters->date_format->value;
+        }
+
         return $this->client->execute(self::BASE_URL . $method,
             array_merge($arguments, $universalParams)
         );
@@ -70,6 +76,11 @@ trait UniversalParameters
 
             if ($parameters->mode !== null) {
                 $calls[$i][1]['mode'] = $parameters->mode->value;
+            }
+
+            // dateformat can only be used with CSV format
+            if ($parameters->date_format !== null && $parameters->format === Format::CSV) {
+                $calls[$i][1]['dateformat'] = $parameters->date_format->value;
             }
         }
 

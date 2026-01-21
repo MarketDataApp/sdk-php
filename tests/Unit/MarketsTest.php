@@ -8,6 +8,8 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Markets\Status;
 use MarketDataApp\Endpoints\Responses\Markets\Statuses;
+use InvalidArgumentException;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
@@ -118,5 +120,57 @@ class MarketsTest extends TestCase
         $this->assertInstanceOf(Status::class, $response->statuses[0]);
         $this->assertEquals(Carbon::parse($mocked_response['Date']), $response->statuses[0]->date);
         $this->assertEquals($mocked_response['Status'], $response->statuses[0]->status);
+    }
+
+    /**
+     * Test that date_format parameter can be used with CSV format for markets.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withCsv_success(): void
+    {
+        $mocked_response = 's, date, status';
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->markets->status(
+            date: '1680580800',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertTrue($response->isCsv());
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test that date_format parameter with JSON format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+
+        new Parameters(format: Format::JSON, date_format: DateFormat::UNIX);
+    }
+
+    /**
+     * Test markets status endpoint with CSV format and dateformat=unix.
+     *
+     * @return void
+     */
+    public function testStatus_csv_withDateFormat_unix(): void
+    {
+        $mocked_response = 's, date, status';
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->markets->status(
+            date: '1680580800',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertTrue($response->isCsv());
     }
 }

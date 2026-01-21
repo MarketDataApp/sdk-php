@@ -7,6 +7,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candle;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use PHPUnit\Framework\TestCase;
 
@@ -81,5 +82,71 @@ class MutualFundsTest extends TestCase
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertEquals('string', gettype($response->getCsv()));
+    }
+
+    /**
+     * Test mutual funds candles endpoint with CSV format and dateformat=unix.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testCandles_csv_dateFormat_unix_returnsCsv(): void
+    {
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2023-01-01',
+            to: '2023-01-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+    }
+
+    /**
+     * Test mutual funds candles endpoint with CSV format and dateformat=timestamp.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testCandles_csv_dateFormat_timestamp_returnsCsv(): void
+    {
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2023-01-01',
+            to: '2023-01-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
+    }
+
+    /**
+     * Test mutual funds candles endpoint with CSV format and dateformat=spreadsheet.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException|ApiException
+     */
+    public function testCandles_csv_dateFormat_spreadsheet_returnsCsv(): void
+    {
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2023-01-01',
+            to: '2023-01-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $csv = $response->getCsv();
+        $this->assertNotEmpty($csv);
     }
 }

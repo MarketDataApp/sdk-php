@@ -13,6 +13,8 @@ use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Endpoints\Responses\Options\Quote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
+use InvalidArgumentException;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Tests\Traits\MockResponses;
@@ -731,5 +733,75 @@ class OptionsTest extends TestCase
         $this->assertEquals($mocked_response['Theta'][0], $response->quotes[0]->theta);
         $this->assertEquals($mocked_response['Vega'][0], $response->quotes[0]->vega);
         $this->assertEquals(Carbon::parse($mocked_response['Date'][0]), $response->quotes[0]->updated);
+    }
+
+    /**
+     * Test that date_format parameter can be used with CSV format for options.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withCsv_success(): void
+    {
+        $mocked_response = "s, symbol, ask, bid";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertTrue($response->isCsv());
+    }
+
+    /**
+     * Test that date_format parameter with JSON format throws InvalidArgumentException.
+     *
+     * @return void
+     */
+    public function testParameters_dateFormat_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV format');
+
+        new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
+    }
+
+    /**
+     * Test options quotes endpoint with CSV format and dateformat=unix.
+     *
+     * @return void
+     */
+    public function testQuotes_csv_withDateFormat_unix(): void
+    {
+        $mocked_response = "s, symbol, ask, bid";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL250117C00150000',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+    }
+
+    /**
+     * Test options quotes endpoint with CSV format and dateformat=spreadsheet.
+     *
+     * @return void
+     */
+    public function testQuotes_csv_withDateFormat_spreadsheet(): void
+    {
+        $mocked_response = "s, symbol, ask, bid";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->quotes(
+            option_symbol: 'AAPL250117C00150000',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
     }
 }
