@@ -123,6 +123,132 @@ class ClientBaseErrorHandlingTest extends TestCase
     }
 
     /**
+     * Test async RequestError catch block - retryable error that triggers retry logic.
+     * 
+     * This test covers lines 200-213 in ClientBase.php - the RequestError catch block
+     * in the async promise then() handler when validateResponseStatusCode throws RequestError
+     * and retry succeeds. This path is different from ServerException handling because
+     * Guzzle returns a response (not throws) and validateResponseStatusCode throws RequestError.
+     * 
+     * Uses real 509 API ENDPOINT OVERLOADED response format from the API.
+     *
+     * @return void
+     */
+    public function testAsyncRequestErrorCatchBlock_retriesAndSucceeds(): void
+    {
+        // Create a custom Guzzle client that returns a 5xx response instead of throwing ServerException
+        // This allows validateResponseStatusCode to throw RequestError, which is caught by the RequestError catch block
+        // Using real 509 API ENDPOINT OVERLOADED response format
+        $mockHandler = new MockHandler([
+            new Response(509, [], json_encode(['s' => 'error', 'errmsg' => 'This API Endpoint is currently overloaded. Please try again in a few minutes. Write to support@marketdata.app or submit a ticket in the customer dashboard if this error continues for more than 15 minutes.'])),
+            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        // This should succeed after retry
+        $responses = $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+
+        $this->assertCount(1, $responses);
+        $this->assertIsObject($responses[0]);
+    }
+
+    /**
+     * Test async RequestError catch block - retryable error that exhausts retries.
+     * 
+     * This test covers lines 200-215 in ClientBase.php - the RequestError catch block
+     * in the async promise then() handler when validateResponseStatusCode throws RequestError
+     * and retries are exhausted.
+     * 
+     * Uses real 509 API ENDPOINT OVERLOADED response format from the API.
+     *
+     * @return void
+     */
+    public function testAsyncRequestErrorCatchBlock_exhaustsRetries(): void
+    {
+        // Create a custom Guzzle client that returns 5xx responses instead of throwing ServerException
+        // This allows validateResponseStatusCode to throw RequestError, which is caught by the RequestError catch block
+        // Using real 509 API ENDPOINT OVERLOADED response format
+        $errorMessage = 'This API Endpoint is currently overloaded. Please try again in a few minutes. Write to support@marketdata.app or submit a ticket in the customer dashboard if this error continues for more than 15 minutes.';
+        $mockHandler = new MockHandler([
+            new Response(509, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+            new Response(509, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+            new Response(509, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        $this->expectException(RequestError::class);
+        $this->expectExceptionMessage($errorMessage);
+
+        // This will call async(), which will get a 5xx response, validateResponseStatusCode will throw RequestError,
+        // and the RequestError catch block will handle retries until exhausted
+        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+    }
+
+    /**
+     * Test async RequestError catch block - service offline skips retries.
+     * 
+     * This test covers lines 200-204 in ClientBase.php - the RequestError catch block
+     * when service is offline and retries should be skipped.
+     * 
+     * Uses real 509 API ENDPOINT OVERLOADED response format from the API.
+     *
+     * @return void
+     */
+    public function testAsyncRequestErrorCatchBlock_serviceOffline_skipsRetries(): void
+    {
+        // Mock ApiStatusData to return OFFLINE status
+        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData->method('getApiStatus')
+            ->willReturn(\MarketDataApp\Enums\ApiStatusResult::OFFLINE);
+
+        // Use reflection to replace the singleton instance
+        $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
+        $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
+        $apiStatusDataProperty->setAccessible(true);
+        
+        // Save original value
+        $originalApiStatusData = $apiStatusDataProperty->getValue();
+        
+        try {
+            // Replace with mock
+            $apiStatusDataProperty->setValue(null, $mockApiStatusData);
+            
+            // Create a custom Guzzle client that returns a 5xx response instead of throwing ServerException
+            // Using real 509 API ENDPOINT OVERLOADED response format
+            $errorMessage = 'This API Endpoint is currently overloaded. Please try again in a few minutes. Write to support@marketdata.app or submit a ticket in the customer dashboard if this error continues for more than 15 minutes.';
+            $mockHandler = new MockHandler([
+                new Response(509, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+            ]);
+            $handlerStack = HandlerStack::create($mockHandler);
+            $mockGuzzle = new \GuzzleHttp\Client([
+                'handler' => $handlerStack,
+                'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+            ]);
+            $this->client->setGuzzle($mockGuzzle);
+
+            $this->expectException(RequestError::class);
+            $this->expectExceptionMessage($errorMessage);
+
+            // This will call async(), which will get a 5xx response, validateResponseStatusCode will throw RequestError,
+            // and the RequestError catch block will check service status and skip retries (throw immediately)
+            $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+        } finally {
+            // Restore original singleton
+            $apiStatusDataProperty->setValue(null, $originalApiStatusData);
+        }
+    }
+
+    /**
      * Test async retry with non-retryable ServerException.
      *
      * @return void
@@ -741,5 +867,34 @@ class ClientBaseErrorHandlingTest extends TestCase
             // Restore original singleton
             $apiStatusDataProperty->setValue(null, $originalApiStatusData);
         }
+    }
+
+    /**
+     * Test async promise rejection handler - re-throw other exceptions.
+     * 
+     * This test covers line 309 in ClientBase.php - the re-throw of other exceptions
+     * in the async promise rejection handler when the exception is not a ServerException,
+     * ClientException, or RequestException.
+     *
+     * @return void
+     */
+    public function testAsyncPromiseRejection_otherException_rethrows(): void
+    {
+        // Create a custom Guzzle client that throws a non-Guzzle exception
+        // This will trigger the "other exceptions" path at line 309
+        $mockHandler = new MockHandler([
+            new \RuntimeException('Unexpected error'),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Unexpected error');
+
+        // This will call async(), which will get a RuntimeException, and it should be re-thrown at line 309
+        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
     }
 }
