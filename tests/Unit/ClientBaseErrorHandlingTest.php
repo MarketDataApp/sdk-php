@@ -605,4 +605,28 @@ class ClientBaseErrorHandlingTest extends TestCase
             $apiStatusDataProperty->setValue(null, $originalApiStatusData);
         }
     }
+
+    /**
+     * Test async RequestException exhausts retries and throws RequestError.
+     * 
+     * This test covers lines 300-305 in ClientBase.php - the RequestException
+     * handling path in async promise rejection handler when retries are exhausted.
+     *
+     * @return void
+     */
+    public function testAsyncRequestException_exhaustsRetries_throwsRequestError(): void
+    {
+        // Mock RequestException (network error) that exhausts all retries
+        // MAX_RETRY_ATTEMPTS is 3, so we need 3 RequestExceptions
+        $this->setMockResponses([
+            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+        ]);
+
+        $this->expectException(RequestError::class);
+        $this->expectExceptionMessage('Request failed: Network Error');
+
+        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+    }
 }
