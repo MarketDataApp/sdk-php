@@ -218,6 +218,60 @@ class ClientBaseErrorHandlingTest extends TestCase
     }
 
     /**
+     * Test validateResponseStatusCode with retryable status code (5xx) throws RequestError.
+     *
+     * @return void
+     */
+    public function testValidateResponseStatusCode_withRetryableStatusCode_throwsRequestError(): void
+    {
+        $response = new Response(502, [], json_encode(['errmsg' => 'Bad Gateway']));
+        
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('validateResponseStatusCode');
+
+        $this->expectException(RequestError::class);
+        $this->expectExceptionMessage('Bad Gateway');
+        
+        $method->invoke($this->client, $response, true);
+    }
+
+    /**
+     * Test validateResponseStatusCode with 401 when raiseForStatus=true throws UnauthorizedException.
+     *
+     * @return void
+     */
+    public function testValidateResponseStatusCode_with401_raiseForStatusTrue_throwsUnauthorizedException(): void
+    {
+        $response = new Response(401, [], json_encode(['errmsg' => 'Unauthorized']));
+        
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('validateResponseStatusCode');
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionMessage('Unauthorized');
+        
+        $method->invoke($this->client, $response, true);
+    }
+
+    /**
+     * Test validateResponseStatusCode with other 4xx status code throws BadStatusCodeError.
+     *
+     * @return void
+     */
+    public function testValidateResponseStatusCode_withOther4xx_throwsBadStatusCodeError(): void
+    {
+        $response = new Response(403, [], json_encode(['errmsg' => 'Forbidden']));
+        
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('validateResponseStatusCode');
+
+        $this->expectException(BadStatusCodeError::class);
+        $this->expectExceptionMessage('Forbidden');
+        
+        $method->invoke($this->client, $response, true);
+    }
+
+    /**
      * Test getErrorMessage with null response.
      *
      * @return void
