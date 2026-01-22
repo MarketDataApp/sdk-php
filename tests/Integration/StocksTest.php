@@ -1169,13 +1169,13 @@ class StocksTest extends TestCase
         $this->assertEquals('AAPL', $response->symbols[0]);
         $this->assertNotEmpty($response->mid);
         $this->assertCount(1, $response->mid);
-        $this->assertEquals('double', gettype($response->mid[0]));
+        $this->assertTrue(in_array(gettype($response->mid[0]), ['double', 'integer']), "Expected mid to be double or integer");
         $this->assertNotEmpty($response->change);
         $this->assertCount(1, $response->change);
-        $this->assertTrue(in_array(gettype($response->change[0]), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->change[0]), ['double', 'integer', 'NULL']));
         $this->assertNotEmpty($response->changepct);
         $this->assertCount(1, $response->changepct);
-        $this->assertTrue(in_array(gettype($response->changepct[0]), ['double', 'NULL']));
+        $this->assertTrue(in_array(gettype($response->changepct[0]), ['double', 'integer', 'NULL']));
         $this->assertNotEmpty($response->updated);
         $this->assertCount(1, $response->updated);
         $this->assertInstanceOf(Carbon::class, $response->updated[0]);
@@ -1204,15 +1204,15 @@ class StocksTest extends TestCase
         $this->assertCount(3, $response->changepct);
         $this->assertCount(3, $response->updated);
         
-        // Verify data types
+        // Verify data types (API may return integer for round numbers or double for decimals)
         foreach ($response->mid as $mid) {
-            $this->assertEquals('double', gettype($mid));
+            $this->assertTrue(in_array(gettype($mid), ['double', 'integer']), "Expected mid to be double or integer, got " . gettype($mid));
         }
         foreach ($response->change as $change) {
-            $this->assertTrue(in_array(gettype($change), ['double', 'NULL']));
+            $this->assertTrue(in_array(gettype($change), ['double', 'integer', 'NULL']), "Expected change to be double, integer, or NULL, got " . gettype($change));
         }
         foreach ($response->changepct as $changepct) {
-            $this->assertTrue(in_array(gettype($changepct), ['double', 'NULL']));
+            $this->assertTrue(in_array(gettype($changepct), ['double', 'integer', 'NULL']), "Expected changepct to be double, integer, or NULL, got " . gettype($changepct));
         }
         foreach ($response->updated as $updated) {
             $this->assertInstanceOf(Carbon::class, $updated);
