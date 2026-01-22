@@ -8,6 +8,7 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\ClientBase;
+use MarketDataApp\Tests\Traits\MockResponses;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,6 +19,7 @@ use PHPUnit\Framework\TestCase;
  */
 class UserAgentTest extends TestCase
 {
+    use MockResponses;
     /**
      * The client instance used for testing.
      *
@@ -39,6 +41,11 @@ class UserAgentTest extends TestCase
      */
     protected function setUp(): void
     {
+        // Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
+        // This prevents real API calls during Client construction by ensuring
+        // _setup_rate_limits() skips the /user/ endpoint validation call.
+        $this->clearMarketDataToken();
+        
         // Use empty token for unit tests to skip validation (tests use mocks anyway)
         $this->client = new Client('');
         $this->history = [];

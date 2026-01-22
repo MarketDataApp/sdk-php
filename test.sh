@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Test runner script for MarketDataApp PHP SDK
-# Runs unit tests first, then integration tests (if enabled)
+# Requires explicit test suite selection: unit, integration, or coverage
 # Outputs to console and creates a log file
 
 # Don't use set -e because we handle errors manually
@@ -14,9 +14,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Default values
-RUN_INTEGRATION=false
+TEST_MODE=""
 PHP_VERSION="8.5"
 LOG_FILE="test-output-$(date +%Y%m%d-%H%M%S).log"
+COVERAGE_HTML_DIR=""
+COVERAGE_TEXT_FILE=""
+COVERAGE_CLOVER_FILE=""
 
 # Function to print usage
 print_usage() {
@@ -24,30 +27,60 @@ print_usage() {
     echo -e "${BLUE}MarketDataApp PHP SDK Test Runner${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo ""
-    echo "Usage: $0 [OPTIONS]"
+    echo "Usage: $0 MODE [OPTIONS]"
     echo ""
-    echo "Options:"
-    echo "  --integration, -i    Run integration tests after unit tests (default: false)"
+    echo "MODE (required):"
+    echo "  unit         Run unit tests only"
+    echo "  integration  Run integration tests only"
+    echo "  coverage     Run both unit and integration tests with coverage report"
+    echo ""
+    echo "OPTIONS:"
     echo "  --php-version=V      Use specific PHP version (default: 8.5)"
     echo "  --log-file=FILE      Specify log file path (default: test-output-TIMESTAMP.log)"
     echo "  --help, -h           Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0                          # Run unit tests only"
-    echo "  $0 --integration            # Run unit tests, then integration tests"
-    echo "  $0 -i --php-version=8.4     # Run all tests with PHP 8.4"
+    echo "  $0 unit                      # Run unit tests only"
+    echo "  $0 integration               # Run integration tests only"
+    echo "  $0 coverage                  # Run all tests with coverage"
+    echo "  $0 unit --php-version=8.4    # Run unit tests with PHP 8.4"
     echo ""
-    echo -e "${YELLOW}Note: Integration tests require MARKETDATA_TOKEN environment variable${NC}"
+    echo -e "${YELLOW}Note: Integration tests and coverage require MARKETDATA_TOKEN environment variable${NC}"
     echo ""
 }
 
 # Parse command line arguments
+if [ $# -eq 0 ]; then
+    echo -e "${RED}Error: MODE parameter is required${NC}"
+    echo ""
+    print_usage
+    exit 1
+fi
+
+# First argument is the mode
+TEST_MODE="$1"
+shift
+
+# Validate mode
+case "$TEST_MODE" in
+    unit|integration|coverage)
+        ;;
+    --help|-h|help)
+        print_usage
+        exit 0
+        ;;
+    *)
+        echo -e "${RED}Error: Invalid MODE: $TEST_MODE${NC}"
+        echo -e "${RED}Valid modes are: unit, integration, coverage${NC}"
+        echo ""
+        print_usage
+        exit 1
+        ;;
+esac
+
+# Parse remaining options
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --integration|-i)
-            RUN_INTEGRATION=true
-            shift
-            ;;
         --php-version=*)
             PHP_VERSION="${1#*=}"
             shift
@@ -67,9 +100,6 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-
-# Print usage at start
-print_usage
 
 # Function to log and echo (plain text to both console and log)
 log_and_echo() {
@@ -97,8 +127,8 @@ START_TIME=$(date +%s)
 # Initialize log file
 log_and_echo_color "${BLUE}========================================${NC}"
 log_and_echo "Test Run Started: $(date)"
+log_and_echo "Mode: $TEST_MODE"
 log_and_echo "PHP Version: $PHP_VERSION"
-log_and_echo "Run Integration Tests: $RUN_INTEGRATION"
 log_and_echo "Log File: $LOG_FILE"
 log_and_echo_color "${BLUE}========================================${NC}"
 log_and_echo ""
@@ -144,6 +174,7 @@ fi
 run_tests() {
     local test_suite=$1
     local test_name=$2
+    local generate_coverage=$3  # true or false
     local exit_code=0
     
     log_and_echo_color "${BLUE}========================================${NC}"
@@ -151,17 +182,29 @@ run_tests() {
     log_and_echo_color "${BLUE}========================================${NC}"
     log_and_echo ""
     
+    # Build PHPUnit command arguments
+    local phpunit_args=(
+        -d output_buffering=0
+        vendor/bin/phpunit
+        --testsuite "$test_suite"
+        --testdox
+        --display-skipped
+        --display-incomplete
+        --display-all-issues
+    )
+    
+    # Enable or disable coverage based on parameter
+    if [ "$generate_coverage" = "true" ]; then
+        # Coverage will be generated (default behavior when not using --no-coverage)
+        :
+    else
+        phpunit_args+=(--no-coverage)
+    fi
+    
     # Run tests with verbose output, streaming to both console and log file in real-time
     # Use tee to show progress as it happens - output streams immediately
     # Capture exit code using PIPESTATUS (bash-specific, but we're using bash)
-    # Force unbuffered output by using PHP's -d output_buffering=0
-    $PHP_BIN -d output_buffering=0 vendor/bin/phpunit \
-        --testsuite "$test_suite" \
-        --testdox \
-        --display-skipped \
-        --display-incomplete \
-        --display-all-issues \
-        2>&1 | tee -a "$LOG_FILE"
+    $PHP_BIN "${phpunit_args[@]}" 2>&1 | tee -a "$LOG_FILE"
     exit_code=${PIPESTATUS[0]}
     
     log_and_echo ""
@@ -177,69 +220,149 @@ run_tests() {
     fi
 }
 
-# Run unit tests first
-log_and_echo_color "${YELLOW}Starting Unit Tests...${NC}"
-log_and_echo ""
-
-if ! run_tests "Unit" "Unit"; then
-    # Calculate execution time even on failure
-    END_TIME=$(date +%s)
-    TOTAL_SECONDS=$((END_TIME - START_TIME))
-    TOTAL_MINUTES=$((TOTAL_SECONDS / 60))
-    REMAINING_SECONDS=$((TOTAL_SECONDS % 60))
-    if [ $TOTAL_MINUTES -gt 0 ]; then
-        TIME_DISPLAY="${TOTAL_MINUTES}m ${REMAINING_SECONDS}s"
-    else
-        TIME_DISPLAY="${TOTAL_SECONDS}s"
-    fi
-    
-    log_and_echo_color "${RED}========================================${NC}"
-    log_and_echo_color "${RED}Unit tests failed. Stopping.${NC}"
-    log_and_echo_color "${RED}Integration tests will not be run.${NC}"
-    log_and_echo_color "${RED}========================================${NC}"
-    log_and_echo ""
-    log_and_echo "Test run completed with failures at $(date)"
-    log_and_echo "Total execution time: $TIME_DISPLAY"
-    log_and_echo "Full output saved to: $LOG_FILE"
-    exit 1
-fi
-
-# Run integration tests if enabled
-if [ "$RUN_INTEGRATION" = true ]; then
-    log_and_echo_color "${YELLOW}Starting Integration Tests...${NC}"
-    log_and_echo ""
-    
-    # Check if MARKETDATA_TOKEN is set
-    if [ -z "${MARKETDATA_TOKEN:-}" ]; then
-        log_and_echo_color "${YELLOW}Warning: MARKETDATA_TOKEN not set. Integration tests may be skipped.${NC}"
+# Execute based on mode
+case "$TEST_MODE" in
+    unit)
+        log_and_echo_color "${YELLOW}Running Unit Tests...${NC}"
         log_and_echo ""
-    fi
+        
+        if ! run_tests "Unit" "Unit" "false"; then
+            END_TIME=$(date +%s)
+            TOTAL_SECONDS=$((END_TIME - START_TIME))
+            TOTAL_MINUTES=$((TOTAL_SECONDS / 60))
+            REMAINING_SECONDS=$((TOTAL_SECONDS % 60))
+            if [ $TOTAL_MINUTES -gt 0 ]; then
+                TIME_DISPLAY="${TOTAL_MINUTES}m ${REMAINING_SECONDS}s"
+            else
+                TIME_DISPLAY="${TOTAL_SECONDS}s"
+            fi
+            
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo_color "${RED}Unit tests failed.${NC}"
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo ""
+            log_and_echo "Test run completed with failures at $(date)"
+            log_and_echo "Total execution time: $TIME_DISPLAY"
+            log_and_echo "Full output saved to: $LOG_FILE"
+            exit 1
+        fi
+        ;;
     
-    if ! run_tests "Integration" "Integration"; then
-        # Calculate execution time even on failure
-        END_TIME=$(date +%s)
-        TOTAL_SECONDS=$((END_TIME - START_TIME))
-        TOTAL_MINUTES=$((TOTAL_SECONDS / 60))
-        REMAINING_SECONDS=$((TOTAL_SECONDS % 60))
-        if [ $TOTAL_MINUTES -gt 0 ]; then
-            TIME_DISPLAY="${TOTAL_MINUTES}m ${REMAINING_SECONDS}s"
-        else
-            TIME_DISPLAY="${TOTAL_SECONDS}s"
+    integration)
+        log_and_echo_color "${YELLOW}Running Integration Tests...${NC}"
+        log_and_echo ""
+        
+        # Check if MARKETDATA_TOKEN is set
+        if [ -z "${MARKETDATA_TOKEN:-}" ]; then
+            log_and_echo_color "${YELLOW}Warning: MARKETDATA_TOKEN not set. Integration tests may be skipped.${NC}"
+            log_and_echo ""
         fi
         
-        log_and_echo_color "${RED}========================================${NC}"
-        log_and_echo_color "${RED}Integration tests failed.${NC}"
-        log_and_echo_color "${RED}========================================${NC}"
+        if ! run_tests "Integration" "Integration" "false"; then
+            END_TIME=$(date +%s)
+            TOTAL_SECONDS=$((END_TIME - START_TIME))
+            TOTAL_MINUTES=$((TOTAL_SECONDS / 60))
+            REMAINING_SECONDS=$((TOTAL_SECONDS % 60))
+            if [ $TOTAL_MINUTES -gt 0 ]; then
+                TIME_DISPLAY="${TOTAL_MINUTES}m ${REMAINING_SECONDS}s"
+            else
+                TIME_DISPLAY="${TOTAL_SECONDS}s"
+            fi
+            
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo_color "${RED}Integration tests failed.${NC}"
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo ""
+            log_and_echo "Test run completed with failures at $(date)"
+            log_and_echo "Total execution time: $TIME_DISPLAY"
+            log_and_echo "Full output saved to: $LOG_FILE"
+            exit 1
+        fi
+        ;;
+    
+    coverage)
+        log_and_echo_color "${YELLOW}Running Full Test Suite with Coverage...${NC}"
         log_and_echo ""
-        log_and_echo "Test run completed with failures at $(date)"
-        log_and_echo "Total execution time: $TIME_DISPLAY"
-        log_and_echo "Full output saved to: $LOG_FILE"
-        exit 1
-    fi
-else
-    log_and_echo_color "${YELLOW}Skipping integration tests (use --integration to run them)${NC}"
-    log_and_echo ""
-fi
+        
+        # Check if MARKETDATA_TOKEN is set
+        if [ -z "${MARKETDATA_TOKEN:-}" ]; then
+            log_and_echo_color "${YELLOW}Warning: MARKETDATA_TOKEN not set. Integration tests may be skipped.${NC}"
+            log_and_echo ""
+        fi
+        
+        # Extract timestamp from log file name (format: test-output-YYYYMMDD-HHMMSS.log)
+        # If custom log file was provided, generate timestamp from current time
+        local timestamp
+        if [[ "$LOG_FILE" =~ test-output-([0-9]{8}-[0-9]{6})\.log$ ]]; then
+            timestamp="${BASH_REMATCH[1]}"
+        else
+            # Generate timestamp from current time if custom log file name
+            timestamp=$(date +%Y%m%d-%H%M%S)
+        fi
+        
+        # Create timestamped coverage output paths
+        COVERAGE_HTML_DIR="build/coverage-${timestamp}"
+        COVERAGE_TEXT_FILE="build/coverage-${timestamp}.txt"
+        COVERAGE_CLOVER_FILE="build/logs/clover-${timestamp}.xml"
+        
+        # Ensure build/logs directory exists
+        mkdir -p "build/logs"
+        
+        log_and_echo "Coverage reports will be saved with timestamp: ${timestamp}"
+        log_and_echo "  HTML: ${COVERAGE_HTML_DIR}/"
+        log_and_echo "  Text: ${COVERAGE_TEXT_FILE}"
+        log_and_echo "  Clover: ${COVERAGE_CLOVER_FILE}"
+        log_and_echo ""
+        
+        # Run both test suites with coverage enabled
+        log_and_echo_color "${BLUE}========================================${NC}"
+        log_and_echo_color "${BLUE}Running Unit and Integration Tests with Coverage${NC}"
+        log_and_echo_color "${BLUE}========================================${NC}"
+        log_and_echo ""
+        
+        # Build PHPUnit command arguments for coverage run
+        local phpunit_args=(
+            -d output_buffering=0
+            vendor/bin/phpunit
+            --testsuite "Unit"
+            --testsuite "Integration"
+            --testdox
+            --display-skipped
+            --display-incomplete
+            --display-all-issues
+            --coverage-html "${COVERAGE_HTML_DIR}"
+            --coverage-text "${COVERAGE_TEXT_FILE}"
+            --coverage-clover "${COVERAGE_CLOVER_FILE}"
+        )
+        
+        # Run tests with coverage
+        $PHP_BIN "${phpunit_args[@]}" 2>&1 | tee -a "$LOG_FILE"
+        exit_code=${PIPESTATUS[0]}
+        
+        log_and_echo ""
+        
+        if [ $exit_code -ne 0 ]; then
+            END_TIME=$(date +%s)
+            TOTAL_SECONDS=$((END_TIME - START_TIME))
+            TOTAL_MINUTES=$((TOTAL_SECONDS / 60))
+            REMAINING_SECONDS=$((TOTAL_SECONDS % 60))
+            if [ $TOTAL_MINUTES -gt 0 ]; then
+                TIME_DISPLAY="${TOTAL_MINUTES}m ${REMAINING_SECONDS}s"
+            else
+                TIME_DISPLAY="${TOTAL_SECONDS}s"
+            fi
+            
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo_color "${RED}Tests failed.${NC}"
+            log_and_echo_color "${RED}========================================${NC}"
+            log_and_echo ""
+            log_and_echo "Test run completed with failures at $(date)"
+            log_and_echo "Total execution time: $TIME_DISPLAY"
+            log_and_echo "Full output saved to: $LOG_FILE"
+            exit 1
+        fi
+        ;;
+esac
 
 # Calculate total execution time
 END_TIME=$(date +%s)
@@ -257,6 +380,14 @@ fi
 # Summary
 log_and_echo_color "${GREEN}========================================${NC}"
 log_and_echo_color "${GREEN}All tests passed!${NC}"
+if [ "$TEST_MODE" = "coverage" ]; then
+    log_and_echo_color "${GREEN}Coverage report generated.${NC}"
+    log_and_echo ""
+    log_and_echo "Coverage reports saved:"
+    log_and_echo "  HTML: ${COVERAGE_HTML_DIR}/"
+    log_and_echo "  Text: ${COVERAGE_TEXT_FILE}"
+    log_and_echo "  Clover: ${COVERAGE_CLOVER_FILE}"
+fi
 log_and_echo_color "${GREEN}========================================${NC}"
 log_and_echo ""
 log_and_echo "Test run completed successfully at $(date)"

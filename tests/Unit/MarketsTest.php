@@ -40,6 +40,11 @@ class MarketsTest extends TestCase
      */
     protected function setUp(): void
     {
+        // Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
+        // This prevents real API calls during Client construction by ensuring
+        // _setup_rate_limits() skips the /user/ endpoint validation call.
+        $this->clearMarketDataToken();
+        
         // Use empty token for unit tests to skip validation (tests use mocks anyway)
         $token = "";
         $client = new Client($token);

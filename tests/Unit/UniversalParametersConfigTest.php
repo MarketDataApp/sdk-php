@@ -61,6 +61,12 @@ class UniversalParametersConfigTest extends TestCase
         $this->originalCwd = getcwd();
         $this->saveEnvironmentState();
         $this->clearUniversalParamEnvVars();
+        
+        // Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
+        // This prevents real API calls during Client construction by ensuring
+        // _setup_rate_limits() skips the /user/ endpoint validation call.
+        $this->clearMarketDataToken();
+        
         // Create client with empty token for unit tests (uses mocks for integration tests)
         $this->client = new Client('');
     }
