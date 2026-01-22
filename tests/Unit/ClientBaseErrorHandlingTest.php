@@ -629,4 +629,117 @@ class ClientBaseErrorHandlingTest extends TestCase
 
         $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
     }
+
+    /**
+     * Test sync execute with RequestError catch block - retryable error that exhausts retries.
+     * 
+     * This test covers lines 436-451 in ClientBase.php - the RequestError catch block
+     * in the execute() method when validateResponseStatusCode throws RequestError
+     * and retries are exhausted.
+     *
+     * @return void
+     */
+    public function testSyncExecute_withRequestErrorCatchBlock_exhaustsRetries(): void
+    {
+        // Create a custom Guzzle client that returns a 5xx response instead of throwing ServerException
+        // This allows validateResponseStatusCode to throw RequestError, which is caught by the RequestError catch block
+        $mockHandler = new MockHandler([
+            new Response(502, [], json_encode(['errmsg' => 'Bad Gateway'])),
+            new Response(502, [], json_encode(['errmsg' => 'Bad Gateway'])),
+            new Response(502, [], json_encode(['errmsg' => 'Bad Gateway'])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        $this->expectException(RequestError::class);
+        $this->expectExceptionMessage('Bad Gateway');
+
+        // This will call execute(), which will get a 5xx response, validateResponseStatusCode will throw RequestError,
+        // and the RequestError catch block will handle retries until exhausted
+        $this->client->stocks->quote('AAPL');
+    }
+
+    /**
+     * Test sync execute with RequestError catch block - retryable error that succeeds after retry.
+     * 
+     * This test covers lines 436-447 in ClientBase.php - the RequestError catch block
+     * in the execute() method when validateResponseStatusCode throws RequestError
+     * and retry succeeds.
+     *
+     * @return void
+     */
+    public function testSyncExecute_withRequestErrorCatchBlock_retriesAndSucceeds(): void
+    {
+        // Create a custom Guzzle client that returns a 5xx response then succeeds
+        $mockHandler = new MockHandler([
+            new Response(502, [], json_encode(['errmsg' => 'Bad Gateway'])),
+            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        // This should succeed after retry
+        $result = $this->client->stocks->quote('AAPL');
+
+        $this->assertNotNull($result);
+        $this->assertIsObject($result);
+    }
+
+    /**
+     * Test sync execute with RequestError catch block - service offline skips retries.
+     * 
+     * This test covers lines 436-441 in ClientBase.php - the RequestError catch block
+     * when service is offline and retries should be skipped.
+     *
+     * @return void
+     */
+    public function testSyncExecute_withRequestErrorCatchBlock_serviceOffline_skipsRetries(): void
+    {
+        // Mock ApiStatusData to return OFFLINE status
+        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData->method('getApiStatus')
+            ->willReturn(\MarketDataApp\Enums\ApiStatusResult::OFFLINE);
+
+        // Use reflection to replace the singleton instance
+        $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
+        $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
+        $apiStatusDataProperty->setAccessible(true);
+        
+        // Save original value
+        $originalApiStatusData = $apiStatusDataProperty->getValue();
+        
+        try {
+            // Replace with mock
+            $apiStatusDataProperty->setValue(null, $mockApiStatusData);
+            
+            // Create a custom Guzzle client that returns a 5xx response instead of throwing ServerException
+            $mockHandler = new MockHandler([
+                new Response(502, [], json_encode(['errmsg' => 'Bad Gateway'])),
+            ]);
+            $handlerStack = HandlerStack::create($mockHandler);
+            $mockGuzzle = new \GuzzleHttp\Client([
+                'handler' => $handlerStack,
+                'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+            ]);
+            $this->client->setGuzzle($mockGuzzle);
+
+            $this->expectException(RequestError::class);
+            $this->expectExceptionMessage('Bad Gateway');
+
+            // This will call execute(), which will get a 5xx response, validateResponseStatusCode will throw RequestError,
+            // and the RequestError catch block will check service status and skip retries (throw immediately)
+            $this->client->stocks->quote('AAPL');
+        } finally {
+            // Restore original singleton
+            $apiStatusDataProperty->setValue(null, $originalApiStatusData);
+        }
+    }
 }
