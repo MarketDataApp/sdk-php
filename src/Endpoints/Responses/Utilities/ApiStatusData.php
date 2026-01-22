@@ -100,7 +100,7 @@ class ApiStatusData
             return false;
         }
 
-        $age = Carbon::now()->diffInSeconds($this->lastRefreshed);
+        $age = Carbon::now()->diffInSeconds($this->lastRefreshed, true);
         return $age < Settings::API_STATUS_CACHE_VALIDITY;
     }
 
@@ -115,7 +115,7 @@ class ApiStatusData
             return false;
         }
 
-        $age = Carbon::now()->diffInSeconds($this->lastRefreshed);
+        $age = Carbon::now()->diffInSeconds($this->lastRefreshed, true);
         return $age >= Settings::REFRESH_API_STATUS_INTERVAL && $age < Settings::API_STATUS_CACHE_VALIDITY;
     }
 
@@ -228,7 +228,7 @@ class ApiStatusData
     {
         // If cache is fresh (< 4min30sec): Return immediately, no async update
         if ($this->lastRefreshed !== null) {
-            $age = Carbon::now()->diffInSeconds($this->lastRefreshed);
+            $age = Carbon::now()->diffInSeconds($this->lastRefreshed, true);
             if ($age < Settings::REFRESH_API_STATUS_INTERVAL) {
                 return $this->getServiceStatus($service);
             }

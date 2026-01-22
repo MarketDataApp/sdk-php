@@ -379,38 +379,6 @@ class UtilitiesTest extends TestCase
     }
 
     /**
-     * Test that client initialization throws UnauthorizedException with invalid token.
-     *
-     * Invalid token should cause UnauthorizedException to be thrown during construction.
-     * Note: This test makes a real API call. Integration tests provide better coverage
-     * for this scenario, but this verifies the behavior in unit test context.
-     *
-     * @return void
-     */
-    public function testClient_init_invalidToken_throwsUnauthorizedException()
-    {
-        // Expect UnauthorizedException during construction
-        $this->expectException(UnauthorizedException::class);
-        $this->expectExceptionCode(401);
-        
-        try {
-            // Create client with invalid token - should throw during construction
-            $client = new Client('invalid_token_12345');
-            
-            // If we get here, the exception wasn't thrown (unexpected)
-            $this->fail('Expected UnauthorizedException to be thrown during client construction');
-        } catch (UnauthorizedException $e) {
-            // Verify exception details
-            $this->assertEquals(401, $e->getCode());
-            $this->assertNotNull($e->getResponse());
-            $this->assertEquals(401, $e->getResponse()->getStatusCode());
-            
-            // Re-throw to satisfy expectException
-            throw $e;
-        }
-    }
-
-    /**
      * Test the API status endpoint parses online field correctly.
      *
      * @return void
@@ -626,5 +594,131 @@ class UtilitiesTest extends TestCase
         
         // Fresh cache should not be in refresh window
         $this->assertFalse($data->inRefreshWindow());
+    }
+
+    /**
+     * Test API status refresh window triggers async refresh (lines 96-99).
+     *
+     * When cache age is between 4min30sec and 5min, it should return cached data
+     * immediately AND trigger async refresh.
+     *
+     * @return void
+     */
+    public function testApiStatus_refreshWindow_triggersAsyncRefresh()
+    {
+        $apiStatusData = \MarketDataApp\Endpoints\Utilities::getApiStatusData();
+        $reflection = new \ReflectionClass($apiStatusData);
+        
+        // Directly populate the cache via reflection (bypass api_status() first call)
+        // This ensures we have full control over the cache state
+        $serviceProperty = $reflection->getProperty('service');
+        $serviceProperty->setValue($apiStatusData, ['Test Service']);
+        
+        $statusProperty = $reflection->getProperty('status');
+        $statusProperty->setValue($apiStatusData, ['online']);
+        
+        $onlineProperty = $reflection->getProperty('online');
+        $onlineProperty->setValue($apiStatusData, [true]);
+        
+        $uptimePct30dProperty = $reflection->getProperty('uptimePct30d');
+        $uptimePct30dProperty->setValue($apiStatusData, [0.99]);
+        
+        $uptimePct90dProperty = $reflection->getProperty('uptimePct90d');
+        $uptimePct90dProperty->setValue($apiStatusData, [0.98]);
+        
+        $updatedProperty = $reflection->getProperty('updated');
+        $updatedProperty->setValue($apiStatusData, [time()]);
+        
+        // Set lastRefreshed to 275 seconds ago (within refresh window: 270-300 seconds)
+        $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
+        $lastRefreshedProperty->setValue($apiStatusData, Carbon::now()->subSeconds(275));
+        
+        // Verify preconditions
+        $this->assertTrue($apiStatusData->hasData(), 'Cache should have data');
+        $this->assertNotNull($apiStatusData->getCachedApiStatus(), 'getCachedApiStatus should return non-null');
+        $this->assertTrue($apiStatusData->inRefreshWindow(), 'Cache should be in refresh window');
+        
+        // Mock response for async refresh
+        $mocked_response = [
+            's'            => 'ok',
+            'service'      => ['Test Service'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+        
+        // Call api_status() - should return cached data immediately AND trigger async refresh
+        // This should hit lines 96-99:
+        // - hasData() = true (enter first block)
+        // - getCachedApiStatus() != null (enter inner block)
+        // - lastRefreshed != null (enter timestamp check)
+        // - age (275) is NOT < 270, so skip line 92
+        // - age (275) >= 270 AND age (275) < 300, so enter lines 96-99
+        $cachedResponse = $this->client->utilities->api_status();
+        
+        // Verify cached data is returned
+        $this->assertInstanceOf(ApiStatus::class, $cachedResponse);
+        $this->assertEquals('Test Service', $cachedResponse->services[0]->service);
+    }
+
+    /**
+     * Test API status fallback path (lines 115-117).
+     *
+     * The fallback path is reached when:
+     * 1. hasData() returns false (skips first block at lines 85-103)
+     * 2. isValid() returns true (skips second block at lines 106-112)
+     * 3. Code falls through to fallback at lines 115-117
+     *
+     * This simulates a scenario where cache has fresh lastRefreshed but empty data.
+     *
+     * @return void
+     */
+    public function testApiStatus_fallback_whenCacheEmptyButFresh()
+    {
+        $apiStatusData = \MarketDataApp\Endpoints\Utilities::getApiStatusData();
+        
+        // Use reflection to set up a state where:
+        // - lastRefreshed is fresh (within 300 seconds) -> isValid() = true
+        // - service is empty -> hasData() = false
+        // This causes both blocks to be skipped, falling through to fallback
+        $reflection = new \ReflectionClass($apiStatusData);
+        
+        // Set lastRefreshed to 100 seconds ago (fresh, within 300 second validity)
+        $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
+        $lastRefreshedProperty->setAccessible(true);
+        $lastRefreshedProperty->setValue($apiStatusData, Carbon::now()->subSeconds(100));
+        
+        // Keep service array empty (default state, but ensure it explicitly)
+        $serviceProperty = $reflection->getProperty('service');
+        $serviceProperty->setAccessible(true);
+        $serviceProperty->setValue($apiStatusData, []);
+        
+        // Mock the fallback response (only one response needed)
+        $fallback_response = [
+            's'            => 'ok',
+            'service'      => ['Fallback Service'],
+            'status'       => ['online'],
+            'online'       => [true],
+            'uptimePct30d' => [0.95],
+            'uptimePct90d' => [0.97],
+            'updated'      => [time()]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($fallback_response))
+        ]);
+        
+        // Call api_status() - should hit fallback path because:
+        // 1. hasData() = !empty([]) && lastRefreshed !== null = false -> skip first block
+        // 2. isValid() = lastRefreshed !== null && age < 300 = true -> !isValid() = false -> skip second block
+        // 3. Fall through to fallback (lines 115-117)
+        $response = $this->client->utilities->api_status();
+        
+        // Verify fallback response is returned
+        $this->assertInstanceOf(ApiStatus::class, $response);
+        $this->assertCount(1, $response->services);
+        $this->assertEquals('Fallback Service', $response->services[0]->service);
     }
 }

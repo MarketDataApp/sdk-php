@@ -87,7 +87,7 @@ class Utilities
             if ($cached !== null) {
                 $lastRefreshed = $apiStatusData->getLastRefreshed();
                 if ($lastRefreshed !== null) {
-                    $age = Carbon::now()->diffInSeconds($lastRefreshed);
+                    $age = Carbon::now()->diffInSeconds($lastRefreshed, true);
                     if ($age < Settings::REFRESH_API_STATUS_INTERVAL) {
                         return $cached;
                     }

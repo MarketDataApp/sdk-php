@@ -33,6 +33,7 @@ class ApiStatus
     {
         // Convert the response to this object.
         $this->status = $response->s;
+        $this->services = [];
 
         for ($i = 0; $i < count($response->service); $i++) {
             // Handle online field - default to true if missing for backward compatibility
