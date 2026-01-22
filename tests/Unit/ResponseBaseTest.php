@@ -224,7 +224,7 @@ class ResponseBaseTest extends TestCase
     /**
      * Test saveToFile with file write failure on Windows.
      * 
-     * Windows-only: Uses a protected system directory which requires admin privileges to write to.
+     * Windows-only: Creates a read-only file and attempts to overwrite it, which should fail.
      *
      * @return void
      */
@@ -242,18 +242,38 @@ class ResponseBaseTest extends TestCase
             'csv' => 'Symbol,Price\nAAPL,150.0'
         ]);
 
-        // Try to write to a protected system directory that requires admin privileges
-        // System32 is a protected directory on Windows - writing to it should fail without admin rights
-        // This will cause file_put_contents to fail, triggering the RuntimeException
-        $filename = 'C:\\Windows\\System32\\test_' . uniqid() . '.csv';
+        // Create a file and make it read-only, then try to overwrite it
+        // On Windows, attempting to overwrite a read-only file should fail
+        $tempDir = sys_get_temp_dir() . '\\' . uniqid('test_', true);
+        if (mkdir($tempDir, 0755, true)) {
+            $this->tempDirs[] = $tempDir;
+            $filename = $tempDir . '\\test.csv';
+            
+            // Create the file first
+            file_put_contents($filename, 'existing content');
+            $this->tempFiles[] = $filename;
+            
+            // Make it read-only
+            chmod($filename, 0444);
+            
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage('Failed to write file');
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Failed to write file');
-
-        // This is an error-path test - we're verifying the exception is thrown correctly
-        // The PHP warning from file_put_contents() is expected and doesn't indicate a problem
-        // Use @ operator to suppress the expected warning
-        @$response->saveToFile($filename);
+            // This is an error-path test - we're verifying the exception is thrown correctly
+            // The PHP warning from file_put_contents() is expected and doesn't indicate a problem
+            // Use @ operator to suppress the expected warning
+            try {
+                @$response->saveToFile($filename);
+            } catch (\RuntimeException $e) {
+                // Verify the error message
+                $this->assertStringContainsString('Failed to write file', $e->getMessage());
+                // Restore permissions for cleanup
+                chmod($filename, 0644);
+                throw $e;
+            }
+        } else {
+            $this->markTestSkipped('Could not create test directory');
+        }
     }
 
     /**
