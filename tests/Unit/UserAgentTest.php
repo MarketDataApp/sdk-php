@@ -214,6 +214,28 @@ class UserAgentTest extends TestCase
     }
 
     /**
+     * Test that makeRawRequest re-throws non-401 ClientExceptions.
+     *
+     * This test covers line 833 in ClientBase.php where non-401 ClientExceptions
+     * are re-thrown after being caught.
+     *
+     * @return void
+     */
+    public function testMakeRawRequest_withNon401ClientException_rethrowsException(): void
+    {
+        // Mock a 403 Forbidden response (non-401 ClientException)
+        // MockHandler will automatically throw ClientException for 4xx responses
+        $this->setMockResponsesWithHistory([
+            new Response(403, [], json_encode(['errmsg' => 'Forbidden']))
+        ]);
+
+        // Expect ClientException to be re-thrown (not converted to UnauthorizedException)
+        $this->expectException(\GuzzleHttp\Exception\ClientException::class);
+
+        $this->client->makeRawRequest('user/');
+    }
+
+    /**
      * Test that User-Agent header format follows RFC 7231 (product/product-version).
      *
      * @return void
