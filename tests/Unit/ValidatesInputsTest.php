@@ -90,6 +90,59 @@ class ValidatesInputsTest extends TestCase
     }
 
     /**
+     * Test parseDateToTimestamp with null input.
+     */
+    public function testParseDateToTimestamp_null_returnsNull(): void
+    {
+        $result = $this->invokeMethod('parseDateToTimestamp', [null]);
+        $this->assertNull($result);
+    }
+
+    /**
+     * Test parseDateToTimestamp with spreadsheet format dates (< 100000).
+     */
+    public function testParseDateToTimestamp_spreadsheetFormat_returnsTimestamp(): void
+    {
+        // Test with spreadsheet date 45292 (approximately 2024-01-01)
+        $result = $this->invokeMethod('parseDateToTimestamp', ['45292']);
+        $this->assertIsInt($result);
+        $this->assertGreaterThan(0, $result);
+        
+        // Test with decimal spreadsheet date
+        $result2 = $this->invokeMethod('parseDateToTimestamp', ['45292.5']);
+        $this->assertIsInt($result2);
+        $this->assertGreaterThan(0, $result2);
+    }
+
+    /**
+     * Test parseDateToTimestamp with unix timestamp format (>= 100000).
+     * Uses timestamps that strtotime() cannot parse, so they go through the numeric path.
+     */
+    public function testParseDateToTimestamp_unixTimestamp_returnsTimestamp(): void
+    {
+        // Test with unix timestamp that strtotime() cannot parse
+        $result = $this->invokeMethod('parseDateToTimestamp', ['1704067200']);
+        $this->assertEquals(1704067200, $result);
+        
+        // Test with another unix timestamp that strtotime() cannot parse (>= 100000)
+        $result2 = $this->invokeMethod('parseDateToTimestamp', ['1000000000']);
+        $this->assertEquals(1000000000, $result2);
+    }
+
+    /**
+     * Test parseDateToTimestamp with unparseable non-numeric values.
+     */
+    public function testParseDateToTimestamp_unparseable_returnsNull(): void
+    {
+        // Values that fail strtotime() and are not numeric
+        $result = $this->invokeMethod('parseDateToTimestamp', ['invalid date']);
+        $this->assertNull($result);
+        
+        $result2 = $this->invokeMethod('parseDateToTimestamp', ['not a date']);
+        $this->assertNull($result2);
+    }
+
+    /**
      * Test validateDateRange with valid range.
      */
     public function testValidateDateRange_validRange_noException(): void
