@@ -58,6 +58,7 @@ class MarketsTest extends TestCase
      */
     public function testStatus_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'      => 'ok',
             'date'   => [1680580800],
@@ -88,6 +89,7 @@ class MarketsTest extends TestCase
      */
     public function testStatus_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = 's, date, status';
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -108,6 +110,7 @@ class MarketsTest extends TestCase
      */
     public function testStatus_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Date' => 1680580800,
             'Status' => 'open'
@@ -128,12 +131,69 @@ class MarketsTest extends TestCase
     }
 
     /**
+     * Test the status endpoint with human-readable format and non-numeric date string.
+     * This covers the Carbon::parse() path for non-numeric date values.
+     *
+     * @return void
+     */
+    public function testStatus_humanReadable_nonNumericDate_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            'Date' => '2023-04-05',
+            'Status' => 'open'
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            date: '2023-04-05',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->statuses);
+        $this->assertInstanceOf(Status::class, $response->statuses[0]);
+        $this->assertEquals(Carbon::parse($mocked_response['Date']), $response->statuses[0]->date);
+        $this->assertEquals($mocked_response['Status'], $response->statuses[0]->status);
+    }
+
+    /**
+     * Test the status endpoint with human-readable format where Date field is an array.
+     * This covers the array handling path when Date is an array.
+     *
+     * @return void
+     */
+    public function testStatus_humanReadable_dateAsArray_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            'Date' => ['2023-04-05'],
+            'Status' => 'open'
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            date: '2023-04-05',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->statuses);
+        $this->assertInstanceOf(Status::class, $response->statuses[0]);
+        $this->assertEquals(Carbon::parse($mocked_response['Date'][0]), $response->statuses[0]->date);
+        $this->assertEquals($mocked_response['Status'], $response->statuses[0]->status);
+    }
+
+    /**
      * Test that date_format parameter can be used with CSV format for markets.
      *
      * @return void
      */
     public function testParameters_dateFormat_withCsv_success(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = 's, date, status';
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 

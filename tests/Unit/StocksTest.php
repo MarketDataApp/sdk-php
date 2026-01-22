@@ -45,6 +45,7 @@ class StocksTest extends TestCase
 
     /**
      * Mocked response data for AAPL stock.
+     * Mock response: NOT from real API output (synthetic/test data)
      *
      * @var array
      */
@@ -65,6 +66,7 @@ class StocksTest extends TestCase
 
     /**
      * Mocked response data for multiple stocks.
+     * Mock response: NOT from real API output (synthetic/test data)
      *
      * @var array
      */
@@ -112,6 +114,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_fromTo_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'c' => [22.84, 23.93, 21.95, 21.44, 21.15],
@@ -155,6 +158,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -180,6 +184,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Date' => [1659326400, 1659412800],
             'Open' => [22.41, 24.08],
@@ -218,6 +223,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'no_data',
         ];
@@ -245,6 +251,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_noDataNextTime_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663958094,
@@ -273,6 +280,7 @@ class StocksTest extends TestCase
      */
     public function testBulkCandles_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'c' => [22.84, 23.93],
@@ -312,6 +320,7 @@ class StocksTest extends TestCase
      */
     public function testBulkCandles_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -333,6 +342,7 @@ class StocksTest extends TestCase
      */
     public function testBulkCandles_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Date' => [1659326400, 1659412800],
             'Open' => [22.41, 24.08],
@@ -364,6 +374,7 @@ class StocksTest extends TestCase
      */
     public function testBulkCandles_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'no_data',
         ];
@@ -401,6 +412,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -431,6 +443,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "a, b, c";
         $this->setMockResponses([
             new Response(200, [], $mocked_response),
@@ -451,6 +464,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_52week_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data - extends class property)
         $mocked_response = $this->aapl_mocked_response;
         $mocked_response['52weekHigh'] = [149.08];
         $mocked_response['52weekLow'] = [149.07];
@@ -485,6 +499,7 @@ class StocksTest extends TestCase
      */
     public function testQuotes_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $nflx_mocked_response = [
             's'         => 'ok',
             'symbol'    => ['NFLX'],
@@ -532,6 +547,7 @@ class StocksTest extends TestCase
      */
     public function testEarnings_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'              => 'ok',
             'symbol'         => ['AAPL', 'AAPL'],
@@ -579,6 +595,7 @@ class StocksTest extends TestCase
      */
     public function testEarnings_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, fiscalYear...";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
         $response = $this->client->stocks->earnings(
@@ -598,6 +615,7 @@ class StocksTest extends TestCase
      */
     public function testEarnings_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => ['AAPL', 'AAPL'],
             'Fiscal Year' => [2023, 2023],
@@ -647,6 +665,7 @@ class StocksTest extends TestCase
      */
     public function testNews_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'               => 'ok',
             'symbol'          => 'AAPL',
@@ -674,6 +693,7 @@ class StocksTest extends TestCase
      */
     public function testNews_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, headline...";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
         $news = $this->client->stocks->news(
@@ -693,6 +713,7 @@ class StocksTest extends TestCase
      */
     public function testNews_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'headline' => 'Test Headline',
             'content' => 'Test Content',
@@ -756,6 +777,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => ['AAPL'],
             'Ask' => [149.08],
@@ -794,12 +816,63 @@ class StocksTest extends TestCase
     }
 
     /**
+     * Test the quote endpoint with human-readable format and 52-week high/low.
+     * Uses real API response values from a live API call.
+     *
+     * @return void
+     */
+    public function testQuote_humanReadable_52week_success()
+    {
+        // Real API response values captured from live API call on 2026-01-22
+        $mocked_response = [
+            'Symbol' => ['AAPL'],
+            'Ask' => [248.8],
+            'Ask Size' => [200],
+            'Bid' => [248.7],
+            'Bid Size' => [600],
+            'Mid' => [248.75],
+            'Last' => [247.65],
+            'Change $' => [0.95],
+            'Change %' => [0.0039],
+            'Volume' => [54933217],
+            'Date' => [1769043595],
+            '52 Week High' => [288.62],
+            '52 Week Low' => [169.2101]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            true,
+            new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('ok', $quote->status);
+        $this->assertEquals($mocked_response['Symbol'][0], $quote->symbol);
+        $this->assertEquals($mocked_response['Ask'][0], $quote->ask);
+        $this->assertEquals($mocked_response['Ask Size'][0], $quote->ask_size);
+        $this->assertEquals($mocked_response['Bid'][0], $quote->bid);
+        $this->assertEquals($mocked_response['Bid Size'][0], $quote->bid_size);
+        $this->assertEquals($mocked_response['Mid'][0], $quote->mid);
+        $this->assertEquals($mocked_response['Last'][0], $quote->last);
+        $this->assertEquals($mocked_response['Change $'][0], $quote->change);
+        $this->assertEquals($mocked_response['Change %'][0], $quote->change_percent);
+        $this->assertEquals($mocked_response['Volume'][0], $quote->volume);
+        $this->assertEquals(Carbon::parse($mocked_response['Date'][0]), $quote->updated);
+        $this->assertEquals($mocked_response['52 Week High'][0], $quote->fifty_two_week_high);
+        $this->assertEquals($mocked_response['52 Week Low'][0], $quote->fifty_two_week_low);
+    }
+
+    /**
      * Test the quote endpoint with human_readable=false.
      *
      * @return void
      */
     public function testQuote_humanReadableFalse_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -822,6 +895,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_humanReadableNull_usesRegularFormat()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -845,6 +919,7 @@ class StocksTest extends TestCase
      */
     public function testQuotes_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $human_readable_response = [
             'Symbol' => ['AAPL'],
             'Ask' => [149.08],
@@ -883,6 +958,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_modeLive_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -907,6 +983,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_modeCached_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -931,6 +1008,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_modeDelayed_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -955,6 +1033,7 @@ class StocksTest extends TestCase
      */
     public function testQuote_modeNull_notIncluded()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -978,6 +1057,7 @@ class StocksTest extends TestCase
      */
     public function testQuotes_mode_success()
     {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
         $mocked_response = $this->aapl_mocked_response;
         $this->setMockResponses([
             new Response(200, [], json_encode($mocked_response)),
@@ -1004,6 +1084,7 @@ class StocksTest extends TestCase
      */
     public function testParameters_dateFormat_withCsv_success(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1054,6 +1135,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_html_withDateFormat_unix(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "<table><tr><th>Date</th></tr><tr><td>1234567890</td></tr></table>";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1079,6 +1161,7 @@ class StocksTest extends TestCase
      */
     public function testParameters_dateFormat_null_withCsv_success(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1103,6 +1186,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_csv_withDateFormat_unix(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1128,6 +1212,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_csv_withDateFormat_timestamp(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1153,6 +1238,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_csv_withDateFormat_spreadsheet(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, c, h, l, o, v, t";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1178,6 +1264,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_singleSymbol_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'symbol' => ['AAPL'],
@@ -1214,6 +1301,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_multipleSymbols_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'symbol' => ['AAPL', 'META', 'MSFT'],
@@ -1251,6 +1339,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_extendedTrue_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'symbol' => ['AAPL'],
@@ -1277,6 +1366,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_extendedFalse_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             'symbol' => ['AAPL'],
@@ -1303,6 +1393,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, mid, change, changepct, updated";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -1324,6 +1415,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => ['AAPL', 'META'],
             'Mid' => [149.07, 320.45],
@@ -1363,6 +1455,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'no_data',
         ];
@@ -1387,6 +1480,7 @@ class StocksTest extends TestCase
      */
     public function testPrices_errorResponse_throwsApiException()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'error',
             'errmsg' => 'Invalid request'
@@ -1420,6 +1514,7 @@ class StocksTest extends TestCase
      */
     public function testCandles_relativeDates_noException(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $this->setMockResponses([
             new Response(200, [], json_encode(['s' => 'ok', 't' => [], 'o' => [], 'h' => [], 'l' => [], 'c' => [], 'v' => []])),
         ]);

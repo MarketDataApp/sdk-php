@@ -151,12 +151,12 @@ class Quote extends ResponseBase
             $this->updated = Carbon::parse($responseArray['Date'][0]);
             
             // 52-week high/low may not be present in human-readable format
-            // Check if they exist
-            if (isset($responseArray['52week High'][0])) {
-                $this->fifty_two_week_high = $responseArray['52week High'][0];
+            // Check if they exist (API returns "52 Week High" with space)
+            if (isset($responseArray['52 Week High'][0])) {
+                $this->fifty_two_week_high = $responseArray['52 Week High'][0];
             }
-            if (isset($responseArray['52week Low'][0])) {
-                $this->fifty_two_week_low = $responseArray['52week Low'][0];
+            if (isset($responseArray['52 Week Low'][0])) {
+                $this->fifty_two_week_low = $responseArray['52 Week Low'][0];
             }
         } else {
             // Regular format

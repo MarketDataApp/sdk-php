@@ -61,6 +61,7 @@ class MutualFundsTest extends TestCase
      */
     public function testCandles_fromTo_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'ok',
             't' => [1577941200, 1578027600, 1578286800, 1578373200, 1578459600, 1578546000, 1578632400],
@@ -102,6 +103,7 @@ class MutualFundsTest extends TestCase
      */
     public function testCandles_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, t, o, h, l, c\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -127,6 +129,7 @@ class MutualFundsTest extends TestCase
      */
     public function testCandles_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's' => 'no_data',
         ];
@@ -154,6 +157,7 @@ class MutualFundsTest extends TestCase
      */
     public function testCandles_noDataNextTime_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663958094,

@@ -292,7 +292,7 @@ case "$TEST_MODE" in
         
         # Extract timestamp from log file name (format: test-output-YYYYMMDD-HHMMSS.log)
         # If custom log file was provided, generate timestamp from current time
-        local timestamp
+        timestamp=""
         if [[ "$LOG_FILE" =~ test-output-([0-9]{8}-[0-9]{6})\.log$ ]]; then
             timestamp="${BASH_REMATCH[1]}"
         else
@@ -321,17 +321,17 @@ case "$TEST_MODE" in
         log_and_echo ""
         
         # Build PHPUnit command arguments for coverage run
-        local phpunit_args=(
+        # Note: --coverage-text uses = format, others use space-separated format
+        # Omit --testsuite flags to run all tests (both Unit and Integration)
+        phpunit_args=(
             -d output_buffering=0
             vendor/bin/phpunit
-            --testsuite "Unit"
-            --testsuite "Integration"
             --testdox
             --display-skipped
             --display-incomplete
             --display-all-issues
             --coverage-html "${COVERAGE_HTML_DIR}"
-            --coverage-text "${COVERAGE_TEXT_FILE}"
+            --coverage-text="${COVERAGE_TEXT_FILE}"
             --coverage-clover "${COVERAGE_CLOVER_FILE}"
         )
         

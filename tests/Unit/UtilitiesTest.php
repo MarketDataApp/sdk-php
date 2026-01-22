@@ -64,6 +64,7 @@ class UtilitiesTest extends TestCase
      */
     public function testApiStatus_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['Customer Dashboard', 'Historical Data API', 'Real-time Data API', 'Website'],
@@ -100,6 +101,7 @@ class UtilitiesTest extends TestCase
      */
     public function testHeaders_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'accept'            => '*/*',
             'accept-encoding'   => 'gzip',
@@ -415,6 +417,7 @@ class UtilitiesTest extends TestCase
      */
     public function testApiStatus_parsesOnlineField()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['Test Service'],
@@ -439,6 +442,7 @@ class UtilitiesTest extends TestCase
      */
     public function testApiStatus_missingOnlineField_defaultsToTrue()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['Test Service'],
@@ -464,6 +468,7 @@ class UtilitiesTest extends TestCase
      */
     public function testGetServiceStatus_onlineService_returnsOnline()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -486,6 +491,7 @@ class UtilitiesTest extends TestCase
      */
     public function testGetServiceStatus_offlineService_returnsOffline()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -508,6 +514,7 @@ class UtilitiesTest extends TestCase
      */
     public function testGetServiceStatus_unknownService_returnsUnknown()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -530,6 +537,7 @@ class UtilitiesTest extends TestCase
      */
     public function testRefreshApiStatus_blocking_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -552,6 +560,7 @@ class UtilitiesTest extends TestCase
      */
     public function testRefreshApiStatus_async_returnsImmediately()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -579,6 +588,7 @@ class UtilitiesTest extends TestCase
         $data = new ApiStatusData();
         $this->assertFalse($data->isValid()); // No cache initially
 
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = (object)[
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],
@@ -602,6 +612,7 @@ class UtilitiesTest extends TestCase
         $data = new ApiStatusData();
         $this->assertFalse($data->inRefreshWindow()); // No cache initially
 
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = (object)[
             's'            => 'ok',
             'service'      => ['/v1/stocks/quotes/'],

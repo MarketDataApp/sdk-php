@@ -22,6 +22,8 @@ use PHPUnit\Framework\TestCase;
  * Test case for retry functionality in the MarketDataApp SDK.
  *
  * This class tests retry logic for sync, async, and parallel requests.
+ *
+ * Note: All mock responses in this test class are NOT from real API output (synthetic/test data for retry testing).
  */
 class RetryTest extends TestCase
 {
@@ -62,6 +64,7 @@ class RetryTest extends TestCase
      */
     public function testSyncRetryOnServerError_retriesAndSucceeds(): void
     {
+        // Mock responses: NOT from real API output (synthetic/test data for retry testing)
         $this->setMockResponses([
             new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
             new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
@@ -85,6 +88,7 @@ class RetryTest extends TestCase
      */
     public function testSyncRetryOnServerError_exhaustsRetries(): void
     {
+        // Mock responses: NOT from real API output (synthetic/test data for retry testing)
         $this->setMockResponses([
             new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
             new Response(502, [], json_encode(['errmsg' => 'Server Error'])),

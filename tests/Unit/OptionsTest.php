@@ -64,6 +64,7 @@ class OptionsTest extends TestCase
      */
     public function testExpirations_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'           => 'ok',
             'expirations' => ['2022-09-23', '2022-09-30'],
@@ -91,6 +92,7 @@ class OptionsTest extends TestCase
      */
     public function testExpirations_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, expirations, updated\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -111,6 +113,7 @@ class OptionsTest extends TestCase
      */
     public function testExpirations_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663704000,
@@ -134,6 +137,7 @@ class OptionsTest extends TestCase
      */
     public function testLookup_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'            => 'no_data',
             'optionSymbol' => 'AAPL230728C00200000',
@@ -154,6 +158,7 @@ class OptionsTest extends TestCase
      */
     public function testLookup_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, optionSymbol\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -171,6 +176,7 @@ class OptionsTest extends TestCase
      */
     public function testStrikes_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'          => 'ok',
             'updated'    => 1663704000,
@@ -200,6 +206,7 @@ class OptionsTest extends TestCase
      */
     public function testStrikes_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, updated, 2023-01-20\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -222,6 +229,7 @@ class OptionsTest extends TestCase
      */
     public function testStrikes_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663704000,
@@ -249,6 +257,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000'],
@@ -311,6 +320,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, optionSymbol, ask...\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -331,6 +341,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663704000,
@@ -354,6 +365,7 @@ class OptionsTest extends TestCase
      */
     public function testOptionChain_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000', 'AAPL230616C00075000'],
@@ -435,6 +447,7 @@ class OptionsTest extends TestCase
      */
     public function testOptionChain_csv_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, optionSymbol, underlying...\r\n";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -456,6 +469,7 @@ class OptionsTest extends TestCase
      */
     public function testOptionChain_noData_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'        => 'no_data',
             'nextTime' => 1663704000,
@@ -479,6 +493,7 @@ class OptionsTest extends TestCase
      */
     public function testOptionChain_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => ['AAPL230616C00060000', 'AAPL230616C00065000'],
             'Underlying' => ['AAPL', 'AAPL'],
@@ -562,6 +577,7 @@ class OptionsTest extends TestCase
      */
     public function testOptionChain_humanReadableFalse_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL230616C00060000'],
@@ -609,6 +625,7 @@ class OptionsTest extends TestCase
      */
     public function testExpirations_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Expirations' => ['2022-09-23', '2022-09-30'],
             'Date' => 1663704000
@@ -633,6 +650,7 @@ class OptionsTest extends TestCase
      */
     public function testStrikes_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             '2023-01-20' => [30.0, 35.0],
             'Date' => 1663704000
@@ -659,6 +677,7 @@ class OptionsTest extends TestCase
      */
     public function testLookup_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => 'AAPL230728C00200000'
         ];
@@ -681,6 +700,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_humanReadable_success()
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             'Symbol' => ['AAPL281215C00400000'],
             'Underlying' => ['AAPL'],
@@ -747,6 +767,7 @@ class OptionsTest extends TestCase
      */
     public function testParameters_dateFormat_withCsv_success(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, ask, bid";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -779,6 +800,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_csv_withDateFormat_unix(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, ask, bid";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
@@ -798,6 +820,7 @@ class OptionsTest extends TestCase
      */
     public function testQuotes_csv_withDateFormat_spreadsheet(): void
     {
+        // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = "s, symbol, ask, bid";
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
