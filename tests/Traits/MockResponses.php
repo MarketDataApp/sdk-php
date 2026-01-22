@@ -23,7 +23,7 @@ trait MockResponses
      *
      * @return void
      */
-    private function setMockResponses(array $responses): void
+    protected function setMockResponses(array $responses): void
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
