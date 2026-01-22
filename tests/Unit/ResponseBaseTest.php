@@ -224,7 +224,7 @@ class ResponseBaseTest extends TestCase
     /**
      * Test saveToFile with file write failure on Windows.
      * 
-     * Windows-only: Uses a path with a reserved device name in the filename which causes write failure on Windows.
+     * Windows-only: Uses a protected system directory which requires admin privileges to write to.
      *
      * @return void
      */
@@ -242,11 +242,10 @@ class ResponseBaseTest extends TestCase
             'csv' => 'Symbol,Price\nAAPL,150.0'
         ]);
 
-        // Use a path where the directory can be created, but the filename uses a reserved device name
-        // CON is a reserved device name in Windows and cannot be used as a filename
-        // We use the temp directory as the base so directory creation succeeds, but file creation fails
-        $tempDir = sys_get_temp_dir() . '\\' . uniqid('test_', true);
-        $filename = $tempDir . '\\CON.csv'; // CON is reserved, so this will fail at file write
+        // Try to write to a protected system directory that requires admin privileges
+        // System32 is a protected directory on Windows - writing to it should fail without admin rights
+        // This will cause file_put_contents to fail, triggering the RuntimeException
+        $filename = 'C:\\Windows\\System32\\test_' . uniqid() . '.csv';
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to write file');
@@ -254,14 +253,7 @@ class ResponseBaseTest extends TestCase
         // This is an error-path test - we're verifying the exception is thrown correctly
         // The PHP warning from file_put_contents() is expected and doesn't indicate a problem
         // Use @ operator to suppress the expected warning
-        try {
-            @$response->saveToFile($filename);
-        } finally {
-            // Cleanup: try to remove the directory if it was created
-            if (is_dir($tempDir)) {
-                @rmdir($tempDir);
-            }
-        }
+        @$response->saveToFile($filename);
     }
 
     /**
