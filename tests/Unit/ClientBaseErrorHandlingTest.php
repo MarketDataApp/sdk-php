@@ -559,4 +559,50 @@ class ClientBaseErrorHandlingTest extends TestCase
             $this->markTestSkipped('Could not create test directory');
         }
     }
+
+    /**
+     * Test shouldSkipRetryDueToOfflineService with exception during status check.
+     * 
+     * This test covers the exception catch block (lines 773, 776) in shouldSkipRetryDueToOfflineService.
+     * When the status check throws an exception, the method should return false (allowing retry).
+     *
+     * @return void
+     */
+    public function testShouldSkipRetryDueToOfflineService_withException_returnsFalse(): void
+    {
+        // Create a mock ApiStatusData that throws when getApiStatus is called
+        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData->method('getApiStatus')
+            ->willThrowException(new \RuntimeException('Status check failed'));
+
+        // Use reflection to replace the singleton instance
+        $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
+        $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
+        $apiStatusDataProperty->setAccessible(true);
+        
+        // Save original value
+        $originalApiStatusData = $apiStatusDataProperty->getValue();
+        
+        try {
+            // Replace with mock (for static properties, pass null as the object)
+            $apiStatusDataProperty->setValue(null, $mockApiStatusData);
+            
+            // Make a request that triggers retry logic (5xx error)
+            // This will call shouldSkipRetryDueToOfflineService, which will try to check status
+            // The status check will throw, and the catch block should return false (allowing retry)
+            $this->setMockResponses([
+                new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
+                new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
+            ]);
+
+            // This should succeed because the exception in status check is caught and retry continues
+            $result = $this->client->stocks->quote('AAPL');
+            
+            $this->assertNotNull($result);
+            $this->assertIsObject($result);
+        } finally {
+            // Restore original singleton
+            $apiStatusDataProperty->setValue(null, $originalApiStatusData);
+        }
+    }
 }
