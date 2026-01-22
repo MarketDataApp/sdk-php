@@ -897,4 +897,72 @@ class ClientBaseErrorHandlingTest extends TestCase
         // This will call async(), which will get a RuntimeException, and it should be re-thrown at line 309
         $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
     }
+
+    /**
+     * Test async BadStatusCodeError catch block - non-retryable 4xx error.
+     * 
+     * This test covers lines 216-218 in ClientBase.php - the BadStatusCodeError catch block
+     * in the async promise then() handler when validateResponseStatusCode throws BadStatusCodeError
+     * for non-retryable 4xx errors (like 400 Bad Request or 403 Forbidden).
+     * 
+     * The key to hitting this path is:
+     * 1. Use http_errors => false so Guzzle returns the response instead of throwing ClientException
+     * 2. The response has a 4xx status code (not 401 which throws UnauthorizedException)
+     * 3. validateResponseStatusCode is called and throws BadStatusCodeError
+     *
+     * @return void
+     */
+    public function testAsyncBadStatusCodeErrorCatchBlock_nonRetryable4xx_throwsImmediately(): void
+    {
+        // Create a custom Guzzle client that returns a 4xx response instead of throwing ClientException
+        // This allows validateResponseStatusCode to throw BadStatusCodeError, which is caught by the catch block
+        // Using 400 Bad Request as an example of a non-retryable 4xx error
+        $errorMessage = 'Bad Request - Invalid parameters provided';
+        $mockHandler = new MockHandler([
+            new Response(400, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        $this->expectException(BadStatusCodeError::class);
+        $this->expectExceptionMessage($errorMessage);
+
+        // This will call async(), which will get a 400 response, validateResponseStatusCode will throw BadStatusCodeError,
+        // and the BadStatusCodeError catch block will re-throw it immediately (no retry for 4xx)
+        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+    }
+
+    /**
+     * Test async BadStatusCodeError catch block - 403 Forbidden error.
+     * 
+     * This test covers lines 216-218 in ClientBase.php - additional coverage for the BadStatusCodeError catch block
+     * with a 403 Forbidden status code to ensure the path is covered.
+     *
+     * @return void
+     */
+    public function testAsyncBadStatusCodeErrorCatchBlock_403Forbidden_throwsImmediately(): void
+    {
+        // Create a custom Guzzle client that returns a 403 Forbidden response
+        $errorMessage = 'Access denied - insufficient permissions';
+        $mockHandler = new MockHandler([
+            new Response(403, [], json_encode(['s' => 'error', 'errmsg' => $errorMessage])),
+        ]);
+        $handlerStack = HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client([
+            'handler' => $handlerStack,
+            'http_errors' => false, // Don't throw exceptions for 4xx/5xx, return response instead
+        ]);
+        $this->client->setGuzzle($mockGuzzle);
+
+        $this->expectException(BadStatusCodeError::class);
+        $this->expectExceptionMessage($errorMessage);
+
+        // This will call async(), which will get a 403 response, validateResponseStatusCode will throw BadStatusCodeError,
+        // and the BadStatusCodeError catch block will re-throw it immediately (no retry for 4xx)
+        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+    }
 }
