@@ -99,6 +99,7 @@ class UniversalParametersConfigTest extends TestCase
             'MARKETDATA_ADD_HEADERS',
             'MARKETDATA_USE_HUMAN_READABLE',
             'MARKETDATA_MODE',
+            'MARKETDATA_TOKEN', // Save token state to restore after tests
         ];
 
         foreach ($envVars as $var) {

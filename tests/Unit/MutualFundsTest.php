@@ -41,6 +41,9 @@ class MutualFundsTest extends TestCase
      */
     protected function setUp(): void
     {
+        // Save original token state before clearing
+        $this->saveMarketDataTokenState();
+        
         // Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
         // This prevents real API calls during Client construction by ensuring
         // _setup_rate_limits() skips the /user/ endpoint validation call.
@@ -50,6 +53,17 @@ class MutualFundsTest extends TestCase
         $token = '';
         $client = new Client($token);
         $this->client = $client;
+    }
+
+    /**
+     * Restore original environment variable state after each test.
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        $this->restoreMarketDataTokenState();
+        parent::tearDown();
     }
 
     /**

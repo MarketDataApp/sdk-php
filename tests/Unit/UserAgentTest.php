@@ -41,6 +41,9 @@ class UserAgentTest extends TestCase
      */
     protected function setUp(): void
     {
+        // Save original token state before clearing
+        $this->saveMarketDataTokenState();
+        
         // Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
         // This prevents real API calls during Client construction by ensuring
         // _setup_rate_limits() skips the /user/ endpoint validation call.
@@ -49,6 +52,17 @@ class UserAgentTest extends TestCase
         // Use empty token for unit tests to skip validation (tests use mocks anyway)
         $this->client = new Client('');
         $this->history = [];
+    }
+
+    /**
+     * Restore original environment variable state after each test.
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        $this->restoreMarketDataTokenState();
+        parent::tearDown();
     }
 
     /**

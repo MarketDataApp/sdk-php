@@ -51,6 +51,61 @@ trait MockResponses
     }
 
     /**
+     * Original MARKETDATA_TOKEN environment variable values to restore after tests.
+     *
+     * @var array|null
+     */
+    private ?array $originalTokenState = null;
+
+    /**
+     * Save the original MARKETDATA_TOKEN environment variable state.
+     *
+     * This should be called in setUp() before clearMarketDataToken().
+     *
+     * @return void
+     */
+    protected function saveMarketDataTokenState(): void
+    {
+        $this->originalTokenState = [
+            'getenv' => getenv('MARKETDATA_TOKEN'),
+            '_ENV' => $_ENV['MARKETDATA_TOKEN'] ?? null,
+            '_SERVER' => $_SERVER['MARKETDATA_TOKEN'] ?? null,
+        ];
+    }
+
+    /**
+     * Restore the original MARKETDATA_TOKEN environment variable state.
+     *
+     * This should be called in tearDown() to restore the token for subsequent tests.
+     *
+     * @return void
+     */
+    protected function restoreMarketDataTokenState(): void
+    {
+        if ($this->originalTokenState === null) {
+            return;
+        }
+
+        if ($this->originalTokenState['getenv'] !== false) {
+            putenv('MARKETDATA_TOKEN=' . $this->originalTokenState['getenv']);
+        } else {
+            putenv('MARKETDATA_TOKEN');
+        }
+
+        if ($this->originalTokenState['_ENV'] !== null) {
+            $_ENV['MARKETDATA_TOKEN'] = $this->originalTokenState['_ENV'];
+        } else {
+            unset($_ENV['MARKETDATA_TOKEN']);
+        }
+
+        if ($this->originalTokenState['_SERVER'] !== null) {
+            $_SERVER['MARKETDATA_TOKEN'] = $this->originalTokenState['_SERVER'];
+        } else {
+            unset($_SERVER['MARKETDATA_TOKEN']);
+        }
+    }
+
+    /**
      * Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
      *
      * This method clears the token from all possible locations where it might be set:
@@ -61,6 +116,9 @@ trait MockResponses
      * This prevents real API calls during Client construction in unit tests by ensuring
      * that an empty token is used, which causes _setup_rate_limits() to skip the /user/
      * endpoint validation call.
+     *
+     * IMPORTANT: Call saveMarketDataTokenState() before this method, and
+     * restoreMarketDataTokenState() in tearDown() to prevent affecting other tests.
      *
      * @return void
      */
