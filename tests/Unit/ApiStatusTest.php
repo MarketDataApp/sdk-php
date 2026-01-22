@@ -388,6 +388,37 @@ class ApiStatusTest extends TestCase
     }
 
     /**
+     * Test getServiceStatus with status online but online field missing for the index.
+     *
+     * This tests the edge case where status indicates online but the online array
+     * doesn't have an entry for that service index.
+     *
+     * @return void
+     */
+    public function testGetServiceStatus_withStatusOnlineButOnlineFieldMissing_returnsOffline()
+    {
+        $data = new ApiStatusData();
+        $response = (object)[
+            'service' => ['/v1/stocks/quotes/'],
+            'status' => ['online'],
+            'online' => [], // Empty online array - missing entry for index 0
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ];
+        $data->update($response);
+
+        // Use reflection to call private method
+        $reflection = new \ReflectionClass($data);
+        $method = $reflection->getMethod('getServiceStatus');
+
+        $result = $method->invoke($data, '/v1/stocks/quotes/');
+
+        // Status says online but online field is missing - should return offline
+        $this->assertEquals(ApiStatusResult::OFFLINE, $result);
+    }
+
+    /**
      * Test getServiceStatus with status online and online field true.
      *
      * @return void
@@ -520,8 +551,7 @@ class ApiStatusTest extends TestCase
         // Use reflection to check refreshPromise is set
         $reflection = new \ReflectionClass($data);
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $firstPromise = $refreshPromiseProperty->getValue($data);
+                $firstPromise = $refreshPromiseProperty->getValue($data);
         
         $this->assertNotNull($firstPromise, 'First promise should be created');
 
@@ -569,8 +599,7 @@ class ApiStatusTest extends TestCase
         // Use reflection to get the promise
         $reflection = new \ReflectionClass($data);
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $promise = $refreshPromiseProperty->getValue($data);
+                $promise = $refreshPromiseProperty->getValue($data);
 
         // Wait for promise to complete and handlers to execute
         // The exception is caught in the promise handler (line 204), so we need to wait
@@ -633,8 +662,7 @@ class ApiStatusTest extends TestCase
         // Use reflection to get the promise
         $reflection = new \ReflectionClass($data);
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $promise = $refreshPromiseProperty->getValue($data);
+                $promise = $refreshPromiseProperty->getValue($data);
 
         // Wait for promise to complete (exception will be caught at line 204)
         try {
@@ -694,8 +722,7 @@ class ApiStatusTest extends TestCase
         // Use reflection to get the promise
         $reflection = new \ReflectionClass($data);
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $promise = $refreshPromiseProperty->getValue($data);
+                $promise = $refreshPromiseProperty->getValue($data);
 
         // Wait for promise rejection (line 214 handler should execute)
         try {
@@ -745,8 +772,7 @@ class ApiStatusTest extends TestCase
         // Use reflection to set lastRefreshed to 275 seconds ago (in refresh window: 270-300 seconds)
         $reflection = new \ReflectionClass($data);
         $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
-        $lastRefreshedProperty->setAccessible(true);
-        $lastRefreshedProperty->setValue($data, Carbon::now()->subSeconds(275));
+                $lastRefreshedProperty->setValue($data, Carbon::now()->subSeconds(275));
 
         // Verify cache is in refresh window
         $this->assertTrue($data->inRefreshWindow(), 'Cache should be in refresh window');
@@ -772,8 +798,7 @@ class ApiStatusTest extends TestCase
 
         // Verify async refresh was triggered (promise should be created)
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $promise = $refreshPromiseProperty->getValue($data);
+                $promise = $refreshPromiseProperty->getValue($data);
         $this->assertNotNull($promise, 'Async refresh promise should be created');
 
         // Wait for promise to complete
@@ -814,8 +839,7 @@ class ApiStatusTest extends TestCase
         // This makes cache valid (age < 300) but not in refresh window (age < 270)
         $reflection = new \ReflectionClass($data);
         $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
-        $lastRefreshedProperty->setAccessible(true);
-        $lastRefreshedProperty->setValue($data, Carbon::now()->subSeconds(100));
+                $lastRefreshedProperty->setValue($data, Carbon::now()->subSeconds(100));
 
         // Verify cache is valid but not in refresh window
         $this->assertTrue($data->isValid(), 'Cache should be valid');
@@ -829,8 +853,7 @@ class ApiStatusTest extends TestCase
 
         // Verify no async refresh was triggered (cache is fresh)
         $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
-        $refreshPromiseProperty->setAccessible(true);
-        $promise = $refreshPromiseProperty->getValue($data);
+                $promise = $refreshPromiseProperty->getValue($data);
         $this->assertNull($promise, 'No async refresh should be triggered for fresh cache');
     }
 

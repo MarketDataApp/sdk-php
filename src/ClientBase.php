@@ -452,8 +452,10 @@ abstract class ClientBase
             }
         }
         
+        // @codeCoverageIgnoreStart
         // Should never reach here, but just in case
         throw new RequestError("Request failed after $maxAttempts attempts", 0);
+        // @codeCoverageIgnoreEnd
     }
 
     /**

@@ -336,18 +336,24 @@ class Settings
             self::$dotenvLoaded = true;
 
             // Check again after loading .env
+            // @codeCoverageIgnoreStart
+            // Unreachable: Dotenv::createImmutable() doesn't call putenv(), so getenv() is never populated
             $value = getenv($varName);
             if ($value !== false && $value !== '') {
                 return $value;
             }
+            // @codeCoverageIgnoreEnd
 
             if (isset($_ENV[$varName]) && $_ENV[$varName] !== '') {
                 return $_ENV[$varName];
             }
 
+            // @codeCoverageIgnoreStart
+            // Unreachable: $_ENV is checked first and Dotenv populates both $_ENV and $_SERVER
             if (isset($_SERVER[$varName]) && $_SERVER[$varName] !== '') {
                 return $_SERVER[$varName];
             }
+            // @codeCoverageIgnoreEnd
         }
 
         return null;

@@ -715,13 +715,11 @@ class UtilitiesTest extends TestCase
         
         // Set lastRefreshed to 100 seconds ago (fresh, within 300 second validity)
         $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
-        $lastRefreshedProperty->setAccessible(true);
-        $lastRefreshedProperty->setValue($apiStatusData, Carbon::now()->subSeconds(100));
+                $lastRefreshedProperty->setValue($apiStatusData, Carbon::now()->subSeconds(100));
         
         // Keep service array empty (default state, but ensure it explicitly)
         $serviceProperty = $reflection->getProperty('service');
-        $serviceProperty->setAccessible(true);
-        $serviceProperty->setValue($apiStatusData, []);
+                $serviceProperty->setValue($apiStatusData, []);
         
         // Mock the fallback response (only one response needed)
         $fallback_response = [

@@ -115,6 +115,105 @@ log_and_echo_color() {
     echo -e "$message" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" >> "$LOG_FILE"
 }
 
+# Function to clean up old coverage files (only keep most recent)
+cleanup_old_coverage_files() {
+    local current_timestamp="$1"
+    
+    log_and_echo_color "${BLUE}Cleaning up old coverage files...${NC}"
+    
+    # Clean up old coverage directories (keep only the current one)
+    local cleaned_dirs=0
+    if [ -d "build" ]; then
+        while IFS= read -r dir; do
+            if [ -n "$dir" ] && [ "$dir" != "build/coverage-${current_timestamp}" ]; then
+                rm -rf "$dir"
+                cleaned_dirs=$((cleaned_dirs + 1))
+            fi
+        done < <(find build -maxdepth 1 -type d -name "coverage-*" 2>/dev/null)
+    fi
+    
+    # Clean up old coverage text files (keep only the current one)
+    local cleaned_txt=0
+    if [ -d "build" ]; then
+        while IFS= read -r file; do
+            if [ -n "$file" ] && [ "$file" != "build/coverage-${current_timestamp}.txt" ]; then
+                rm -f "$file"
+                cleaned_txt=$((cleaned_txt + 1))
+            fi
+        done < <(find build -maxdepth 1 -type f -name "coverage-*.txt" 2>/dev/null)
+    fi
+    
+    # Clean up old Clover XML files (keep only the current one)
+    local cleaned_xml=0
+    if [ -d "build/logs" ]; then
+        while IFS= read -r file; do
+            if [ -n "$file" ] && [ "$file" != "build/logs/clover-${current_timestamp}.xml" ]; then
+                rm -f "$file"
+                cleaned_xml=$((cleaned_xml + 1))
+            fi
+        done < <(find build/logs -type f -name "clover-*.xml" 2>/dev/null)
+    fi
+    
+    # Clean up test coverage directories (coverage-test, coverage-universal-params, etc.)
+    local cleaned_test_dirs=0
+    if [ -d "build" ]; then
+        for dir in build/coverage-test build/coverage-universal-params; do
+            if [ -d "$dir" ]; then
+                rm -rf "$dir"
+                cleaned_test_dirs=$((cleaned_test_dirs + 1))
+            fi
+        done
+    fi
+    
+    # Clean up old generic coverage files
+    local cleaned_generic=0
+    if [ -f "build/coverage.txt" ]; then
+        rm -f "build/coverage.txt"
+        cleaned_generic=$((cleaned_generic + 1))
+    fi
+    if [ -f "build/coverage-clover.xml" ]; then
+        rm -f "build/coverage-clover.xml"
+        cleaned_generic=$((cleaned_generic + 1))
+    fi
+    if [ -f "build/logs/clover.xml" ]; then
+        rm -f "build/logs/clover.xml"
+        cleaned_generic=$((cleaned_generic + 1))
+    fi
+    if [ -f "build/logs/clover-universal-params.xml" ]; then
+        rm -f "build/logs/clover-universal-params.xml"
+        cleaned_generic=$((cleaned_generic + 1))
+    fi
+    
+    if [ $cleaned_dirs -gt 0 ] || [ $cleaned_txt -gt 0 ] || [ $cleaned_xml -gt 0 ] || [ $cleaned_test_dirs -gt 0 ] || [ $cleaned_generic -gt 0 ]; then
+        log_and_echo "  Removed: $cleaned_dirs old coverage directories, $cleaned_txt text files, $cleaned_xml XML files, $cleaned_test_dirs test directories, $cleaned_generic generic files"
+    else
+        log_and_echo "  No old coverage files to clean up"
+    fi
+    log_and_echo ""
+}
+
+# Function to clean up old test output log files (only keep most recent)
+cleanup_old_test_logs() {
+    local current_log_file="$1"
+    
+    log_and_echo_color "${BLUE}Cleaning up old test output logs...${NC}"
+    
+    local cleaned_logs=0
+    while IFS= read -r file; do
+        if [ -n "$file" ] && [ "$file" != "$current_log_file" ]; then
+            rm -f "$file"
+            cleaned_logs=$((cleaned_logs + 1))
+        fi
+    done < <(find . -maxdepth 1 -type f -name "test-output-*.log" 2>/dev/null)
+    
+    if [ $cleaned_logs -gt 0 ]; then
+        log_and_echo "  Removed: $cleaned_logs old test output log files"
+    else
+        log_and_echo "  No old test output logs to clean up"
+    fi
+    log_and_echo ""
+}
+
 # Initialize log file (create empty file first to ensure it's writable)
 touch "$LOG_FILE" || {
     echo "Error: Cannot create log file: $LOG_FILE" >&2
@@ -246,6 +345,9 @@ case "$TEST_MODE" in
             log_and_echo "Full output saved to: $LOG_FILE"
             exit 1
         fi
+        
+        # Clean up old test logs after successful run
+        cleanup_old_test_logs "$LOG_FILE"
         ;;
     
     integration)
@@ -278,6 +380,9 @@ case "$TEST_MODE" in
             log_and_echo "Full output saved to: $LOG_FILE"
             exit 1
         fi
+        
+        # Clean up old test logs after successful run
+        cleanup_old_test_logs "$LOG_FILE"
         ;;
     
     coverage)
@@ -361,6 +466,32 @@ case "$TEST_MODE" in
             log_and_echo "Full output saved to: $LOG_FILE"
             exit 1
         fi
+        
+        # Verify coverage files were generated before cleaning up old ones
+        coverage_files_exist=true
+        if [ ! -d "$COVERAGE_HTML_DIR" ]; then
+            log_and_echo_color "${YELLOW}Warning: Coverage HTML directory not found: ${COVERAGE_HTML_DIR}${NC}"
+            coverage_files_exist=false
+        fi
+        if [ ! -f "$COVERAGE_TEXT_FILE" ]; then
+            log_and_echo_color "${YELLOW}Warning: Coverage text file not found: ${COVERAGE_TEXT_FILE}${NC}"
+            coverage_files_exist=false
+        fi
+        if [ ! -f "$COVERAGE_CLOVER_FILE" ]; then
+            log_and_echo_color "${YELLOW}Warning: Coverage Clover XML file not found: ${COVERAGE_CLOVER_FILE}${NC}"
+            coverage_files_exist=false
+        fi
+        
+        # Only clean up old files if new coverage files were successfully generated
+        if [ "$coverage_files_exist" = "true" ]; then
+            cleanup_old_coverage_files "$timestamp"
+        else
+            log_and_echo_color "${YELLOW}Skipping cleanup of old coverage files - new reports may not be complete${NC}"
+            log_and_echo ""
+        fi
+        
+        # Clean up old test logs after successful run
+        cleanup_old_test_logs "$LOG_FILE"
         ;;
 esac
 

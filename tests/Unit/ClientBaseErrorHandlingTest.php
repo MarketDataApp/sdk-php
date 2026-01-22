@@ -214,8 +214,7 @@ class ClientBaseErrorHandlingTest extends TestCase
         // Use reflection to replace the singleton instance
         $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
         $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
-        $apiStatusDataProperty->setAccessible(true);
-        
+                
         // Save original value
         $originalApiStatusData = $apiStatusDataProperty->getValue();
         
@@ -704,8 +703,7 @@ class ClientBaseErrorHandlingTest extends TestCase
         // Use reflection to replace the singleton instance
         $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
         $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
-        $apiStatusDataProperty->setAccessible(true);
-        
+                
         // Save original value
         $originalApiStatusData = $apiStatusDataProperty->getValue();
         
@@ -837,8 +835,7 @@ class ClientBaseErrorHandlingTest extends TestCase
         // Use reflection to replace the singleton instance
         $utilitiesReflection = new \ReflectionClass(\MarketDataApp\Endpoints\Utilities::class);
         $apiStatusDataProperty = $utilitiesReflection->getProperty('apiStatusData');
-        $apiStatusDataProperty->setAccessible(true);
-        
+                
         // Save original value
         $originalApiStatusData = $apiStatusDataProperty->getValue();
         
