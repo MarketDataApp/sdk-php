@@ -78,22 +78,35 @@ class UtilitiesTest extends TestCase
      */
     public function testApiStatus_success()
     {
-        // Mock response: NOT from real API output (synthetic/test data)
+        // Mock response: Based on real API output from https://api.marketdata.app/status/
         $mocked_response = [
             's'            => 'ok',
-            'service'      => ['Customer Dashboard', 'Historical Data API', 'Real-time Data API', 'Website'],
-            'status'       => ['online', 'online', 'online', 'online'],
-            'online'       => [true, true, true, true],
-            'uptimePct30d' => [1, 0.99769, 0.99804, 1],
-            'uptimePct90d' => [1, 0.99866, 0.99919, 1],
-            'updated'      => [1708972840, 1708972840, 1708972840, 1708972840]
+            'service'      => [
+                '/v1/markets/status/',
+                '/v1/options/chain/',
+                '/v1/options/expirations/',
+                '/v1/options/lookup/',
+                '/v1/options/quotes/',
+                '/v1/options/strikes/',
+                '/v1/stocks/bulkcandles/',
+                '/v1/stocks/bulkquotes/',
+                '/v1/stocks/candles/',
+                '/v1/stocks/earnings/',
+                '/v1/stocks/news/',
+                '/v1/stocks/quotes/'
+            ],
+            'status'       => ['online', 'online', 'online', 'online', 'online', 'online', 'online', 'online', 'online', 'online', 'online', 'online'],
+            'online'       => [true, true, true, true, true, true, true, true, true, true, true, true],
+            'uptimePct30d' => [0.99961, 0.9995999999999999, 0.99992, 0.99977, 0.9995999999999999, 0.99997, 0.99956, 0.99954, 0.99961, 0.9995999999999999, 0.99981, 0.99959],
+            'uptimePct90d' => [0.9985299999999999, 0.9976, 0.99884, 0.99928, 0.9986499999999999, 0.99884, 0.99874, 0.99866, 0.9987900000000001, 0.99887, 0.99893, 0.99869],
+            'updated'      => [1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755, 1769102755]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->utilities->api_status();
         $this->assertInstanceOf(ApiStatus::class, $response);
 
-        $this->assertCount(4, $response->services);
+        $this->assertCount(12, $response->services);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         for ($i = 0; $i < count($response->services); $i++) {

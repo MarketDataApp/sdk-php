@@ -1356,4 +1356,232 @@ class UniversalParametersConfigTest extends TestCase
         // Call with format override to JSON - should throw exception
         $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
     }
+
+    public function testIntegration_addHeaders_invalidWithJsonFormat(): void
+    {
+        $this->client = new Client('');
+        // Set CSV-only param in client defaults with CSV format
+        $this->client->default_params->format = Format::CSV;
+        $this->client->default_params->add_headers = true;
+
+        // This should throw an exception when merging parameters and format changes to JSON
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('add_headers parameter can only be used with CSV or HTML format');
+
+        // Call with format override to JSON - should throw exception
+        $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
+    }
+
+    public function testIntegration_filename_invalidWithJsonFormat(): void
+    {
+        $tempDir = $this->createTempDir();
+        $filename = $tempDir . '/test.csv';
+        // Don't create file - Parameters validates it doesn't exist
+
+        $this->client = new Client('');
+        // Set CSV-only param in client defaults with CSV format
+        $this->client->default_params->format = Format::CSV;
+        $this->client->default_params->filename = $filename;
+
+        // This should throw an exception when merging parameters and format changes to JSON
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter can only be used with CSV or HTML format');
+
+        // Call with format override to JSON - should throw exception
+        $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
+    }
+
+    public function testIntegration_parallelRequests_withDateFormat(): void
+    {
+        $this->client = new Client('');
+        $this->client->default_params->format = Format::CSV;
+        $this->client->default_params->date_format = DateFormat::UNIX;
+
+        // Mock responses for parallel requests
+        $mockResponse1 = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [150.0],
+            'askSize' => [100],
+            'bid' => [149.5],
+            'bidSize' => [200],
+            'mid' => [149.75],
+            'last' => [150.0],
+            'change' => [1.0],
+            'changepct' => [0.67],
+            'volume' => [1000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $mockResponse2 = [
+            's' => 'ok',
+            'symbol' => ['MSFT'],
+            'ask' => [300.0],
+            'askSize' => [100],
+            'bid' => [299.5],
+            'bidSize' => [200],
+            'mid' => [299.75],
+            'last' => [300.0],
+            'change' => [2.0],
+            'changepct' => [0.67],
+            'volume' => [2000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mockResponse1)),
+            new Response(200, [], json_encode($mockResponse2))
+        ]);
+
+        // Call with date_format parameter in parallel execution
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP));
+
+        // Verify response was processed
+        $this->assertIsObject($response);
+        $this->assertIsArray($response->quotes);
+        $this->assertCount(2, $response->quotes);
+    }
+
+    public function testIntegration_parallelRequests_withColumns(): void
+    {
+        $this->client = new Client('');
+        $this->client->default_params->format = Format::CSV;
+
+        // Mock responses for parallel requests
+        $mockResponse1 = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [150.0],
+            'askSize' => [100],
+            'bid' => [149.5],
+            'bidSize' => [200],
+            'mid' => [149.75],
+            'last' => [150.0],
+            'change' => [1.0],
+            'changepct' => [0.67],
+            'volume' => [1000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $mockResponse2 = [
+            's' => 'ok',
+            'symbol' => ['MSFT'],
+            'ask' => [300.0],
+            'askSize' => [100],
+            'bid' => [299.5],
+            'bidSize' => [200],
+            'mid' => [299.75],
+            'last' => [300.0],
+            'change' => [2.0],
+            'changepct' => [0.67],
+            'volume' => [2000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mockResponse1)),
+            new Response(200, [], json_encode($mockResponse2))
+        ]);
+
+        // Call with columns parameter in parallel execution
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::CSV, columns: ['symbol', 'ask']));
+
+        // Verify response was processed
+        $this->assertIsObject($response);
+        $this->assertIsArray($response->quotes);
+        $this->assertCount(2, $response->quotes);
+    }
+
+    public function testIntegration_parallelRequests_withDateFormat_htmlFormat(): void
+    {
+        $this->client = new Client('');
+        $this->client->default_params->format = Format::HTML;
+        $this->client->default_params->date_format = DateFormat::UNIX;
+
+        // Mock responses for parallel requests
+        $mockResponse1 = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [150.0],
+            'askSize' => [100],
+            'bid' => [149.5],
+            'bidSize' => [200],
+            'mid' => [149.75],
+            'last' => [150.0],
+            'change' => [1.0],
+            'changepct' => [0.67],
+            'volume' => [1000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $mockResponse2 = [
+            's' => 'ok',
+            'symbol' => ['MSFT'],
+            'ask' => [300.0],
+            'askSize' => [100],
+            'bid' => [299.5],
+            'bidSize' => [200],
+            'mid' => [299.75],
+            'last' => [300.0],
+            'change' => [2.0],
+            'changepct' => [0.67],
+            'volume' => [2000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mockResponse1)),
+            new Response(200, [], json_encode($mockResponse2))
+        ]);
+
+        // Call with date_format parameter in parallel execution with HTML format
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP));
+
+        // Verify response was processed
+        $this->assertIsObject($response);
+        $this->assertIsArray($response->quotes);
+        $this->assertCount(2, $response->quotes);
+    }
+
+    public function testIntegration_parallelRequests_withColumns_htmlFormat(): void
+    {
+        $this->client = new Client('');
+        $this->client->default_params->format = Format::HTML;
+
+        // Mock responses for parallel requests
+        $mockResponse1 = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [150.0],
+            'askSize' => [100],
+            'bid' => [149.5],
+            'bidSize' => [200],
+            'mid' => [149.75],
+            'last' => [150.0],
+            'change' => [1.0],
+            'changepct' => [0.67],
+            'volume' => [1000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $mockResponse2 = [
+            's' => 'ok',
+            'symbol' => ['MSFT'],
+            'ask' => [300.0],
+            'askSize' => [100],
+            'bid' => [299.5],
+            'bidSize' => [200],
+            'mid' => [299.75],
+            'last' => [300.0],
+            'change' => [2.0],
+            'changepct' => [0.67],
+            'volume' => [2000000],
+            'updated' => ['2024-01-20T10:30:00Z']
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mockResponse1)),
+            new Response(200, [], json_encode($mockResponse2))
+        ]);
+
+        // Call with columns parameter in parallel execution with HTML format
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::HTML, columns: ['symbol', 'ask']));
+
+        // Verify response was processed
+        $this->assertIsObject($response);
+        $this->assertIsArray($response->quotes);
+        $this->assertCount(2, $response->quotes);
+    }
 }
