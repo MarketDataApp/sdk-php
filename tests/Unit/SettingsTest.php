@@ -318,10 +318,10 @@ class SettingsTest extends TestCase
             chdir($tempDir);
 
             // Create a .env file with invalid syntax that will cause Dotenv to throw an exception
-            // Dotenv throws exceptions for certain syntax errors like unclosed quotes
-            // We'll create a file with an unclosed double quote which should cause a parsing exception
+            // Dotenv throws InvalidFileException for unclosed SINGLE quotes (not double quotes)
+            // Double quotes don't throw, but single quotes do
             $envFile = $tempDir . '/.env';
-            file_put_contents($envFile, 'MARKETDATA_TOKEN="unclosed_quote_value');
+            file_put_contents($envFile, "MARKETDATA_TOKEN='unclosed_quote_value");
             $this->tempFiles[] = $envFile;
 
             // Reset dotenv loaded flag
