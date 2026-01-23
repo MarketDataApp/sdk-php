@@ -313,34 +313,34 @@ class RetryTest extends TestCase
     }
 
     /**
-     * Test parallel retry on server error with mixed results.
+     * Test multi-symbol quotes retry on server error.
      *
-     * This test verifies that all parallel requests eventually succeed even when
-     * some need retries. It does not assume any specific response ordering, only
-     * that all required symbols are present in the final result.
+     * This test verifies that the single multi-symbol request retries on server error
+     * and eventually succeeds with all symbols present in the final result.
      *
      * @return void
      */
-    public function testParallelRetryOnServerError_mixedResults(): void
+    public function testMultiSymbolQuotes_retryOnServerError_succeeds(): void
     {
-        // Test scenario:
-        // - AAPL: Should succeed immediately (1 response needed)
-        // - MSFT: Needs 1 retry (1 failure + 1 success = 2 responses needed)
-        // - GOOGL: Needs 2 retries (2 failures + 1 success = 3 responses needed)
-        // Total: 6 responses minimum, but we provide extra buffer for timing variations
+        // Test scenario: First request fails with 502, retry succeeds
         $this->setMockResponses([
-            // Success responses for each symbol (multiple copies to handle retry timing)
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['MSFT'], 'last' => [300.0], 'ask' => [300.1], 'askSize' => [200], 'bid' => [300.0], 'bidSize' => [300], 'mid' => [300.05], 'change' => [1.0], 'changepct' => [0.33], 'volume' => [2000000], 'updated' => [1234567890]])),
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['GOOGL'], 'last' => [2500.0], 'ask' => [2500.1], 'askSize' => [200], 'bid' => [2500.0], 'bidSize' => [300], 'mid' => [2500.05], 'change' => [5.0], 'changepct' => [0.2], 'volume' => [3000000], 'updated' => [1234567890]])),
-            // Error responses to trigger retries (order may vary due to async timing)
+            // First request fails
             new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
-            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
-            new Response(502, [], json_encode(['errmsg' => 'Server Error'])),
-            // Additional success responses for retries (buffer for timing variations)
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['MSFT'], 'last' => [300.0], 'ask' => [300.1], 'askSize' => [200], 'bid' => [300.0], 'bidSize' => [300], 'mid' => [300.05], 'change' => [1.0], 'changepct' => [0.33], 'volume' => [2000000], 'updated' => [1234567890]])),
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['GOOGL'], 'last' => [2500.0], 'ask' => [2500.1], 'askSize' => [200], 'bid' => [2500.0], 'bidSize' => [300], 'mid' => [2500.05], 'change' => [5.0], 'changepct' => [0.2], 'volume' => [3000000], 'updated' => [1234567890]])),
+            // Retry succeeds with multi-symbol response
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'MSFT', 'GOOGL'],
+                'last' => [150.0, 300.0, 2500.0],
+                'ask' => [150.1, 300.1, 2500.1],
+                'askSize' => [200, 200, 200],
+                'bid' => [150.0, 300.0, 2500.0],
+                'bidSize' => [300, 300, 300],
+                'mid' => [150.05, 300.05, 2500.05],
+                'change' => [0.5, 1.0, 5.0],
+                'changepct' => [0.33, 0.33, 0.2],
+                'volume' => [1000000, 2000000, 3000000],
+                'updated' => [1234567890, 1234567890, 1234567890]
+            ])),
         ]);
 
         $result = $this->client->stocks->quotes(['AAPL', 'MSFT', 'GOOGL']);
@@ -351,37 +351,48 @@ class RetryTest extends TestCase
         $this->assertIsArray($result->quotes);
         $this->assertCount(3, $result->quotes, 'Should have exactly 3 quotes');
 
-        // Extract symbols from the result (order-independent verification)
+        // Extract symbols from the result
         $symbols = array_map(function($quote) {
             return $quote->symbol;
         }, $result->quotes);
 
-        // Verify all expected symbols are present (regardless of order)
+        // Verify all expected symbols are present
         $expectedSymbols = ['AAPL', 'MSFT', 'GOOGL'];
-        sort($symbols);
-        sort($expectedSymbols);
         $this->assertEquals($expectedSymbols, $symbols, 'All expected symbols should be present in the result');
     }
 
     /**
-     * Test parallel retry on network error retries independently.
+     * Test multi-symbol quotes retry on network error.
      *
      * @return void
      */
-    public function testParallelRetryOnNetworkError_retriesIndependently(): void
+    public function testMultiSymbolQuotes_retryOnNetworkError_succeeds(): void
     {
         $this->setMockResponses([
-            // Request 1: network error then success
+            // First request fails with network error
             new RequestException("Network Error", new Request('GET', 'test')),
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
-            // Request 2: succeeds immediately
-            new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['MSFT'], 'last' => [300.0], 'ask' => [300.1], 'askSize' => [200], 'bid' => [300.0], 'bidSize' => [300], 'mid' => [300.05], 'change' => [1.0], 'changepct' => [0.33], 'volume' => [2000000], 'updated' => [1234567890]])),
+            // Retry succeeds with multi-symbol response
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'MSFT'],
+                'last' => [150.0, 300.0],
+                'ask' => [150.1, 300.1],
+                'askSize' => [200, 200],
+                'bid' => [150.0, 300.0],
+                'bidSize' => [300, 300],
+                'mid' => [150.05, 300.05],
+                'change' => [0.5, 1.0],
+                'changepct' => [0.33, 0.33],
+                'volume' => [1000000, 2000000],
+                'updated' => [1234567890, 1234567890]
+            ])),
         ]);
 
         $result = $this->client->stocks->quotes(['AAPL', 'MSFT']);
 
         $this->assertNotNull($result);
         $this->assertIsObject($result);
+        $this->assertCount(2, $result->quotes);
     }
 
     // ========== Edge Cases and Integration Tests ==========

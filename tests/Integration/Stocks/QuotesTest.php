@@ -11,7 +11,7 @@ use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 
 /**
- * Integration tests for the Stocks Quotes endpoint (parallel/multiple symbols).
+ * Integration tests for the Stocks Quotes endpoint (multiple symbols in single request).
  */
 class QuotesTest extends StocksTestCase
 {
@@ -22,6 +22,8 @@ class QuotesTest extends StocksTestCase
     {
         $response = $this->client->stocks->quotes(['AAPL']);
 
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertNotEmpty($response->quotes);
         $this->assertInstanceOf(Quote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->status));
         $this->assertEquals('string', gettype($response->quotes[0]->symbol));
@@ -40,8 +42,34 @@ class QuotesTest extends StocksTestCase
     }
 
     /**
-     * Test stocks quotes (parallel) with human-readable format.
-     * Verifies that the API returns human-readable JSON keys for parallel requests.
+     * Test successful retrieval of multiple stock quotes with multiple symbols.
+     */
+    public function testQuotes_multipleSymbols_success()
+    {
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT', 'GOOG']);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertCount(3, $response->quotes);
+
+        // Verify all quotes are valid Quote objects with correct symbols
+        $symbols = array_map(fn($q) => $q->symbol, $response->quotes);
+        $this->assertContains('AAPL', $symbols);
+        $this->assertContains('MSFT', $symbols);
+        $this->assertContains('GOOG', $symbols);
+
+        // Verify each quote has valid data
+        foreach ($response->quotes as $quote) {
+            $this->assertInstanceOf(Quote::class, $quote);
+            $this->assertEquals('ok', $quote->status);
+            $this->assertIsFloat($quote->ask);
+            $this->assertIsInt($quote->volume);
+            $this->assertInstanceOf(Carbon::class, $quote->updated);
+        }
+    }
+
+    /**
+     * Test stocks quotes with human-readable format.
+     * Verifies that the API returns human-readable JSON keys.
      */
     public function testQuotes_humanReadable_returnsHumanReadableKeys()
     {
@@ -60,8 +88,8 @@ class QuotesTest extends StocksTestCase
     }
 
     /**
-     * Test quotes endpoint (parallel) with CSV format and add_headers=true.
-     * Verifies that the CSV response includes header row for parallel requests.
+     * Test quotes endpoint with CSV format and add_headers=true.
+     * Verifies that the CSV response includes header row.
      *
      * @throws GuzzleException|ApiException
      */
@@ -92,8 +120,8 @@ class QuotesTest extends StocksTestCase
     }
 
     /**
-     * Test quotes endpoint (parallel) with CSV format and add_headers=false.
-     * Verifies that the CSV response does NOT include header row for parallel requests.
+     * Test quotes endpoint with CSV format and add_headers=false.
+     * Verifies that the CSV response does NOT include header row.
      *
      * @throws GuzzleException|ApiException
      */
@@ -137,22 +165,56 @@ class QuotesTest extends StocksTestCase
     }
 
     /**
-     * Test quotes endpoint (parallel) with filename parameter.
-     * Verifies that exception is thrown for parallel requests with filename.
+     * Test quotes endpoint with CSV format and filename parameter.
+     * Verifies that CSV data is saved to file.
      *
      * @throws GuzzleException|ApiException
      */
-    public function testQuotes_csv_withFilename_throwsException(): void
+    public function testQuotes_csv_withFilename_savesToFile(): void
     {
         $tempDir = sys_get_temp_dir();
-        $testFile = $tempDir . '/test_parallel_' . uniqid() . '.csv';
+        $testFile = $tempDir . '/test_quotes_' . uniqid() . '.csv';
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+        try {
+            $response = $this->client->stocks->quotes(
+                symbols: ['AAPL'],
+                parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            );
 
-        $this->client->stocks->quotes(
-            symbols: ['AAPL'],
-            parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            $this->assertInstanceOf(Quotes::class, $response);
+            $this->assertFileExists($testFile);
+
+            $content = file_get_contents($testFile);
+            $this->assertNotEmpty($content);
+            $this->assertStringContainsString('AAPL', $content);
+        } finally {
+            // Clean up
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
+    }
+
+    /**
+     * Test quotes endpoint with 52-week data enabled.
+     */
+    public function testQuotes_with52Week_returnsHighLowData(): void
+    {
+        $response = $this->client->stocks->quotes(['AAPL'], true);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertNotEmpty($response->quotes);
+
+        $quote = $response->quotes[0];
+        // 52-week data may or may not be present depending on API response
+        // Just verify the properties exist (they default to null if not in response)
+        $this->assertTrue(
+            property_exists($quote, 'fifty_two_week_high'),
+            'Quote should have fifty_two_week_high property'
+        );
+        $this->assertTrue(
+            property_exists($quote, 'fifty_two_week_low'),
+            'Quote should have fifty_two_week_low property'
         );
     }
 }

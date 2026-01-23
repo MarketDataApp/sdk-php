@@ -130,48 +130,36 @@ class ModeTest extends UniversalParametersTestCase
         $this->assertIsObject($response);
     }
 
-    public function testIntegration_parallelRequests_usesMergedParameters(): void
+    public function testIntegration_multiSymbol_usesMergedParameters(): void
     {
         $this->client = new Client('');
-        $this->client->default_params->format = Format::CSV;
 
-        $mockResponse1 = [
+        // Mock JSON response for multi-symbol request (single API call returns all data)
+        $mockResponse = [
             's' => 'ok',
-            'symbol' => ['AAPL'],
-            'ask' => [150.0],
-            'askSize' => [100],
-            'bid' => [149.5],
-            'bidSize' => [200],
-            'mid' => [149.75],
-            'last' => [150.0],
-            'change' => [1.0],
-            'changepct' => [0.67],
-            'volume' => [1000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
-        $mockResponse2 = [
-            's' => 'ok',
-            'symbol' => ['MSFT'],
-            'ask' => [300.0],
-            'askSize' => [100],
-            'bid' => [299.5],
-            'bidSize' => [200],
-            'mid' => [299.75],
-            'last' => [300.0],
-            'change' => [2.0],
-            'changepct' => [0.67],
-            'volume' => [2000000],
-            'updated' => ['2024-01-20T10:30:00Z']
+            'symbol' => ['AAPL', 'MSFT'],
+            'ask' => [150.0, 300.0],
+            'askSize' => [100, 100],
+            'bid' => [149.5, 299.5],
+            'bidSize' => [200, 200],
+            'mid' => [149.75, 299.75],
+            'last' => [150.0, 300.0],
+            'change' => [1.0, 2.0],
+            'changepct' => [0.67, 0.67],
+            'volume' => [1000000, 2000000],
+            'updated' => [1705747800, 1705747800]
         ];
         $this->setMockResponses([
-            new Response(200, [], json_encode($mockResponse1)),
-            new Response(200, [], json_encode($mockResponse2))
+            new Response(200, [], json_encode($mockResponse))
         ]);
 
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(mode: Mode::LIVE));
 
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
+        // JSON format creates individual Quote objects for each symbol
         $this->assertCount(2, $response->quotes);
+        $this->assertEquals('AAPL', $response->quotes[0]->symbol);
+        $this->assertEquals('MSFT', $response->quotes[1]->symbol);
     }
 }

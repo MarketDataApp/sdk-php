@@ -162,17 +162,27 @@ class FilenameTest extends TestCase
         }
     }
 
-    public function testFilename_parallelRequests_throwsException(): void
+    public function testFilename_multiSymbol_savesToFile(): void
     {
         $tempDir = sys_get_temp_dir();
-        $testFile = $tempDir . '/test_parallel_' . uniqid() . '.csv';
+        $testFile = $tempDir . '/test_multi_symbol_' . uniqid() . '.csv';
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+        try {
+            $response = $this->client->stocks->quotes(
+                symbols: ['AAPL', 'MSFT'],
+                parameters: new Parameters(format: Format::CSV, filename: $testFile)
+            );
 
-        $this->client->stocks->quotes(
-            symbols: ['AAPL'],
-            parameters: new Parameters(format: Format::CSV, filename: $testFile)
-        );
+            $this->assertFileExists($testFile, 'CSV file should be created for multi-symbol request');
+
+            $fileContent = file_get_contents($testFile);
+            $this->assertNotEmpty($fileContent, 'CSV file should contain data');
+            $this->assertStringContainsString('AAPL', $fileContent, 'CSV file should contain AAPL');
+            $this->assertStringContainsString('MSFT', $fileContent, 'CSV file should contain MSFT');
+        } finally {
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
     }
 }

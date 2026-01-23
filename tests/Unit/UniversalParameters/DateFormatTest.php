@@ -138,96 +138,46 @@ class DateFormatTest extends UniversalParametersTestCase
         $this->client->stocks->quote('AAPL', parameters: null);
     }
 
-    public function testIntegration_parallelRequests_withDateFormat(): void
+    public function testIntegration_multiSymbol_withDateFormat_csvFormat(): void
     {
         $this->client = new Client('');
         $this->client->default_params->format = Format::CSV;
         $this->client->default_params->date_format = DateFormat::UNIX;
 
-        $mockResponse1 = [
-            's' => 'ok',
-            'symbol' => ['AAPL'],
-            'ask' => [150.0],
-            'askSize' => [100],
-            'bid' => [149.5],
-            'bidSize' => [200],
-            'mid' => [149.75],
-            'last' => [150.0],
-            'change' => [1.0],
-            'changepct' => [0.67],
-            'volume' => [1000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
-        $mockResponse2 = [
-            's' => 'ok',
-            'symbol' => ['MSFT'],
-            'ask' => [300.0],
-            'askSize' => [100],
-            'bid' => [299.5],
-            'bidSize' => [200],
-            'mid' => [299.75],
-            'last' => [300.0],
-            'change' => [2.0],
-            'changepct' => [0.67],
-            'volume' => [2000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
+        // Mock CSV response for multi-symbol request (single API call returns all data)
+        $csvContent = "symbol,ask,updated\nAAPL,150.0,1705747800\nMSFT,300.0,1705747800";
         $this->setMockResponses([
-            new Response(200, [], json_encode($mockResponse1)),
-            new Response(200, [], json_encode($mockResponse2))
+            new Response(200, [], $csvContent)
         ]);
 
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP));
 
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
-        $this->assertCount(2, $response->quotes);
+        // CSV format returns a single Quote object containing all data
+        $this->assertCount(1, $response->quotes);
+        $this->assertTrue($response->quotes[0]->isCsv());
     }
 
-    public function testIntegration_parallelRequests_withDateFormat_htmlFormat(): void
+    public function testIntegration_multiSymbol_withDateFormat_htmlFormat(): void
     {
         $this->client = new Client('');
         $this->client->default_params->format = Format::HTML;
         $this->client->default_params->date_format = DateFormat::UNIX;
 
-        $mockResponse1 = [
-            's' => 'ok',
-            'symbol' => ['AAPL'],
-            'ask' => [150.0],
-            'askSize' => [100],
-            'bid' => [149.5],
-            'bidSize' => [200],
-            'mid' => [149.75],
-            'last' => [150.0],
-            'change' => [1.0],
-            'changepct' => [0.67],
-            'volume' => [1000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
-        $mockResponse2 = [
-            's' => 'ok',
-            'symbol' => ['MSFT'],
-            'ask' => [300.0],
-            'askSize' => [100],
-            'bid' => [299.5],
-            'bidSize' => [200],
-            'mid' => [299.75],
-            'last' => [300.0],
-            'change' => [2.0],
-            'changepct' => [0.67],
-            'volume' => [2000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
+        // Mock HTML response for multi-symbol request (single API call returns all data)
+        $htmlContent = "<table><tr><th>symbol</th><th>ask</th><th>updated</th></tr><tr><td>AAPL</td><td>150.0</td><td>1705747800</td></tr><tr><td>MSFT</td><td>300.0</td><td>1705747800</td></tr></table>";
         $this->setMockResponses([
-            new Response(200, [], json_encode($mockResponse1)),
-            new Response(200, [], json_encode($mockResponse2))
+            new Response(200, [], $htmlContent)
         ]);
 
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP));
 
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
-        $this->assertCount(2, $response->quotes);
+        // HTML format returns a single Quote object containing all data
+        $this->assertCount(1, $response->quotes);
+        $this->assertTrue($response->quotes[0]->isHtml());
     }
 
     // ============================================================================

@@ -520,7 +520,7 @@ class Stocks
     }
 
     /**
-     * Get real-time price quotes for multiple stocks by doing parallel requests.
+     * Get real-time price quotes for multiple stocks in a single API request.
      *
      * @param array           $symbols        The ticker symbols to return in the response.
      * @param bool            $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote
@@ -528,20 +528,20 @@ class Stocks
      * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
      * @return Quotes
-     * @throws \Throwable
+     * @throws GuzzleException|ApiException
      */
     public function quotes(array $symbols, bool $fifty_two_week = false, ?Parameters $parameters = null): Quotes
     {
         // Validate symbols array
         $this->validateSymbols($symbols);
 
-        // Execute standard quotes in parallel
-        $calls = [];
-        foreach ($symbols as $symbol) {
-            $calls[] = ["quotes/$symbol", ['52week' => $fifty_two_week]];
-        }
+        // Build comma-separated symbols string
+        $symbolsString = implode(',', array_map('trim', $symbols));
 
-        return new Quotes($this->execute_in_parallel($calls, $parameters));
+        return new Quotes($this->execute("quotes/", [
+            'symbols' => $symbolsString,
+            '52week'  => $fifty_two_week,
+        ], $parameters));
     }
 
     /**

@@ -120,94 +120,81 @@ class ColumnsTest extends UniversalParametersTestCase
         $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
     }
 
-    public function testIntegration_parallelRequests_withColumns(): void
+    public function testIntegration_multiSymbol_withColumns_csvFormat(): void
     {
         $this->client = new Client('');
         $this->client->default_params->format = Format::CSV;
 
-        $mockResponse1 = [
-            's' => 'ok',
-            'symbol' => ['AAPL'],
-            'ask' => [150.0],
-            'askSize' => [100],
-            'bid' => [149.5],
-            'bidSize' => [200],
-            'mid' => [149.75],
-            'last' => [150.0],
-            'change' => [1.0],
-            'changepct' => [0.67],
-            'volume' => [1000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
-        $mockResponse2 = [
-            's' => 'ok',
-            'symbol' => ['MSFT'],
-            'ask' => [300.0],
-            'askSize' => [100],
-            'bid' => [299.5],
-            'bidSize' => [200],
-            'mid' => [299.75],
-            'last' => [300.0],
-            'change' => [2.0],
-            'changepct' => [0.67],
-            'volume' => [2000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
+        // Mock CSV response for multi-symbol request (single API call returns all data)
+        $csvContent = "symbol,ask\nAAPL,150.0\nMSFT,300.0";
         $this->setMockResponses([
-            new Response(200, [], json_encode($mockResponse1)),
-            new Response(200, [], json_encode($mockResponse2))
+            new Response(200, [], $csvContent)
         ]);
 
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::CSV, columns: ['symbol', 'ask']));
 
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
-        $this->assertCount(2, $response->quotes);
+        // CSV format returns a single Quote object containing all data
+        $this->assertCount(1, $response->quotes);
+        $this->assertTrue($response->quotes[0]->isCsv());
+        $this->assertStringContainsString('AAPL', $response->quotes[0]->getCsv());
+        $this->assertStringContainsString('MSFT', $response->quotes[0]->getCsv());
     }
 
-    public function testIntegration_parallelRequests_withColumns_htmlFormat(): void
+    public function testIntegration_multiSymbol_withColumns_htmlFormat(): void
     {
         $this->client = new Client('');
         $this->client->default_params->format = Format::HTML;
 
-        $mockResponse1 = [
-            's' => 'ok',
-            'symbol' => ['AAPL'],
-            'ask' => [150.0],
-            'askSize' => [100],
-            'bid' => [149.5],
-            'bidSize' => [200],
-            'mid' => [149.75],
-            'last' => [150.0],
-            'change' => [1.0],
-            'changepct' => [0.67],
-            'volume' => [1000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
-        $mockResponse2 = [
-            's' => 'ok',
-            'symbol' => ['MSFT'],
-            'ask' => [300.0],
-            'askSize' => [100],
-            'bid' => [299.5],
-            'bidSize' => [200],
-            'mid' => [299.75],
-            'last' => [300.0],
-            'change' => [2.0],
-            'changepct' => [0.67],
-            'volume' => [2000000],
-            'updated' => ['2024-01-20T10:30:00Z']
-        ];
+        // Mock HTML response for multi-symbol request (single API call returns all data)
+        $htmlContent = "<table><tr><th>symbol</th><th>ask</th></tr><tr><td>AAPL</td><td>150.0</td></tr><tr><td>MSFT</td><td>300.0</td></tr></table>";
         $this->setMockResponses([
-            new Response(200, [], json_encode($mockResponse1)),
-            new Response(200, [], json_encode($mockResponse2))
+            new Response(200, [], $htmlContent)
         ]);
 
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: new Parameters(format: Format::HTML, columns: ['symbol', 'ask']));
 
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
+        // HTML format returns a single Quote object containing all data
+        $this->assertCount(1, $response->quotes);
+        $this->assertTrue($response->quotes[0]->isHtml());
+        $this->assertStringContainsString('AAPL', $response->quotes[0]->getHtml());
+        $this->assertStringContainsString('MSFT', $response->quotes[0]->getHtml());
+    }
+
+    public function testIntegration_multiSymbol_withColumns_jsonFormat(): void
+    {
+        $this->client = new Client('');
+
+        // Mock JSON response for multi-symbol request (single API call returns all data)
+        $mockResponse = [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'MSFT'],
+            'ask' => [150.0, 300.0],
+            'askSize' => [100, 100],
+            'bid' => [149.5, 299.5],
+            'bidSize' => [200, 200],
+            'mid' => [149.75, 299.75],
+            'last' => [150.0, 300.0],
+            'change' => [1.0, 2.0],
+            'changepct' => [0.67, 0.67],
+            'volume' => [1000000, 2000000],
+            'updated' => [1705747800, 1705747800]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mockResponse))
+        ]);
+
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT']);
+
+        $this->assertIsObject($response);
+        $this->assertIsArray($response->quotes);
+        // JSON format creates individual Quote objects for each symbol
         $this->assertCount(2, $response->quotes);
+        $this->assertEquals('AAPL', $response->quotes[0]->symbol);
+        $this->assertEquals('MSFT', $response->quotes[1]->symbol);
     }
 
     // ============================================================================

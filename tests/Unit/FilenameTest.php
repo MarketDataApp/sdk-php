@@ -348,19 +348,28 @@ class FilenameTest extends TestCase
         $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
     }
 
-    public function testIntegration_parallelRequests_filenameNotAllowed(): void
+    public function testIntegration_multiSymbol_filenameIsAllowed(): void
     {
         $tempDir = $this->createTempDir();
         $filename = $tempDir . '/test.csv';
-        touch($filename);
 
         $this->client = new Client('');
         $this->client->default_params->format = Format::CSV;
         $this->client->default_params->filename = $filename;
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+        // Mock CSV response for multi-symbol request (single API call)
+        $csvContent = "symbol,ask\nAAPL,150.0\nMSFT,300.0";
+        $this->setMockResponses([
+            new \GuzzleHttp\Psr7\Response(200, [], $csvContent)
+        ]);
 
-        $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: null);
+        // Multi-symbol quotes now uses a single API call, so filename works
+        $response = $this->client->stocks->quotes(['AAPL', 'MSFT'], parameters: null);
+
+        $this->assertIsObject($response);
+        $this->assertCount(1, $response->quotes);
+        $this->assertTrue($response->quotes[0]->isCsv());
+        $this->assertFileExists($filename);
+        $this->assertStringContainsString('AAPL', file_get_contents($filename));
     }
 }
