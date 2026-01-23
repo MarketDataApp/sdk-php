@@ -8,6 +8,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Settings;
 
 /**
@@ -227,5 +228,99 @@ class DateFormatTest extends UniversalParametersTestCase
         $this->assertIsObject($response);
         $this->assertIsArray($response->quotes);
         $this->assertCount(2, $response->quotes);
+    }
+
+    // ============================================================================
+    // Constructor Validation Tests
+    // ============================================================================
+
+    public function testParameters_dateFormat_withCsv_success(): void
+    {
+        $params1 = new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP);
+        $this->assertEquals(Format::CSV, $params1->format);
+        $this->assertEquals(DateFormat::TIMESTAMP, $params1->date_format);
+
+        $params2 = new Parameters(format: Format::CSV, date_format: DateFormat::UNIX);
+        $this->assertEquals(Format::CSV, $params2->format);
+        $this->assertEquals(DateFormat::UNIX, $params2->date_format);
+
+        $params3 = new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET);
+        $this->assertEquals(Format::CSV, $params3->format);
+        $this->assertEquals(DateFormat::SPREADSHEET, $params3->date_format);
+    }
+
+    public function testParameters_dateFormat_withHtml_success(): void
+    {
+        $params1 = new Parameters(format: Format::HTML, date_format: DateFormat::TIMESTAMP);
+        $this->assertEquals(Format::HTML, $params1->format);
+        $this->assertEquals(DateFormat::TIMESTAMP, $params1->date_format);
+
+        $params2 = new Parameters(format: Format::HTML, date_format: DateFormat::UNIX);
+        $this->assertEquals(Format::HTML, $params2->format);
+        $this->assertEquals(DateFormat::UNIX, $params2->date_format);
+
+        $params3 = new Parameters(format: Format::HTML, date_format: DateFormat::SPREADSHEET);
+        $this->assertEquals(Format::HTML, $params3->format);
+        $this->assertEquals(DateFormat::SPREADSHEET, $params3->date_format);
+    }
+
+    public function testParameters_dateFormat_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV or HTML format');
+
+        new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
+    }
+
+    public function testParameters_dateFormat_null_withCsv_success(): void
+    {
+        $params = new Parameters(format: Format::CSV, date_format: null);
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertNull($params->date_format);
+    }
+
+    public function testParameters_dateFormat_null_withHtml_success(): void
+    {
+        $params = new Parameters(format: Format::HTML, date_format: null);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertNull($params->date_format);
+    }
+
+    public function testParameters_dateFormat_null_withJson_success(): void
+    {
+        $params = new Parameters(format: Format::JSON, date_format: null);
+        $this->assertEquals(Format::JSON, $params->format);
+        $this->assertNull($params->date_format);
+    }
+
+    public function testParameters_default_backwardCompatible(): void
+    {
+        $params = new Parameters();
+        $this->assertEquals(Format::JSON, $params->format);
+        $this->assertNull($params->date_format);
+        $this->assertNull($params->use_human_readable);
+        $this->assertNull($params->mode);
+    }
+
+    public function testDateFormat_enumValues(): void
+    {
+        $this->assertEquals('timestamp', DateFormat::TIMESTAMP->value);
+        $this->assertEquals('unix', DateFormat::UNIX->value);
+        $this->assertEquals('spreadsheet', DateFormat::SPREADSHEET->value);
+    }
+
+    public function testParameters_allParameters_withCsv(): void
+    {
+        $params = new Parameters(
+            format: Format::CSV,
+            use_human_readable: true,
+            mode: Mode::LIVE,
+            date_format: DateFormat::UNIX
+        );
+
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertTrue($params->use_human_readable);
+        $this->assertEquals(Mode::LIVE, $params->mode);
+        $this->assertEquals(DateFormat::UNIX, $params->date_format);
     }
 }

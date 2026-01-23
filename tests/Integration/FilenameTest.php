@@ -1,20 +1,32 @@
 <?php
 
-namespace MarketDataApp\Tests\Integration\UniversalParameters;
+namespace MarketDataApp\Tests\Integration;
 
 use InvalidArgumentException;
+use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Enums\Format;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Integration tests for the Filename universal parameter.
+ * Integration tests for the Filename SDK feature.
  *
  * Tests that the filename parameter works correctly with the actual API
  * to save CSV/HTML output to files.
+ *
+ * Note: filename is an SDK feature, NOT an API universal parameter.
  */
-class FilenameTest extends UniversalParametersTestCase
+class FilenameTest extends TestCase
 {
+    protected Client $client;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->client = new Client();
+    }
+
     public function testFilename_createsFile(): void
     {
         $tempDir = sys_get_temp_dir();

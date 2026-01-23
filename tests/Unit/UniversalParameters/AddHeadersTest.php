@@ -5,7 +5,9 @@ namespace MarketDataApp\Tests\Unit\UniversalParameters;
 use InvalidArgumentException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Settings;
 
 /**
@@ -97,5 +99,79 @@ class AddHeadersTest extends UniversalParametersTestCase
         $this->expectExceptionMessage('add_headers parameter can only be used with CSV or HTML format');
 
         $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::JSON));
+    }
+
+    // ============================================================================
+    // Constructor Validation Tests
+    // ============================================================================
+
+    public function testParameters_addHeaders_withCsv_success(): void
+    {
+        $params1 = new Parameters(format: Format::CSV, add_headers: true);
+        $this->assertEquals(Format::CSV, $params1->format);
+        $this->assertTrue($params1->add_headers);
+
+        $params2 = new Parameters(format: Format::CSV, add_headers: false);
+        $this->assertEquals(Format::CSV, $params2->format);
+        $this->assertFalse($params2->add_headers);
+    }
+
+    public function testParameters_addHeaders_withHtml_success(): void
+    {
+        $params1 = new Parameters(format: Format::HTML, add_headers: true);
+        $this->assertEquals(Format::HTML, $params1->format);
+        $this->assertTrue($params1->add_headers);
+
+        $params2 = new Parameters(format: Format::HTML, add_headers: false);
+        $this->assertEquals(Format::HTML, $params2->format);
+        $this->assertFalse($params2->add_headers);
+    }
+
+    public function testParameters_addHeaders_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('add_headers parameter can only be used with CSV or HTML format');
+
+        new Parameters(format: Format::JSON, add_headers: true);
+    }
+
+    public function testParameters_addHeaders_null_withCsv_success(): void
+    {
+        $params = new Parameters(format: Format::CSV, add_headers: null);
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    public function testParameters_addHeaders_null_withHtml_success(): void
+    {
+        $params = new Parameters(format: Format::HTML, add_headers: null);
+        $this->assertEquals(Format::HTML, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    public function testParameters_addHeaders_null_withJson_success(): void
+    {
+        $params = new Parameters(format: Format::JSON, add_headers: null);
+        $this->assertEquals(Format::JSON, $params->format);
+        $this->assertNull($params->add_headers);
+    }
+
+    public function testParameters_addHeaders_withOtherParameters_success(): void
+    {
+        $params = new Parameters(
+            format: Format::CSV,
+            use_human_readable: true,
+            mode: Mode::LIVE,
+            date_format: DateFormat::UNIX,
+            columns: ['symbol', 'ask', 'bid'],
+            add_headers: true
+        );
+
+        $this->assertEquals(Format::CSV, $params->format);
+        $this->assertTrue($params->use_human_readable);
+        $this->assertEquals(Mode::LIVE, $params->mode);
+        $this->assertEquals(DateFormat::UNIX, $params->date_format);
+        $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
+        $this->assertTrue($params->add_headers);
     }
 }
