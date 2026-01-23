@@ -220,6 +220,36 @@ class RequestLoggingTest extends TestCase
         $this->assertNotEmpty($debugLogs, 'makeRawRequest should log at debug level');
     }
 
+    public function testMakeRawRequest_withArguments_logsFullUrl(): void
+    {
+        $mockLogger = $this->createMockLogger();
+
+        // Mock response: synthetic test data
+        $mockResponse = new Response(200, [
+            'x-api-ratelimit-limit' => '100',
+            'x-api-ratelimit-remaining' => '99',
+            'x-api-ratelimit-reset' => (string)(time() + 3600),
+            'x-api-ratelimit-consumed' => '1',
+            'cf-ray' => 'raw-request-ray',
+        ], json_encode(['status' => 'ok']));
+
+        $client = $this->createClientWithMockResponses([$mockResponse], $mockLogger);
+
+        $client->makeRawRequest('user/', ['foo' => 'bar', 'baz' => 'qux']);
+
+        // Find request log
+        $debugLogs = array_filter($mockLogger->logs, fn($log) =>
+            $log['level'] === 'debug' && str_contains($log['message'], 'GET 200')
+        );
+
+        $this->assertNotEmpty($debugLogs, 'makeRawRequest should log at debug level');
+
+        $logEntry = array_values($debugLogs)[0];
+        // Should contain query params in URL
+        $this->assertStringContainsString('foo=bar', $logEntry['message']);
+        $this->assertStringContainsString('baz=qux', $logEntry['message']);
+    }
+
     public function testIsInternalRequest_userEndpoint_returnsTrue(): void
     {
         // Use reflection to test the protected method
