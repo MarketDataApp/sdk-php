@@ -360,6 +360,17 @@ class Settings
     }
 
     /**
+     * Maximum number of concurrent requests for automatic date range splitting.
+     *
+     * When intraday candle requests span large date ranges, they are automatically
+     * split into year-long chunks and fetched concurrently. This constant limits
+     * the maximum number of concurrent requests to prevent overwhelming the API.
+     *
+     * @var int Maximum concurrent requests.
+     */
+    public const MAX_CONCURRENT_REQUESTS = 50;
+
+    /**
      * Refresh interval for API status cache.
      *
      * Cache should be refreshed when this interval has elapsed (4 minutes 30 seconds).

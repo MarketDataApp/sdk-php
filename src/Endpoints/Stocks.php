@@ -2,10 +2,12 @@
 
 namespace MarketDataApp\Endpoints;
 
+use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\BulkCandles;
+use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
 use MarketDataApp\Endpoints\Responses\Stocks\Earnings;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
@@ -13,6 +15,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Prices;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Settings;
 use MarketDataApp\Traits\UniversalParameters;
 use MarketDataApp\Traits\ValidatesInputs;
 
@@ -39,6 +42,226 @@ class Stocks
     public function __construct($client)
     {
         $this->client = $client;
+    }
+
+    /**
+     * Check if a resolution is intraday (minutely or hourly).
+     *
+     * Intraday resolutions include:
+     * - Minutely: 1, 3, 5, 15, 30, 45, minutely, or any number followed by optional suffix
+     * - Hourly: H, 1H, 2H, hourly, or any number followed by H
+     *
+     * @param string $resolution The resolution to check.
+     *
+     * @return bool True if the resolution is intraday, false otherwise.
+     */
+    protected function isIntradayResolution(string $resolution): bool
+    {
+        $resolution = strtolower(trim($resolution));
+
+        // Hourly resolutions: H, 1H, 2H, hourly, etc.
+        if ($resolution === 'h' || $resolution === 'hourly' || preg_match('/^\d+h$/i', $resolution)) {
+            return true;
+        }
+
+        // Minutely resolutions: 1, 3, 5, 15, 30, 45, minutely, or just numbers
+        if ($resolution === 'minutely' || preg_match('/^\d+$/', $resolution)) {
+            return true;
+        }
+
+        // Daily, weekly, monthly, yearly are NOT intraday
+        return false;
+    }
+
+    /**
+     * Check if a date string can be parsed as an absolute date.
+     *
+     * This is used to determine if we can calculate date ranges for automatic splitting.
+     * Relative dates (like "today", "-5 days") or unparseable dates will return false.
+     * Unix timestamps (pure digit strings) are accepted.
+     *
+     * @param string $date The date string to check.
+     *
+     * @return bool True if the date can be parsed, false otherwise.
+     */
+    protected function isParseableDate(string $date): bool
+    {
+        $date = trim($date);
+
+        // Check for common relative date patterns that Carbon would accept but we don't want
+        $relativePatterns = [
+            '/^today$/i',
+            '/^yesterday$/i',
+            '/^tomorrow$/i',
+            '/^now$/i',
+            '/^[+-]\d+\s*(day|week|month|year)/i',
+            '/^\d+\s*(day|week|month|year)/i',
+        ];
+
+        foreach ($relativePatterns as $pattern) {
+            if (preg_match($pattern, $date)) {
+                return false;
+            }
+        }
+
+        // Check for Unix timestamp (9-10 digit number representing seconds since epoch)
+        // Valid range: 1970-01-01 to ~2286-11-20
+        if (preg_match('/^\d{9,10}$/', $date)) {
+            $timestamp = (int) $date;
+            // Reasonable Unix timestamp range (1970-2100)
+            return $timestamp >= 0 && $timestamp <= 4102444800;
+        }
+
+        // Try to parse as ISO 8601 or similar format
+        try {
+            Carbon::parse($date);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Split a date range into year-long chunks for concurrent fetching.
+     *
+     * This method splits a date range into chunks of approximately 1 year each,
+     * which is the maximum recommended range for intraday data requests.
+     *
+     * @param string $from The start date (ISO 8601 format).
+     * @param string $to   The end date (ISO 8601 format).
+     *
+     * @return array Array of [from, to] date pairs representing each chunk.
+     */
+    protected function splitDateRangeIntoYearChunks(string $from, string $to): array
+    {
+        $fromDate = Carbon::parse($from)->startOfDay();
+        $toDate = Carbon::parse($to)->endOfDay();
+
+        $chunks = [];
+        $currentStart = $fromDate->copy();
+
+        while ($currentStart->lt($toDate)) {
+            $currentEnd = $currentStart->copy()->addYear()->subDay();
+
+            // Don't go past the original end date
+            if ($currentEnd->gt($toDate)) {
+                $currentEnd = $toDate->copy();
+            }
+
+            $chunks[] = [
+                $currentStart->toDateString(),
+                $currentEnd->toDateString(),
+            ];
+
+            $currentStart = $currentEnd->copy()->addDay();
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * Determine if a candles request needs automatic date range splitting.
+     *
+     * Splitting is needed when:
+     * 1. Resolution is intraday (minutely or hourly)
+     * 2. Both from and to dates are parseable
+     * 3. The date range spans more than 1 year
+     * 4. countback is not specified (we can't split countback requests)
+     *
+     * @param string      $resolution The candle resolution.
+     * @param string      $from       The start date.
+     * @param string|null $to         The end date.
+     * @param int|null    $countback  The countback value.
+     *
+     * @return bool True if automatic splitting is needed, false otherwise.
+     */
+    protected function needsAutomaticSplitting(
+        string $resolution,
+        string $from,
+        ?string $to,
+        ?int $countback
+    ): bool {
+        // Can't split countback requests
+        if ($countback !== null) {
+            return false;
+        }
+
+        // Need a 'to' date to calculate range
+        if ($to === null) {
+            return false;
+        }
+
+        // Only split intraday resolutions
+        if (!$this->isIntradayResolution($resolution)) {
+            return false;
+        }
+
+        // Both dates must be parseable
+        if (!$this->isParseableDate($from) || !$this->isParseableDate($to)) {
+            return false;
+        }
+
+        // Check if range spans more than 1 year
+        $fromDate = Carbon::parse($from);
+        $toDate = Carbon::parse($to);
+        $diffInDays = $fromDate->diffInDays($toDate);
+
+        // More than 365 days = more than 1 year
+        return $diffInDays > 365;
+    }
+
+    /**
+     * Merge multiple candle responses into a single Candles object.
+     *
+     * This method combines candles from multiple API responses, typically from
+     * concurrent requests for different date chunks. The candles are sorted by
+     * timestamp to maintain chronological order.
+     *
+     * @param array $responses Array of raw response objects from the API.
+     *
+     * @return Candles A single Candles object containing all candles.
+     */
+    protected function mergeCandleResponses(array $responses): Candles
+    {
+        $allCandles = [];
+        $overallStatus = 'no_data';
+        $nextTime = null;
+
+        foreach ($responses as $response) {
+            // Parse each response
+            $candlesResponse = new Candles($response);
+
+            if ($candlesResponse->status === 'ok') {
+                $overallStatus = 'ok';
+                foreach ($candlesResponse->candles as $candle) {
+                    $allCandles[] = $candle;
+                }
+            } elseif ($candlesResponse->status === 'no_data' && isset($candlesResponse->next_time)) {
+                // Keep track of the earliest next_time if we have no data
+                if ($nextTime === null || $candlesResponse->next_time < $nextTime) {
+                    $nextTime = $candlesResponse->next_time;
+                }
+            }
+        }
+
+        // Sort candles by timestamp
+        usort($allCandles, function (Candle $a, Candle $b) {
+            return $a->timestamp->timestamp <=> $b->timestamp->timestamp;
+        });
+
+        // Remove duplicates (same timestamp)
+        $uniqueCandles = [];
+        $seenTimestamps = [];
+        foreach ($allCandles as $candle) {
+            $ts = $candle->timestamp->timestamp;
+            if (!isset($seenTimestamps[$ts])) {
+                $seenTimestamps[$ts] = true;
+                $uniqueCandles[] = $candle;
+            }
+        }
+
+        // Create a merged Candles object
+        return Candles::createMerged($overallStatus, $uniqueCandles, $nextTime);
     }
 
     /**
@@ -171,6 +394,23 @@ class Stocks
         $this->validateResolution($resolution);
         $this->validateDateRange($from, $to, $countback);
 
+        // Check if automatic splitting is needed for large intraday date ranges
+        if ($this->needsAutomaticSplitting($resolution, $from, $to, $countback)) {
+            return $this->candlesConcurrent(
+                $symbol,
+                $from,
+                $to,
+                $resolution,
+                $exchange,
+                $extended,
+                $country,
+                $adjust_splits,
+                $adjust_dividends,
+                $parameters
+            );
+        }
+
+        // Standard single request
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/", [
                 'from'            => $from,
                 'to'              => $to,
@@ -182,6 +422,79 @@ class Stocks
                 'adjustdividends' => $adjust_dividends
             ]
             , $parameters));
+    }
+
+    /**
+     * Fetch candles concurrently by splitting date range into year-long chunks.
+     *
+     * This method is called automatically when:
+     * 1. Resolution is intraday (minutely or hourly)
+     * 2. The date range spans more than 1 year
+     * 3. countback is not specified
+     *
+     * The date range is split into year-long chunks, which are fetched concurrently
+     * (up to MAX_CONCURRENT_REQUESTS at a time). The responses are then merged
+     * into a single Candles object.
+     *
+     * @param string          $symbol           The stock symbol.
+     * @param string          $from             The start date.
+     * @param string          $to               The end date.
+     * @param string          $resolution       The candle resolution.
+     * @param string|null     $exchange         The exchange code.
+     * @param bool            $extended         Include extended hours.
+     * @param string|null     $country          The country code.
+     * @param bool            $adjust_splits    Adjust for splits.
+     * @param bool            $adjust_dividends Adjust for dividends.
+     * @param Parameters|null $parameters       Universal parameters.
+     *
+     * @return Candles The merged candles response.
+     * @throws \Throwable
+     */
+    protected function candlesConcurrent(
+        string $symbol,
+        string $from,
+        string $to,
+        string $resolution,
+        ?string $exchange,
+        bool $extended,
+        ?string $country,
+        bool $adjust_splits,
+        bool $adjust_dividends,
+        ?Parameters $parameters
+    ): Candles {
+        // Split the date range into year-long chunks
+        $chunks = $this->splitDateRangeIntoYearChunks($from, $to);
+
+        // Limit chunks to MAX_CONCURRENT_REQUESTS
+        $maxChunks = Settings::MAX_CONCURRENT_REQUESTS;
+        if (count($chunks) > $maxChunks) {
+            // Take the first MAX_CONCURRENT_REQUESTS chunks
+            // This covers up to 50 years of data, which should be more than enough
+            $chunks = array_slice($chunks, 0, $maxChunks);
+        }
+
+        // Build the API calls for parallel execution
+        $calls = [];
+        foreach ($chunks as $chunk) {
+            $calls[] = [
+                "candles/{$resolution}/{$symbol}/",
+                [
+                    'from'            => $chunk[0],
+                    'to'              => $chunk[1],
+                    'exchange'        => $exchange,
+                    'extended'        => $extended,
+                    'country'         => $country,
+                    'adjustsplits'    => $adjust_splits,
+                    'adjustdividends' => $adjust_dividends,
+                ],
+            ];
+        }
+
+        // Execute all requests in parallel
+        $responses = $this->execute_in_parallel($calls, $parameters);
+
+        // Merge all responses into a single Candles object
+        return $this->mergeCandleResponses($responses);
     }
 
     /**

@@ -47,6 +47,13 @@ class Candles extends ResponseBase
             return;
         }
 
+        // Check for merged response flag (used by createMerged())
+        if (isset($response->_merged) && $response->_merged === true) {
+            // Skip parsing - createMerged will populate fields directly
+            $this->status = $response->s ?? 'no_data';
+            return;
+        }
+
         // Convert to array for easier access to keys with spaces (human-readable format)
         $responseArray = (array) $response;
 
@@ -56,7 +63,7 @@ class Candles extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             $this->status = 'ok';
-            
+
             $count = count($responseArray['Open']);
             for ($i = 0; $i < $count; $i++) {
                 $this->candles[] = new Candle(
@@ -93,5 +100,33 @@ class Candles extends ResponseBase
                     break;
             }
         }
+    }
+
+    /**
+     * Create a Candles object from pre-merged data.
+     *
+     * This static factory method is used by the automatic concurrent request
+     * feature to create a Candles object from multiple merged responses.
+     *
+     * @param string      $status    The overall status ('ok' or 'no_data').
+     * @param Candle[]    $candles   Array of Candle objects.
+     * @param int|null    $nextTime  Unix timestamp of next available data (for no_data status).
+     *
+     * @return self A new Candles instance with the merged data.
+     */
+    public static function createMerged(string $status, array $candles, ?int $nextTime = null): self
+    {
+        // Create a minimal response object to satisfy the parent constructor
+        $response = (object) ['s' => $status, '_merged' => true];
+
+        $instance = new self($response);
+        $instance->status = $status;
+        $instance->candles = $candles;
+
+        if ($nextTime !== null) {
+            $instance->next_time = $nextTime;
+        }
+
+        return $instance;
     }
 }
