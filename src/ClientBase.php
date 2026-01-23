@@ -15,7 +15,11 @@ use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
 use MarketDataApp\Exceptions\UnauthorizedException;
+use MarketDataApp\Logging\LoggerFactory;
+use MarketDataApp\Logging\LoggingUtilities;
 use MarketDataApp\Retry\RetryConfig;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Abstract base class for Market Data API client.
@@ -65,20 +69,28 @@ abstract class ClientBase
     public Parameters $default_params;
 
     /**
+     * @var LoggerInterface PSR-3 logger instance for request logging.
+     */
+    public LoggerInterface $logger;
+
+    /**
      * ClientBase constructor.
      *
-     * @param string|null $token The API token for authentication. If not provided, the token will be
-     *                           automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
-     *                           An empty string is allowed for accessing free symbols like AAPL.
-     *                           A valid token is required for authenticated endpoints. An invalid token will throw
-     *                           UnauthorizedException during construction.
+     * @param string|null          $token  The API token for authentication. If not provided, the token will be
+     *                                     automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
+     *                                     An empty string is allowed for accessing free symbols like AAPL.
+     *                                     A valid token is required for authenticated endpoints. An invalid token will throw
+     *                                     UnauthorizedException during construction.
+     * @param LoggerInterface|null $logger PSR-3 logger instance. If not provided, uses the default logger.
+     *
      * @throws UnauthorizedException If the token is invalid (non-empty but returns 401 from /user endpoint)
      */
-    public function __construct(?string $token = null)
+    public function __construct(?string $token = null, ?LoggerInterface $logger = null)
     {
         $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
         $this->token = Settings::getToken($token);
         $this->default_params = Settings::getDefaultParameters();
+        $this->logger = $logger ?? LoggerFactory::getLogger();
         $this->_setup_rate_limits();
     }
 
@@ -176,33 +188,50 @@ abstract class ClientBase
         $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
         $attempt = 0;
 
-        $makeRequest = function() use ($method, $format, $arguments) {
+        // Build full URL for logging
+        $fullUrl = self::API_URL . $method;
+        if (!empty($arguments)) {
+            $fullUrl .= '?' . http_build_query($arguments);
+        }
+        $logLevel = $this->isInternalRequest($method) ? 'debug' : 'info';
+
+        // Track start time for each request attempt
+        $startTime = microtime(true);
+
+        $makeRequest = function() use ($method, $format, $arguments, &$startTime) {
+            $startTime = microtime(true);
             return $this->guzzle->getAsync($method, [
                 'headers' => $this->headers($format),
                 'query'   => $arguments,
             ]);
         };
 
-        $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
+        $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method, $fullUrl, $logLevel, &$startTime) {
             return $promise->then(
-                function($response) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
+                function($response) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method, $fullUrl, $logLevel, &$startTime) {
+                    $durationMs = (microtime(true) - $startTime) * 1000;
+
+                    // Log the request
+                    $this->logRequest('GET', $response, $durationMs, $fullUrl, $logLevel);
+
                     // Validate status code
                     try {
                         $this->validateResponseStatusCode($response, true);
-                        
+
                         // Automatically update rate limits from response headers
                         $rateLimits = $this->extractRateLimitsFromResponse($response);
                         if ($rateLimits !== null) {
                             $this->rate_limits = $rateLimits;
                         }
-                        
+
                         return $response;
                     } catch (RequestError $e) {
                         // Retryable error (5xx) - check if service is offline
                         if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                            $this->logger->error('Service {service} is offline', ['service' => $method]);
                             throw $e;
                         }
-                        
+
                         $attempt++;
                         if ($attempt < $maxAttempts) {
                             $delay = $this->calculateBackoffDelay($attempt);
@@ -218,13 +247,19 @@ abstract class ClientBase
                         throw $e;
                     }
                 },
-                function($reason) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method) {
+                function($reason) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method, $fullUrl, $logLevel, &$startTime) {
+                    $durationMs = (microtime(true) - $startTime) * 1000;
+
                     // Handle ServerException (5xx)
                     if ($reason instanceof \GuzzleHttp\Exception\ServerException) {
+                        // Log the failed request
+                        $this->logRequest('GET', $reason->getResponse(), $durationMs, $fullUrl, $logLevel);
+
                         $statusCode = $reason->getResponse()->getStatusCode();
                         if (RetryConfig::isRetryableStatusCode($statusCode)) {
                             // Check if service is offline - skip retries if offline
                             if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                                $this->logger->error('Service {service} is offline', ['service' => $method]);
                                 throw new RequestError(
                                     $this->getErrorMessage($reason->getResponse()),
                                     $statusCode,
@@ -232,7 +267,7 @@ abstract class ClientBase
                                     $reason->getResponse()
                                 );
                             }
-                            
+
                             $attempt++;
                             if ($attempt < $maxAttempts) {
                                 $delay = $this->calculateBackoffDelay($attempt);
@@ -258,6 +293,9 @@ abstract class ClientBase
 
                     // Handle ClientException (4xx)
                     if ($reason instanceof \GuzzleHttp\Exception\ClientException) {
+                        // Log the failed request
+                        $this->logRequest('GET', $reason->getResponse(), $durationMs, $fullUrl, $logLevel);
+
                         $statusCode = $reason->getResponse()->getStatusCode();
                         // 404 is handled specially - return response
                         if ($statusCode === 404) {
@@ -330,33 +368,49 @@ abstract class ClientBase
     public function execute($method, array $arguments = []): object
     {
         $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
-        
+
+        // Build full URL for logging (base URL + method + query params)
+        $fullUrl = self::API_URL . $method;
+        if (!empty($arguments)) {
+            $fullUrl .= '?' . http_build_query($arguments);
+        }
+        $logLevel = $this->isInternalRequest($method) ? 'debug' : 'info';
+
         // Retry logic matching Python SDK behavior
         $attempt = 0;
         $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
-        
+
         while ($attempt < $maxAttempts) {
+            $startTime = microtime(true);
             try {
                 $response = $this->guzzle->get($method, [
                     'headers' => $this->headers($format),
                     'query'   => $arguments,
                 ]);
-                
+                $durationMs = (microtime(true) - $startTime) * 1000;
+
+                // Log the request
+                $this->logRequest('GET', $response, $durationMs, $fullUrl, $logLevel);
+
                 // Validate response status code
                 $this->validateResponseStatusCode($response, true);
-                
+
                 // Automatically update rate limits from response headers
                 $rateLimits = $this->extractRateLimitsFromResponse($response);
                 if ($rateLimits !== null) {
                     $this->rate_limits = $rateLimits;
                 }
-                
+
                 // Success - process response
                 return $this->processResponse($response, $format, $arguments);
                 
             } catch (\GuzzleHttp\Exception\ClientException $e) {
+                $durationMs = (microtime(true) - $startTime) * 1000;
                 $statusCode = $e->getResponse()->getStatusCode();
-                
+
+                // Log the failed request
+                $this->logRequest('GET', $e->getResponse(), $durationMs, $fullUrl, $logLevel);
+
                 // 404 is handled specially (return response instead of throwing)
                 if ($statusCode === 404) {
                     $response = $e->getResponse();
@@ -387,11 +441,17 @@ abstract class ClientBase
                 );
                 
             } catch (\GuzzleHttp\Exception\ServerException $e) {
+                $durationMs = (microtime(true) - $startTime) * 1000;
+
+                // Log the failed request
+                $this->logRequest('GET', $e->getResponse(), $durationMs, $fullUrl, $logLevel);
+
                 // Server errors (5xx) - check if retryable
                 $statusCode = $e->getResponse()->getStatusCode();
                 if (RetryConfig::isRetryableStatusCode($statusCode)) {
                     // Check if service is offline - skip retries if offline
                     if ($this->shouldSkipRetryDueToOfflineService($method)) {
+                        $this->logger->error('Service {service} is offline', ['service' => $method]);
                         throw new RequestError(
                             $this->getErrorMessage($e->getResponse()),
                             $statusCode,
@@ -647,6 +707,50 @@ abstract class ClientBase
     }
 
     /**
+     * Log a completed HTTP request.
+     *
+     * Logs one line per request with format: METHOD STATUS DURATION REQUEST_ID URL
+     *
+     * @param string            $method     HTTP method (GET, POST, etc.).
+     * @param ResponseInterface $response   The HTTP response.
+     * @param float             $durationMs Request duration in milliseconds.
+     * @param string            $url        The full request URL.
+     * @param string            $logLevel   Log level: 'info' for API requests, 'debug' for internal.
+     *
+     * @return void
+     */
+    protected function logRequest(
+        string $method,
+        ResponseInterface $response,
+        float $durationMs,
+        string $url,
+        string $logLevel = 'info'
+    ): void {
+        $cfRay = $response->getHeaderLine('cf-ray') ?: '-';
+        $status = $response->getStatusCode();
+        $duration = LoggingUtilities::formatDuration($durationMs);
+
+        // Unified format: METHOD STATUS DURATION REQUEST_ID URL
+        $message = "{$method} {$status} {$duration} {$cfRay} {$url}";
+        $this->logger->log($logLevel, $message);
+    }
+
+    /**
+     * Check if a URL is for an internal request.
+     *
+     * Internal requests (rate limit setup, API status) are logged at DEBUG level.
+     * API requests are logged at INFO level.
+     *
+     * @param string $url The request URL.
+     *
+     * @return bool True if internal request, false otherwise.
+     */
+    protected function isInternalRequest(string $url): bool
+    {
+        return str_contains($url, 'user/') || str_contains($url, 'utilities/status');
+    }
+
+    /**
      * Calculate exponential backoff delay.
      *
      * @param int $attempt The current attempt number (1-based).
@@ -813,14 +917,32 @@ abstract class ClientBase
      * @throws GuzzleException
      * @throws UnauthorizedException
      */
-    public function makeRawRequest(string $method, array $arguments = []): \Psr\Http\Message\ResponseInterface
+    public function makeRawRequest(string $method, array $arguments = []): ResponseInterface
     {
+        // Build full URL for logging
+        $fullUrl = self::API_URL . $method;
+        if (!empty($arguments)) {
+            $fullUrl .= '?' . http_build_query($arguments);
+        }
+
+        $startTime = microtime(true);
         try {
-            return $this->guzzle->get($method, [
+            $response = $this->guzzle->get($method, [
                 'headers' => $this->headers('json'),
                 'query'   => $arguments,
             ]);
+            $durationMs = (microtime(true) - $startTime) * 1000;
+
+            // Internal requests logged at DEBUG level
+            $this->logRequest('GET', $response, $durationMs, $fullUrl, 'debug');
+
+            return $response;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $durationMs = (microtime(true) - $startTime) * 1000;
+
+            // Log the failed request
+            $this->logRequest('GET', $e->getResponse(), $durationMs, $fullUrl, 'debug');
+
             $statusCode = $e->getResponse()->getStatusCode();
             // 401 UNAUTHORIZED gets a specific exception
             if ($statusCode === 401) {

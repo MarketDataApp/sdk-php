@@ -40,5 +40,8 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
+        <exclude>
+            <directory>./examples</directory>
+        </exclude>
     </source>
 </phpunit>

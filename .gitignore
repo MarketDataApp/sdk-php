@@ -15,3 +15,7 @@ act-test-results.log
 .cursorrules
 *.log
 *.tmp
+CLAUDE.md
+SDK_FEATURE_COMPARISON.md
+COVERAGE_REPORT.md
+request_logs.md

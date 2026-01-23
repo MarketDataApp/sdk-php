@@ -300,6 +300,18 @@ class Settings
     }
 
     /**
+     * Get the logging level from environment variable MARKETDATA_LOGGING_LEVEL.
+     *
+     * @return string Log level (DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY, or NONE).
+     *                Defaults to INFO if not set.
+     */
+    public static function getLogLevel(): string
+    {
+        $value = self::getEnvValue('MARKETDATA_LOGGING_LEVEL');
+        return $value ?: 'INFO';
+    }
+
+    /**
      * Get environment variable value from multiple sources.
      *
      * Checks in order:
