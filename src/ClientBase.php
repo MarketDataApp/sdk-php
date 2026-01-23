@@ -6,6 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
@@ -146,29 +147,60 @@ abstract class ClientBase
     }
 
     /**
-     * Execute multiple API calls in parallel.
+     * Execute multiple API calls in parallel with concurrency limiting.
+     *
+     * Uses Guzzle's EachPromise to maintain a sliding window of concurrent requests.
+     * Unlike batch processing, this approach starts new requests as soon as previous
+     * ones complete, maintaining optimal throughput up to MAX_CONCURRENT_REQUESTS (50).
      *
      * @param array $calls An array of method calls, each containing the method name and arguments.
      *
-     * @return array An array of decoded JSON responses.
+     * @return array An array of decoded JSON responses in the same order as input calls.
      * @throws \Throwable
      */
     public function execute_in_parallel(array $calls): array
     {
-        $promises = [];
-        foreach ($calls as $call) {
-            $promises[] = $this->async($call[0], $call[1]);
-        }
-        $responses = Promise\Utils::unwrap($promises);
+        $maxConcurrent = Settings::MAX_CONCURRENT_REQUESTS;
+        $results = [];
+        $exceptions = [];
 
-        return array_map(function ($response, $index) use ($calls) {
-            // Extract format from the call arguments, default to 'json'
-            $format = $calls[$index][1]['format'] ?? 'json';
-            $arguments = $calls[$index][1];
-            
-            // Use processResponse to handle CSV/HTML/JSON formats correctly
-            return $this->processResponse($response, $format, $arguments);
-        }, $responses, array_keys($responses));
+        // Create a generator that yields promises with their original indices
+        $promiseGenerator = function () use ($calls) {
+            foreach ($calls as $index => $call) {
+                yield $index => $this->async($call[0], $call[1]);
+            }
+        };
+
+        // Use EachPromise for concurrency-limited parallel execution
+        $eachPromise = new EachPromise($promiseGenerator(), [
+            'concurrency' => $maxConcurrent,
+            'fulfilled' => function ($response, $index) use (&$results, $calls) {
+                // Extract format from the call arguments, default to 'json'
+                $format = $calls[$index][1]['format'] ?? 'json';
+                $arguments = $calls[$index][1];
+
+                // Process and store result at original index to maintain order
+                $results[$index] = $this->processResponse($response, $format, $arguments);
+            },
+            'rejected' => function ($reason, $index) use (&$exceptions) {
+                // Store exception at index for later throwing
+                $exceptions[$index] = $reason;
+            },
+        ]);
+
+        // Wait for all promises to complete
+        $eachPromise->promise()->wait();
+
+        // If any requests failed, throw the first exception
+        if (!empty($exceptions)) {
+            ksort($exceptions);
+            throw reset($exceptions);
+        }
+
+        // Sort by index to maintain original order
+        ksort($results);
+
+        return array_values($results);
     }
 
     /**

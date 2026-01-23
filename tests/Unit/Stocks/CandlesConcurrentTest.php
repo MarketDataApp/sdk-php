@@ -18,6 +18,8 @@ class CandlesConcurrentTest extends StocksTestCase
 {
     /**
      * Test that MAX_CONCURRENT_REQUESTS constant exists and has correct value.
+     *
+     * This is an API-wide limit enforced across all parallel request operations.
      */
     public function testMaxConcurrentRequestsConstant(): void
     {
@@ -1023,8 +1025,9 @@ class CandlesConcurrentTest extends StocksTestCase
     /**
      * Test candlesConcurrent limits to MAX_CONCURRENT_REQUESTS when chunks exceed limit.
      *
-     * Tests the edge case where the date range generates more than MAX_CONCURRENT_REQUESTS
-     * year-long chunks.
+     * Tests the edge case where the date range generates more than the API-wide
+     * MAX_CONCURRENT_REQUESTS limit of year-long chunks. The candlesConcurrent method
+     * pre-limits chunks to this value, and execute_in_parallel enforces the hard limit.
      */
     public function testCandles_automaticConcurrent_maxConcurrentRequestsLimit(): void
     {

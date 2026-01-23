@@ -372,11 +372,18 @@ class Settings
     }
 
     /**
-     * Maximum number of concurrent requests for automatic date range splitting.
+     * Maximum number of concurrent requests allowed for the entire API.
      *
-     * When intraday candle requests span large date ranges, they are automatically
-     * split into year-long chunks and fetched concurrently. This constant limits
-     * the maximum number of concurrent requests to prevent overwhelming the API.
+     * This is a hard limit enforced across all parallel request operations,
+     * not just specific endpoints. The SDK uses Guzzle's EachPromise to maintain
+     * a sliding window of this many concurrent requests - as soon as one completes,
+     * the next one starts, maintaining optimal throughput.
+     *
+     * This limit applies to:
+     * - Direct calls to execute_in_parallel()
+     * - Automatic date range splitting for intraday candles
+     * - Bulk quote requests via stocks->quotes()
+     * - Any other parallel request operations
      *
      * @var int Maximum concurrent requests.
      */

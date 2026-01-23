@@ -809,4 +809,227 @@ class RetryTest extends TestCase
             ['v1/stocks/quotes/AAPL', []],
         ]);
     }
+
+    // ========== Concurrent Request Limit Tests ==========
+
+    /**
+     * Test that execute_in_parallel enforces MAX_CONCURRENT_REQUESTS limit.
+     *
+     * When more than 50 requests are passed, they should be processed in batches.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_enforcesConcurrentLimit(): void
+    {
+        // Create 75 mock responses (more than MAX_CONCURRENT_REQUESTS of 50)
+        $responses = [];
+        for ($i = 0; $i < 75; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ["SYM{$i}"],
+                'last' => [100.0 + $i],
+                'ask' => [100.1],
+                'askSize' => [200],
+                'bid' => [100.0],
+                'bidSize' => [300],
+                'mid' => [100.05],
+                'change' => [0.5],
+                'changepct' => [0.33],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]));
+        }
+        $this->setMockResponses($responses);
+
+        // Create 75 calls
+        $calls = [];
+        for ($i = 0; $i < 75; $i++) {
+            $calls[] = ["quotes/SYM{$i}", []];
+        }
+
+        $results = $this->client->execute_in_parallel($calls);
+
+        // All 75 results should be returned
+        $this->assertCount(75, $results);
+
+        // Results should be in the same order as the calls
+        for ($i = 0; $i < 75; $i++) {
+            $this->assertEquals("SYM{$i}", $results[$i]->symbol[0]);
+        }
+    }
+
+    /**
+     * Test that requests within limit are processed in a single batch.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_singleBatchUnderLimit(): void
+    {
+        // Create 10 mock responses (well under MAX_CONCURRENT_REQUESTS of 50)
+        $responses = [];
+        for ($i = 0; $i < 10; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ["SYM{$i}"],
+                'last' => [100.0 + $i],
+                'ask' => [100.1],
+                'askSize' => [200],
+                'bid' => [100.0],
+                'bidSize' => [300],
+                'mid' => [100.05],
+                'change' => [0.5],
+                'changepct' => [0.33],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]));
+        }
+        $this->setMockResponses($responses);
+
+        // Create 10 calls
+        $calls = [];
+        for ($i = 0; $i < 10; $i++) {
+            $calls[] = ["quotes/SYM{$i}", []];
+        }
+
+        $results = $this->client->execute_in_parallel($calls);
+
+        $this->assertCount(10, $results);
+        for ($i = 0; $i < 10; $i++) {
+            $this->assertEquals("SYM{$i}", $results[$i]->symbol[0]);
+        }
+    }
+
+    /**
+     * Test execute_in_parallel with exactly MAX_CONCURRENT_REQUESTS.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_exactlyAtLimit(): void
+    {
+        $limit = \MarketDataApp\Settings::MAX_CONCURRENT_REQUESTS;
+
+        // Create exactly MAX_CONCURRENT_REQUESTS mock responses
+        $responses = [];
+        for ($i = 0; $i < $limit; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ["SYM{$i}"],
+                'last' => [100.0 + $i],
+                'ask' => [100.1],
+                'askSize' => [200],
+                'bid' => [100.0],
+                'bidSize' => [300],
+                'mid' => [100.05],
+                'change' => [0.5],
+                'changepct' => [0.33],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]));
+        }
+        $this->setMockResponses($responses);
+
+        // Create exactly MAX_CONCURRENT_REQUESTS calls
+        $calls = [];
+        for ($i = 0; $i < $limit; $i++) {
+            $calls[] = ["quotes/SYM{$i}", []];
+        }
+
+        $results = $this->client->execute_in_parallel($calls);
+
+        $this->assertCount($limit, $results);
+    }
+
+    /**
+     * Test execute_in_parallel with one more than MAX_CONCURRENT_REQUESTS.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_oneOverLimit(): void
+    {
+        $limit = \MarketDataApp\Settings::MAX_CONCURRENT_REQUESTS;
+        $count = $limit + 1;
+
+        // Create one more than MAX_CONCURRENT_REQUESTS mock responses
+        $responses = [];
+        for ($i = 0; $i < $count; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ["SYM{$i}"],
+                'last' => [100.0 + $i],
+                'ask' => [100.1],
+                'askSize' => [200],
+                'bid' => [100.0],
+                'bidSize' => [300],
+                'mid' => [100.05],
+                'change' => [0.5],
+                'changepct' => [0.33],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]));
+        }
+        $this->setMockResponses($responses);
+
+        // Create one more than MAX_CONCURRENT_REQUESTS calls
+        $calls = [];
+        for ($i = 0; $i < $count; $i++) {
+            $calls[] = ["quotes/SYM{$i}", []];
+        }
+
+        $results = $this->client->execute_in_parallel($calls);
+
+        // All results should be returned (processed in 2 batches: 50 + 1)
+        $this->assertCount($count, $results);
+
+        // Results should maintain order
+        for ($i = 0; $i < $count; $i++) {
+            $this->assertEquals("SYM{$i}", $results[$i]->symbol[0]);
+        }
+    }
+
+    /**
+     * Test execute_in_parallel batching with large number of requests.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_multipleBatches(): void
+    {
+        $limit = \MarketDataApp\Settings::MAX_CONCURRENT_REQUESTS;
+        $count = $limit * 2 + 25; // 125 requests = 3 batches (50 + 50 + 25)
+
+        // Create mock responses
+        $responses = [];
+        for ($i = 0; $i < $count; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ["SYM{$i}"],
+                'last' => [100.0 + $i],
+                'ask' => [100.1],
+                'askSize' => [200],
+                'bid' => [100.0],
+                'bidSize' => [300],
+                'mid' => [100.05],
+                'change' => [0.5],
+                'changepct' => [0.33],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]));
+        }
+        $this->setMockResponses($responses);
+
+        // Create calls
+        $calls = [];
+        for ($i = 0; $i < $count; $i++) {
+            $calls[] = ["quotes/SYM{$i}", []];
+        }
+
+        $results = $this->client->execute_in_parallel($calls);
+
+        // All results should be returned
+        $this->assertCount($count, $results);
+
+        // Results should maintain order across all batches
+        for ($i = 0; $i < $count; $i++) {
+            $this->assertEquals("SYM{$i}", $results[$i]->symbol[0]);
+        }
+    }
 }
