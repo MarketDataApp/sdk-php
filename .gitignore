@@ -19,3 +19,5 @@ CLAUDE.md
 SDK_FEATURE_COMPARISON.md
 COVERAGE_REPORT.md
 request_logs.md
+documentation-tests/*
+coverage.md
