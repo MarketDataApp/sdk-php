@@ -92,7 +92,7 @@ class UserAgentTest extends TestCase
     public function testVersionConstant_defined(): void
     {
         $this->assertTrue(defined(ClientBase::class . '::VERSION'));
-        $this->assertEquals('0.8.0', ClientBase::VERSION);
+        $this->assertEquals('1.0.0', ClientBase::VERSION);
     }
 
     /**
@@ -133,9 +133,9 @@ class UserAgentTest extends TestCase
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present');
         $this->assertCount(1, $headers['User-Agent'], 'User-Agent header should have one value');
         
-        // Verify User-Agent format: marketdata-sdk-php/0.8.0 (RFC 7231 format)
+        // Verify User-Agent format: marketdata-sdk-php/1.0.0 (RFC 7231 format)
         $userAgent = $headers['User-Agent'][0];
-        $this->assertEquals('marketdata-sdk-php/0.8.0', $userAgent, 
+        $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent, 
             'User-Agent should follow RFC 7231 format: product/product-version');
     }
 
@@ -178,7 +178,7 @@ class UserAgentTest extends TestCase
         
         // Verify User-Agent header is present
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present in async request');
-        $this->assertEquals('marketdata-sdk-php/0.8.0', $headers['User-Agent'][0],
+        $this->assertEquals('marketdata-sdk-php/1.0.0', $headers['User-Agent'][0],
             'User-Agent should follow RFC 7231 format in async requests');
     }
 
@@ -209,7 +209,7 @@ class UserAgentTest extends TestCase
         
         // Verify User-Agent header is present
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present in raw request');
-        $this->assertEquals('marketdata-sdk-php/0.8.0', $headers['User-Agent'][0],
+        $this->assertEquals('marketdata-sdk-php/1.0.0', $headers['User-Agent'][0],
             'User-Agent should follow RFC 7231 format in raw requests');
     }
 
@@ -267,8 +267,8 @@ class UserAgentTest extends TestCase
         $userAgent = $request->getHeaderLine('User-Agent');
         
         // RFC 7231 format: product/product-version (with slash separator)
-        // Should NOT be: marketdata-sdk-php-0.8.0 (missing slash - incorrect format)
-        // Should be: marketdata-sdk-php/0.8.0 (with slash - correct format)
+        // Should NOT be: marketdata-sdk-php-1.0.0 (missing slash - incorrect format)
+        // Should be: marketdata-sdk-php/1.0.0 (with slash - correct format)
         $this->assertStringContainsString('/', $userAgent, 
             'User-Agent should contain slash separator per RFC 7231');
         $this->assertStringStartsWith('marketdata-sdk-php/', $userAgent,
@@ -276,7 +276,7 @@ class UserAgentTest extends TestCase
         $this->assertStringEndsWith(ClientBase::VERSION, $userAgent,
             'User-Agent should end with version number');
         
-        // Verify format: exactly "marketdata-sdk-php/0.8.0"
+        // Verify format: exactly "marketdata-sdk-php/1.0.0"
         $this->assertEquals('marketdata-sdk-php/' . ClientBase::VERSION, $userAgent,
             'User-Agent format should be: marketdata-sdk-php/{version}');
     }
@@ -334,7 +334,7 @@ class UserAgentTest extends TestCase
         foreach ($this->history as $index => $transaction) {
             $request = $transaction['request'];
             $userAgent = $request->getHeaderLine('User-Agent');
-            $this->assertEquals('marketdata-sdk-php/0.8.0', $userAgent,
+            $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent,
                 "User-Agent should be present in request #{$index}");
         }
     }
@@ -409,7 +409,7 @@ class UserAgentTest extends TestCase
         foreach ($this->history as $index => $transaction) {
             $request = $transaction['request'];
             $userAgent = $request->getHeaderLine('User-Agent');
-            $this->assertEquals('marketdata-sdk-php/0.8.0', $userAgent,
+            $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent,
                 "User-Agent should be present in parallel request #{$index}");
         }
     }

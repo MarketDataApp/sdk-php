@@ -44,7 +44,7 @@ abstract class ClientBase
     /**
      * SDK version for User-Agent header.
      */
-    public const VERSION = '0.8.0';
+    public const VERSION = '1.0.0';
 
     /**
      * @var GuzzleClient The Guzzle HTTP client instance.

@@ -1,6 +1,6 @@
 <div align="center">
 
-# Market Data PHP SDK v0.8
+# Market Data PHP SDK v1.0
 ### Access Financial Data with Ease
 
 >This is the official PHP SDK for [Market Data](https://www.marketdata.app). It provides developers with a powerful, easy-to-use interface to obtain real-time and historical financial data. Ideal for building financial applications, trading bots, and investment strategies.
