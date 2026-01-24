@@ -4,12 +4,14 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Represents a collection of option expirations dates and related data.
  */
 class Expirations extends ResponseBase
 {
+    use FormatsForDisplay;
 
     /**
      * Status of the expirations request. Will always be ok when there is strike data for the underlying/expirations
@@ -96,5 +98,31 @@ class Expirations extends ResponseBase
                     break;
             }
         }
+    }
+
+    /**
+     * Returns a string representation of the expirations collection.
+     *
+     * @return string Human-readable expirations summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Expirations - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->expirations);
+        $lines = [sprintf("Expirations: %d date%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(5, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . $this->formatDate($this->expirations[$i]);
+        }
+
+        if ($count > 5) {
+            $lines[] = sprintf("  ... and %d more", $count - 5);
+        }
+
+        return implode("\n", $lines);
     }
 }

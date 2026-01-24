@@ -3,6 +3,7 @@
 namespace MarketDataApp;
 
 use Carbon\Carbon;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Represents rate limit information from API responses.
@@ -18,6 +19,7 @@ use Carbon\Carbon;
  */
 class RateLimits
 {
+    use FormatsForDisplay;
 
     /**
      * Total number of credits allowed in the current rate limit window.
@@ -80,5 +82,21 @@ class RateLimits
         $this->remaining = $remaining;
         $this->reset = $reset;
         $this->consumed = $consumed;
+    }
+
+    /**
+     * Returns a string representation of the rate limits.
+     *
+     * @return string Human-readable rate limit information.
+     */
+    public function __toString(): string
+    {
+        return sprintf(
+            "Rate Limits: %s/%s remaining, %s consumed, resets %s",
+            $this->formatNumber($this->remaining),
+            $this->formatNumber($this->limit),
+            $this->formatNumber($this->consumed),
+            $this->formatDateTime($this->reset)
+        );
     }
 }

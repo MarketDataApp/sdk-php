@@ -198,4 +198,41 @@ class Quotes extends ResponseBase
             }
         }
     }
+
+    /**
+     * Returns a string representation of the option quotes collection.
+     *
+     * @return string Human-readable option quotes summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Option Quotes - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->quotes);
+        $lines = [sprintf("Option Quotes: %d quote%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $quote = $this->quotes[$i];
+            $lines[] = sprintf(
+                "  %s %s %s @ %s",
+                $quote->underlying,
+                strtoupper($quote->side->value),
+                '$' . number_format($quote->strike, 2),
+                $quote->expiration->format('M j, Y')
+            );
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        if (!empty($this->errors)) {
+            $lines[] = sprintf("  Errors: %d failed symbol(s)", count($this->errors));
+        }
+
+        return implode("\n", $lines);
+    }
 }

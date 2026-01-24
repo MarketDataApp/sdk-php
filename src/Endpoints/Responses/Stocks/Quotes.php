@@ -107,4 +107,30 @@ class Quotes extends ResponseBase
             ];
         }
     }
+
+    /**
+     * Returns a string representation of the quotes collection.
+     *
+     * @return string Human-readable quotes summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Quotes - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->quotes);
+        $lines = [sprintf("Quotes: %d symbol%s", $count, $count === 1 ? '' : 's')];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . (string) $this->quotes[$i];
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
+    }
 }

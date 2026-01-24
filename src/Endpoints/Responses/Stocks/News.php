@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Class News
@@ -12,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\ResponseBase;
  */
 class News extends ResponseBase
 {
+    use FormatsForDisplay;
 
     /**
      * The status of the response. Will always be "ok" when there is data for the symbol requested.
@@ -102,5 +104,35 @@ class News extends ResponseBase
                 $this->publication_date = Carbon::parse($publicationDate);
             }
         }
+    }
+
+    /**
+     * Returns a string representation of the news article.
+     *
+     * @return string Human-readable news summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "News - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $lines = [];
+        $lines[] = sprintf("%s: %s", $this->symbol, $this->headline);
+        $lines[] = sprintf(
+            "  Published: %s  Source: %s",
+            $this->formatDateTime($this->publication_date),
+            $this->source
+        );
+
+        // Include content preview (first 200 chars if longer)
+        if (!empty($this->content)) {
+            $contentPreview = strlen($this->content) > 200
+                ? substr($this->content, 0, 197) . '...'
+                : $this->content;
+            $lines[] = sprintf("  Content: %s", $contentPreview);
+        }
+
+        return implode("\n", $lines);
     }
 }

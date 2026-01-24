@@ -260,4 +260,44 @@ class OptionChains extends ResponseBase
 
         return array_values($strikes);
     }
+
+    /**
+     * Returns a string representation of the option chains collection.
+     *
+     * @return string Human-readable option chains summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Option Chains - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $expirationCount = count($this->option_chains);
+        $totalContracts = $this->count();
+        $lines = [sprintf(
+            "Option Chains: %d expiration%s, %d total contract%s (status: %s)",
+            $expirationCount,
+            $expirationCount === 1 ? '' : 's',
+            $totalContracts,
+            $totalContracts === 1 ? '' : 's',
+            $this->status
+        )];
+
+        $displayCount = 0;
+        foreach ($this->option_chains as $date => $quotes) {
+            if ($displayCount >= 3) {
+                break;
+            }
+            $callCount = count(array_filter($quotes, fn($q) => $q->side === Side::CALL));
+            $putCount = count($quotes) - $callCount;
+            $lines[] = sprintf("  %s: %d contracts (%d calls, %d puts)", $date, count($quotes), $callCount, $putCount);
+            $displayCount++;
+        }
+
+        if ($expirationCount > 3) {
+            $lines[] = sprintf("  ... and %d more expiration(s)", $expirationCount - 3);
+        }
+
+        return implode("\n", $lines);
+    }
 }

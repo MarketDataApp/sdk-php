@@ -129,4 +129,30 @@ class Candles extends ResponseBase
 
         return $instance;
     }
+
+    /**
+     * Returns a string representation of the candles collection.
+     *
+     * @return string Human-readable candles summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Candles - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->candles);
+        $lines = [sprintf("Candles: %d candle%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . (string) $this->candles[$i];
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
+    }
 }

@@ -52,4 +52,18 @@ class Lookup extends ResponseBase
             $this->option_symbol = $response->optionSymbol;
         }
     }
+
+    /**
+     * Returns a string representation of the lookup result.
+     *
+     * @return string Human-readable lookup result.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Lookup - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        return sprintf("Lookup: %s", $this->option_symbol);
+    }
 }

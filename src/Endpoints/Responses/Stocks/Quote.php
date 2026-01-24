@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Class Quote
@@ -12,6 +13,7 @@ use MarketDataApp\Endpoints\Responses\ResponseBase;
  */
 class Quote extends ResponseBase
 {
+    use FormatsForDisplay;
 
     /**
      * The status of the response. Will always be "ok" when there is data for the symbol requested.
@@ -181,5 +183,49 @@ class Quote extends ResponseBase
                 $this->fifty_two_week_low = $response->{'52weekLow'}[0];
             }
         }
+    }
+
+    /**
+     * Returns a string representation of the quote.
+     *
+     * @return string Human-readable quote data.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Quote ({$this->symbol}) - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $lines = [];
+        $lines[] = sprintf(
+            "%s: %s (%s) Change: %s",
+            $this->symbol,
+            $this->formatCurrency($this->last),
+            $this->formatPercent($this->change_percent),
+            $this->formatChange($this->change)
+        );
+        $lines[] = sprintf(
+            "  Bid: %s x %s  Ask: %s x %s  Mid: %s",
+            $this->formatCurrency($this->bid),
+            $this->formatNumber($this->bid_size),
+            $this->formatCurrency($this->ask),
+            $this->formatNumber($this->ask_size),
+            $this->formatCurrency($this->mid)
+        );
+        $lines[] = sprintf(
+            "  Volume: %s  Updated: %s",
+            $this->formatVolume($this->volume),
+            $this->formatDateTime($this->updated)
+        );
+
+        if ($this->fifty_two_week_high !== null || $this->fifty_two_week_low !== null) {
+            $lines[] = sprintf(
+                "  52-Week Range: %s - %s",
+                $this->formatCurrency($this->fifty_two_week_low),
+                $this->formatCurrency($this->fifty_two_week_high)
+            );
+        }
+
+        return implode("\n", $lines);
     }
 }

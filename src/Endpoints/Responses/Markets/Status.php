@@ -3,12 +3,14 @@
 namespace MarketDataApp\Endpoints\Responses\Markets;
 
 use Carbon\Carbon;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Represents the status of a market for a specific date.
  */
 class Status
 {
+    use FormatsForDisplay;
 
     /**
      * Constructs a new Status instance.
@@ -22,5 +24,17 @@ class Status
         public Carbon $date,
         public string|null $status,
     ) {
+    }
+
+    /**
+     * Returns a string representation of the market status.
+     *
+     * @return string Human-readable market status.
+     */
+    public function __toString(): string
+    {
+        $statusText = $this->status ?? 'unknown';
+
+        return sprintf("%s: %s", $this->formatDate($this->date), $statusText);
     }
 }

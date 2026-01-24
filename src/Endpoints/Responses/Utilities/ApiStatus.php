@@ -51,4 +51,21 @@ class ApiStatus
             );
         }
     }
+
+    /**
+     * Returns a string representation of the API status.
+     *
+     * @return string Human-readable API status summary.
+     */
+    public function __toString(): string
+    {
+        $count = count($this->services);
+        $lines = [sprintf("API Status: %d service%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        foreach ($this->services as $service) {
+            $lines[] = "  " . (string) $service;
+        }
+
+        return implode("\n", $lines);
+    }
 }

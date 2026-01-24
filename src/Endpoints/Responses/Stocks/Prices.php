@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Class Prices
@@ -13,6 +14,7 @@ use MarketDataApp\Endpoints\Responses\ResponseBase;
  */
 class Prices extends ResponseBase
 {
+    use FormatsForDisplay;
 
     /**
      * The status of the response. Will be "ok" when there is data, "no_data" when no prices can be found,
@@ -109,5 +111,44 @@ class Prices extends ResponseBase
                 }
             }
         }
+    }
+
+    /**
+     * Returns a string representation of the prices collection.
+     *
+     * @return string Human-readable prices summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Prices - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->symbols);
+        $lines = [sprintf("Prices: %d symbol%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $symbol = $this->symbols[$i] ?? 'N/A';
+            $mid = $this->mid[$i] ?? null;
+            $change = $this->change[$i] ?? null;
+            $changePct = $this->changepct[$i] ?? null;
+            $updated = $this->updated[$i] ?? null;
+
+            $lines[] = sprintf(
+                "  %s: %s (%s) Change: %s  Updated: %s",
+                $symbol,
+                $this->formatCurrency($mid),
+                $this->formatPercent($changePct),
+                $this->formatChange($change),
+                $updated ? $this->formatDateTime($updated) : 'N/A'
+            );
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
     }
 }

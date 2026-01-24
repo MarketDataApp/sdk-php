@@ -90,4 +90,30 @@ class Earnings extends ResponseBase
             }
         }
     }
+
+    /**
+     * Returns a string representation of the earnings collection.
+     *
+     * @return string Human-readable earnings summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Earnings - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->earnings ?? []);
+        $lines = [sprintf("Earnings: %d record%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . (string) $this->earnings[$i];
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
+    }
 }

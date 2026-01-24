@@ -107,4 +107,42 @@ class Strikes extends ResponseBase
             }
         }
     }
+
+    /**
+     * Returns a string representation of the strikes collection.
+     *
+     * @return string Human-readable strikes summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Strikes - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $dateCount = count($this->dates);
+        $totalStrikes = array_sum(array_map('count', $this->dates));
+        $lines = [sprintf(
+            "Strikes: %d date%s, %d total strike%s (status: %s)",
+            $dateCount,
+            $dateCount === 1 ? '' : 's',
+            $totalStrikes,
+            $totalStrikes === 1 ? '' : 's',
+            $this->status
+        )];
+
+        $displayCount = 0;
+        foreach ($this->dates as $date => $strikes) {
+            if ($displayCount >= 3) {
+                break;
+            }
+            $lines[] = sprintf("  %s: %d strikes", $date, count($strikes));
+            $displayCount++;
+        }
+
+        if ($dateCount > 3) {
+            $lines[] = sprintf("  ... and %d more date(s)", $dateCount - 3);
+        }
+
+        return implode("\n", $lines);
+    }
 }

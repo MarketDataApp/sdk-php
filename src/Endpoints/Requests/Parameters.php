@@ -9,7 +9,7 @@ use MarketDataApp\Enums\Mode;
 /**
  * Represents parameters for API requests.
  */
-class Parameters
+class Parameters implements \Stringable
 {
 
     /**
@@ -141,5 +141,41 @@ class Parameters
                 );
             }
         }
+    }
+
+    /**
+     * Returns a string representation of the parameters.
+     *
+     * @return string Human-readable parameters summary.
+     */
+    public function __toString(): string
+    {
+        $parts = ['format=' . $this->format->value];
+
+        if ($this->mode !== null) {
+            $parts[] = 'mode=' . $this->mode->value;
+        }
+
+        if ($this->date_format !== null) {
+            $parts[] = 'date_format=' . $this->date_format->value;
+        }
+
+        if ($this->use_human_readable !== null) {
+            $parts[] = 'human_readable=' . ($this->use_human_readable ? 'true' : 'false');
+        }
+
+        if ($this->add_headers !== null) {
+            $parts[] = 'add_headers=' . ($this->add_headers ? 'true' : 'false');
+        }
+
+        if ($this->columns !== null) {
+            $parts[] = 'columns=[' . implode(',', $this->columns) . ']';
+        }
+
+        if ($this->filename !== null) {
+            $parts[] = 'filename=' . $this->filename;
+        }
+
+        return 'Parameters: ' . implode(', ', $parts);
     }
 }

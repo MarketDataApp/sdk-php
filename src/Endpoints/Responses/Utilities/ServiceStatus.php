@@ -3,12 +3,14 @@
 namespace MarketDataApp\Endpoints\Responses\Utilities;
 
 use Carbon\Carbon;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Represents the status of a service.
  */
 class ServiceStatus
 {
+    use FormatsForDisplay;
 
     /**
      * ServiceStatus constructor.
@@ -28,5 +30,25 @@ class ServiceStatus
         public float $uptime_percentage_90d,
         public Carbon $updated,
     ) {
+    }
+
+    /**
+     * Returns a string representation of the service status.
+     *
+     * @return string Human-readable service status.
+     */
+    public function __toString(): string
+    {
+        $onlineStr = $this->online ? 'true' : 'false';
+
+        return sprintf(
+            "%s: %s (online: %s, 30d: %.2f%%, 90d: %.2f%%, updated: %s)",
+            $this->service,
+            $this->status,
+            $onlineStr,
+            $this->uptime_percentage_30d,
+            $this->uptime_percentage_90d,
+            $this->formatDateTime($this->updated)
+        );
     }
 }

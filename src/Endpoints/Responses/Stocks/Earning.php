@@ -3,6 +3,7 @@
 namespace MarketDataApp\Endpoints\Responses\Stocks;
 
 use Carbon\Carbon;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Class Earning
@@ -11,6 +12,7 @@ use Carbon\Carbon;
  */
 class Earning
 {
+    use FormatsForDisplay;
 
     /**
      * Constructs a new Earning object with detailed earnings information.
@@ -48,5 +50,48 @@ class Earning
         public float|null $surprise_eps_pct,
         public Carbon $updated
     ) {
+    }
+
+    /**
+     * Returns a string representation of the earnings data.
+     *
+     * @return string Human-readable earnings summary.
+     */
+    public function __toString(): string
+    {
+        $reported = $this->reported_eps !== null ? sprintf('$%.2f', $this->reported_eps) : 'N/A';
+        $estimated = $this->estimated_eps !== null ? sprintf('$%.2f', $this->estimated_eps) : 'N/A';
+        $surprise = '';
+
+        if ($this->surprise_eps !== null && $this->surprise_eps_pct !== null) {
+            $sign = $this->surprise_eps >= 0 ? '+' : '';
+            $surprise = sprintf(' Surprise: %s$%.2f (%s)', $sign, abs($this->surprise_eps), $this->formatPercent($this->surprise_eps_pct));
+        }
+
+        $currency = $this->currency ?? 'N/A';
+
+        $lines = [];
+        $lines[] = sprintf(
+            "%s Q%d %d: EPS %s vs Est %s%s",
+            $this->symbol,
+            $this->fiscal_quarter,
+            $this->fiscal_year,
+            $reported,
+            $estimated,
+            $surprise
+        );
+        $lines[] = sprintf(
+            "  Period End: %s  Report: %s (%s)",
+            $this->formatDate($this->date),
+            $this->formatDate($this->report_date),
+            $this->report_time
+        );
+        $lines[] = sprintf(
+            "  Currency: %s  Updated: %s",
+            $currency,
+            $this->formatDateTime($this->updated)
+        );
+
+        return implode("\n", $lines);
     }
 }

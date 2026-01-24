@@ -29,4 +29,14 @@ class User
     {
         $this->rate_limits = $rateLimits;
     }
+
+    /**
+     * Returns a string representation of the user info.
+     *
+     * @return string Human-readable user/rate limit information.
+     */
+    public function __toString(): string
+    {
+        return "User: " . (string) $this->rate_limits;
+    }
 }
