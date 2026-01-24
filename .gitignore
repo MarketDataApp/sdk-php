@@ -21,3 +21,4 @@ COVERAGE_REPORT.md
 request_logs.md
 documentation-tests/*
 coverage.md
+.vscode/*
