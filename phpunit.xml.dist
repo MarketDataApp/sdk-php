@@ -15,6 +15,11 @@
     cacheDirectory=".phpunit.cache"
     backupStaticProperties="false"
 >
+    <php>
+        <!-- Set log level to CRITICAL to reduce verbose output during tests.
+             Logging tests override this in their setUp/tearDown methods. -->
+        <env name="MARKETDATA_LOGGING_LEVEL" value="CRITICAL"/>
+    </php>
     <testsuites>
         <!-- Unit tests (fast, use mocks) - run by default -->
         <testsuite name="Unit">
