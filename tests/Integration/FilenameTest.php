@@ -24,7 +24,17 @@ class FilenameTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->client = new Client();
+
+        // Use the same robust token detection as Settings class
+        $token = getenv('MARKETDATA_TOKEN');
+        if ($token === false || $token === '') {
+            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
+        }
+        if ($token === null || $token === '') {
+            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
+        }
+
+        $this->client = new Client($token);
     }
 
     public function testFilename_createsFile(): void
