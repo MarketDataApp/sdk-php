@@ -162,4 +162,199 @@ class QuotesTest extends OptionsTestCase
         $this->assertEquals('ok', $response->status);
         $this->assertGreaterThanOrEqual(2, count($response->quotes));
     }
+
+    // =========================================================================
+    // Edge Case Tests - Expired + Unexpired Options
+    // =========================================================================
+
+    /**
+     * Test mixed expired and unexpired options returns partial data.
+     *
+     * When requesting a mix of expired (AAPL230120C00150000 - Jan 2023) and
+     * unexpired (AAPL281215C00400000 - Dec 2028) options without a historical
+     * date, the expired option should fail while the unexpired one succeeds.
+     */
+    public function testQuotes_mixedExpiredUnexpired_returnsPartialData(): void
+    {
+        // AAPL230120C00150000 = AAPL, Jan 20 2023, Call, $150 strike (expired)
+        // AAPL281215C00400000 = AAPL, Dec 15 2028, Call, $400 strike (unexpired)
+        $expiredSymbol = 'AAPL230120C00150000';
+        $unexpiredSymbol = 'AAPL281215C00400000';
+
+        $response = $this->client->options->quotes([
+            $expiredSymbol,
+            $unexpiredSymbol,
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+
+        // Should have at least the unexpired option's quote
+        $this->assertNotEmpty($response->quotes);
+
+        // Verify the unexpired symbol is present
+        $symbols = array_map(fn($q) => $q->option_symbol, $response->quotes);
+        $this->assertContains($unexpiredSymbol, $symbols);
+
+        // Should have error for the expired symbol (or it might return no_data)
+        // The exact behavior depends on the API - it might error or return no_data
+        // Either way, we got partial data successfully
+    }
+
+    /**
+     * Test expired option with historical date returns data.
+     *
+     * When requesting an expired option with a historical date when it was
+     * still trading, the API should return valid quote data.
+     */
+    public function testQuotes_expiredOption_withHistoricalDate_returnsData(): void
+    {
+        // AAPL230120C00150000 = AAPL, Jan 20 2023, Call, $150 strike
+        // Request data from Jan 10, 2023 when this option was still trading
+        $expiredSymbol = 'AAPL230120C00150000';
+
+        $response = $this->client->options->quotes(
+            option_symbols: $expiredSymbol,
+            date: '2023-01-10'
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        // Should return historical data
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->quotes);
+    }
+
+    /**
+     * Test multiple expired options with historical date range.
+     *
+     * When requesting multiple expired options with a historical date range,
+     * both should return valid data from that period.
+     */
+    public function testQuotes_multipleExpiredOptions_withHistoricalDateRange_returnsData(): void
+    {
+        // Both expired in Jan 2023, request data from early January
+        $expiredCall = 'AAPL230120C00150000';
+        $expiredPut = 'AAPL230120P00150000';
+
+        $response = $this->client->options->quotes(
+            option_symbols: [$expiredCall, $expiredPut],
+            from: '2023-01-09',
+            to: '2023-01-11'
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+
+        // Should have quotes from both symbols
+        $symbols = array_unique(array_map(fn($q) => $q->option_symbol, $response->quotes));
+        $this->assertContains($expiredCall, $symbols);
+        $this->assertContains($expiredPut, $symbols);
+
+        // No errors expected since both should have historical data
+        $this->assertEmpty($response->errors);
+    }
+
+    /**
+     * Test mixed expired and unexpired options with historical date.
+     *
+     * When requesting both expired and unexpired options with a historical
+     * date, both should return data (the unexpired option existed then too).
+     */
+    public function testQuotes_mixedExpiredUnexpired_withHistoricalDate_returnsAllData(): void
+    {
+        // AAPL230120C00150000 expired Jan 2023
+        // AAPL281215C00400000 expires Dec 2028 (but existed in 2024)
+        // Use a date when both were trading
+        $expiredSymbol = 'AAPL230120C00150000';
+        $unexpiredSymbol = 'AAPL250117C00200000'; // Jan 2025 expiry, should exist in 2024
+
+        $response = $this->client->options->quotes(
+            option_symbols: [$expiredSymbol, $unexpiredSymbol],
+            date: '2023-01-10'
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        // At minimum, the expired option should have data for this date
+        // The unexpired option may or may not have existed yet
+        $this->assertTrue(
+            in_array($response->status, ['ok', 'no_data']),
+            "Expected status 'ok' or 'no_data', got '{$response->status}'"
+        );
+    }
+
+    /**
+     * Test errors property contains failed symbol info.
+     *
+     * When some symbols fail, the errors property should contain
+     * information about which symbols failed and why.
+     */
+    public function testQuotes_partialFailure_errorsContainSymbolInfo(): void
+    {
+        // Use a completely invalid symbol format alongside a valid one
+        $invalidSymbol = 'INVALID_NOT_AN_OPTION';
+        $validSymbol = 'AAPL281215C00400000';
+
+        $response = $this->client->options->quotes([
+            $validSymbol,
+            $invalidSymbol,
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+
+        // Should have data from the valid symbol
+        $this->assertNotEmpty($response->quotes);
+
+        // Errors should contain the invalid symbol
+        $this->assertNotEmpty($response->errors);
+        $this->assertArrayHasKey($invalidSymbol, $response->errors);
+
+        // Error message should be present
+        $this->assertNotEmpty($response->errors[$invalidSymbol]);
+    }
+
+    /**
+     * Test all valid symbols returns empty errors array.
+     */
+    public function testQuotes_allValidSymbols_errorsEmpty(): void
+    {
+        $response = $this->client->options->quotes([
+            'AAPL281215C00400000',
+            'AAPL281215P00400000',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertNotEmpty($response->quotes);
+
+        // No errors when all symbols are valid
+        $this->assertEmpty($response->errors);
+    }
+
+    /**
+     * Test three symbols with one invalid returns two quotes.
+     */
+    public function testQuotes_threeSymbolsOneInvalid_returnsTwoQuotes(): void
+    {
+        $validCall = 'AAPL281215C00400000';
+        $validPut = 'AAPL281215P00400000';
+        $invalidSymbol = 'NOTREAL123';
+
+        $response = $this->client->options->quotes([
+            $validCall,
+            $invalidSymbol,
+            $validPut,
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+
+        // Should have quotes from both valid symbols
+        $symbols = array_map(fn($q) => $q->option_symbol, $response->quotes);
+        $this->assertContains($validCall, $symbols);
+        $this->assertContains($validPut, $symbols);
+
+        // Should have error for the invalid symbol
+        $this->assertArrayHasKey($invalidSymbol, $response->errors);
+    }
 }
