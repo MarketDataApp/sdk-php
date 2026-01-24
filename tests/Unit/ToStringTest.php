@@ -629,4 +629,504 @@ class ToStringTest extends TestCase
 
         $this->assertStringContainsString('-1.50%', $output);
     }
+
+    // ========== Additional Coverage Tests ==========
+
+    public function testFormatVolume_smallNumbers(): void
+    {
+        // Test volume < 1000 (no suffix)
+        $candle = new Candle(100, 100, 100, 100, 500, Carbon::now());
+        $output = (string) $candle;
+        $this->assertStringContainsString('500', $output);
+    }
+
+    public function testOptionQuote_toString_withNullGreeks(): void
+    {
+        $quote = new OptionQuote(
+            option_symbol: 'AAPL250221C00250000',
+            underlying: 'AAPL',
+            expiration: Carbon::parse('2025-02-21'),
+            side: Side::CALL,
+            strike: 250.00,
+            first_traded: Carbon::parse('2024-01-15'),
+            dte: 30,
+            ask: 5.35,
+            ask_size: 150,
+            bid: 5.20,
+            bid_size: 100,
+            mid: 5.275,
+            last: null,
+            volume: 1500,
+            open_interest: 15234,
+            underlying_price: 245.50,
+            in_the_money: true,
+            intrinsic_value: 0.00,
+            extrinsic_value: 5.275,
+            implied_volatility: null,
+            delta: null,
+            gamma: null,
+            theta: null,
+            vega: null,
+            updated: Carbon::parse('2026-01-24 15:30:00')
+        );
+
+        $output = (string) $quote;
+
+        $this->assertStringContainsString('ITM', $output);
+        $this->assertStringContainsString('N/A', $output);
+    }
+
+    public function testParameters_toString_withDateFormatAndColumns(): void
+    {
+        $params = new Parameters(
+            format: Format::CSV,
+            use_human_readable: true,
+            date_format: \MarketDataApp\Enums\DateFormat::SPREADSHEET,
+            columns: ['open', 'high', 'low', 'close']
+        );
+
+        $output = (string) $params;
+
+        $this->assertStringContainsString('date_format=', $output);
+        $this->assertStringContainsString('human_readable=true', $output);
+        $this->assertStringContainsString('columns=[open,high,low,close]', $output);
+    }
+
+    public function testMarketStatuses_toString_truncatesLargeCollections(): void
+    {
+        // Mock response with 5 dates (more than 3)
+        $response = (object) [
+            's' => 'ok',
+            'date' => [1706054400, 1706140800, 1706227200, 1706313600, 1706400000],
+            'status' => ['open', 'closed', 'open', 'open', 'closed'],
+        ];
+
+        $statuses = new Statuses($response);
+        $output = (string) $statuses;
+
+        $this->assertStringContainsString('5 dates', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testMutualFundCandles_toString_returnsFormattedSummary(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'o' => [25.50, 25.75, 26.00],
+            'h' => [25.75, 26.00, 26.25],
+            'l' => [25.25, 25.50, 25.75],
+            'c' => [25.60, 25.90, 26.10],
+            't' => [1706054400, 1706140800, 1706227200],
+        ];
+
+        $candles = new MutualFundCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('MutualFunds Candles:', $output);
+        $this->assertStringContainsString('3 candles', $output);
+        $this->assertStringContainsString('status: ok', $output);
+    }
+
+    public function testMutualFundCandles_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'o' => [25.50, 25.75, 26.00, 26.25, 26.50],
+            'h' => [25.75, 26.00, 26.25, 26.50, 26.75],
+            'l' => [25.25, 25.50, 25.75, 26.00, 26.25],
+            'c' => [25.60, 25.90, 26.10, 26.35, 26.55],
+            't' => [1706054400, 1706140800, 1706227200, 1706313600, 1706400000],
+        ];
+
+        $candles = new MutualFundCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('5 candles', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testExpirations_toString_returnsFormattedSummary(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'expirations' => [1706054400, 1706140800, 1706227200],
+            'updated' => 1706122800,
+        ];
+
+        $expirations = new Expirations($response);
+        $output = (string) $expirations;
+
+        $this->assertStringContainsString('Expirations:', $output);
+        $this->assertStringContainsString('3 dates', $output);
+    }
+
+    public function testExpirations_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'expirations' => [1706054400, 1706140800, 1706227200, 1706313600, 1706400000, 1706486400, 1706572800],
+            'updated' => 1706122800,
+        ];
+
+        $expirations = new Expirations($response);
+        $output = (string) $expirations;
+
+        $this->assertStringContainsString('7 dates', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testLookup_toString_returnsFormattedString(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'optionSymbol' => 'AAPL250221C00250000',
+        ];
+
+        $lookup = new Lookup($response);
+        $output = (string) $lookup;
+
+        $this->assertStringContainsString('Lookup:', $output);
+        $this->assertStringContainsString('AAPL250221C00250000', $output);
+    }
+
+    public function testOptionChains_toString_returnsFormattedSummary(): void
+    {
+        // Mock response with one option chain
+        $response = (object) [
+            's' => 'ok',
+            'optionSymbol' => ['AAPL250221C00250000'],
+            'underlying' => ['AAPL'],
+            'expiration' => [1740096000], // 2025-02-21
+            'side' => ['call'],
+            'strike' => [250.00],
+            'firstTraded' => [1705276800],
+            'dte' => [30],
+            'ask' => [5.35],
+            'askSize' => [150],
+            'bid' => [5.20],
+            'bidSize' => [100],
+            'mid' => [5.275],
+            'last' => [5.25],
+            'volume' => [1500],
+            'openInterest' => [15234],
+            'underlyingPrice' => [245.50],
+            'inTheMoney' => [false],
+            'intrinsicValue' => [0.00],
+            'extrinsicValue' => [5.275],
+            'iv' => [0.325],
+            'delta' => [0.452],
+            'gamma' => [0.032],
+            'theta' => [-0.085],
+            'vega' => [0.21],
+            'updated' => [1706122800],
+        ];
+
+        $chains = new OptionChains($response);
+        $output = (string) $chains;
+
+        $this->assertStringContainsString('Option Chains:', $output);
+        $this->assertStringContainsString('1 expiration', $output);
+        $this->assertStringContainsString('1 total contract', $output);
+        $this->assertStringContainsString('1 calls', $output);
+    }
+
+    public function testOptionChains_toString_truncatesLargeCollections(): void
+    {
+        // Mock response with 4 different expirations
+        $response = (object) [
+            's' => 'ok',
+            'optionSymbol' => ['AAPL250221C00250000', 'AAPL250321C00250000', 'AAPL250421C00250000', 'AAPL250521C00250000'],
+            'underlying' => ['AAPL', 'AAPL', 'AAPL', 'AAPL'],
+            'expiration' => [1740096000, 1742774400, 1745280000, 1747958400], // Feb, Mar, Apr, May 2025
+            'side' => ['call', 'call', 'call', 'call'],
+            'strike' => [250.00, 250.00, 250.00, 250.00],
+            'firstTraded' => [1705276800, 1705276800, 1705276800, 1705276800],
+            'dte' => [30, 58, 89, 119],
+            'ask' => [5.35, 6.50, 7.25, 8.00],
+            'askSize' => [150, 150, 150, 150],
+            'bid' => [5.20, 6.35, 7.10, 7.85],
+            'bidSize' => [100, 100, 100, 100],
+            'mid' => [5.275, 6.425, 7.175, 7.925],
+            'last' => [5.25, 6.40, 7.15, 7.90],
+            'volume' => [1500, 1200, 800, 500],
+            'openInterest' => [15234, 12000, 8000, 5000],
+            'underlyingPrice' => [245.50, 245.50, 245.50, 245.50],
+            'inTheMoney' => [false, false, false, false],
+            'intrinsicValue' => [0.00, 0.00, 0.00, 0.00],
+            'extrinsicValue' => [5.275, 6.425, 7.175, 7.925],
+            'iv' => [0.325, 0.320, 0.315, 0.310],
+            'delta' => [0.452, 0.480, 0.500, 0.515],
+            'gamma' => [0.032, 0.028, 0.025, 0.022],
+            'theta' => [-0.085, -0.075, -0.065, -0.055],
+            'vega' => [0.21, 0.25, 0.28, 0.30],
+            'updated' => [1706122800, 1706122800, 1706122800, 1706122800],
+        ];
+
+        $chains = new OptionChains($response);
+        $output = (string) $chains;
+
+        $this->assertStringContainsString('4 expirations', $output);
+        $this->assertStringContainsString('... and 1 more expiration(s)', $output);
+    }
+
+    public function testOptionQuotes_toString_truncatesLargeCollections(): void
+    {
+        $makeQuote = fn() => new OptionQuote(
+            option_symbol: 'AAPL250221C00250000',
+            underlying: 'AAPL',
+            expiration: Carbon::parse('2025-02-21'),
+            side: Side::CALL,
+            strike: 250.00,
+            first_traded: Carbon::parse('2024-01-15'),
+            dte: 30,
+            ask: 5.35,
+            ask_size: 150,
+            bid: 5.20,
+            bid_size: 100,
+            mid: 5.275,
+            last: 5.25,
+            volume: 1500,
+            open_interest: 15234,
+            underlying_price: 245.50,
+            in_the_money: false,
+            intrinsic_value: 0.00,
+            extrinsic_value: 5.275,
+            implied_volatility: 0.325,
+            delta: 0.452,
+            gamma: 0.032,
+            theta: -0.085,
+            vega: 0.21,
+            updated: Carbon::parse('2026-01-24')
+        );
+
+        $quotes = OptionQuotes::createMerged('ok', [
+            $makeQuote(), $makeQuote(), $makeQuote(), $makeQuote(), $makeQuote()
+        ]);
+        $output = (string) $quotes;
+
+        $this->assertStringContainsString('5 quotes', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testStrikes_toString_returnsFormattedSummary(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            '2025-02-21' => [245.0, 250.0, 255.0],
+            '2025-03-21' => [240.0, 245.0, 250.0, 255.0],
+        ];
+
+        $strikes = new Strikes($response);
+        $output = (string) $strikes;
+
+        $this->assertStringContainsString('Strikes:', $output);
+        $this->assertStringContainsString('2 dates', $output);
+        $this->assertStringContainsString('7 total strikes', $output);
+    }
+
+    public function testStrikes_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            '2025-02-21' => [245.0, 250.0],
+            '2025-03-21' => [245.0, 250.0],
+            '2025-04-21' => [245.0, 250.0],
+            '2025-05-21' => [245.0, 250.0],
+            '2025-06-21' => [245.0, 250.0],
+        ];
+
+        $strikes = new Strikes($response);
+        $output = (string) $strikes;
+
+        $this->assertStringContainsString('5 dates', $output);
+        $this->assertStringContainsString('... and 2 more date(s)', $output);
+    }
+
+    public function testBulkCandles_toString_returnsFormattedSummary(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'AAPL', 'MSFT'],
+            'o' => [150.00, 151.00, 400.00],
+            'h' => [151.00, 152.00, 405.00],
+            'l' => [149.00, 150.00, 398.00],
+            'c' => [150.50, 151.50, 402.00],
+            'v' => [1000000, 1100000, 500000],
+            't' => [1706054400, 1706140800, 1706054400],
+        ];
+
+        $candles = new BulkCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('BulkCandles:', $output);
+        $this->assertStringContainsString('3 candles', $output);
+        $this->assertStringContainsString('status: ok', $output);
+    }
+
+    public function testBulkCandles_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'AAPL', 'AAPL', 'AAPL', 'AAPL'],
+            'o' => [150.00, 151.00, 152.00, 153.00, 154.00],
+            'h' => [151.00, 152.00, 153.00, 154.00, 155.00],
+            'l' => [149.00, 150.00, 151.00, 152.00, 153.00],
+            'c' => [150.50, 151.50, 152.50, 153.50, 154.50],
+            'v' => [1000000, 1100000, 1200000, 1300000, 1400000],
+            't' => [1706054400, 1706140800, 1706227200, 1706313600, 1706400000],
+        ];
+
+        $candles = new BulkCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('5 candles', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testEarnings_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'AAPL', 'AAPL', 'AAPL', 'AAPL'],
+            'fiscalYear' => [2024, 2024, 2024, 2024, 2023],
+            'fiscalQuarter' => [4, 3, 2, 1, 4],
+            'date' => [1735603200, 1727740800, 1719705600, 1711756800, 1704067200],
+            'reportDate' => [1737590400, 1729900800, 1721865600, 1713916800, 1706227200],
+            'reportTime' => ['after market close', 'after market close', 'after market close', 'after market close', 'after market close'],
+            'currency' => ['USD', 'USD', 'USD', 'USD', 'USD'],
+            'reportedEPS' => [2.15, 1.95, 1.85, 1.75, 2.10],
+            'estimatedEPS' => [2.10, 1.90, 1.80, 1.70, 2.05],
+            'surpriseEPS' => [0.05, 0.05, 0.05, 0.05, 0.05],
+            'surpriseEPSpct' => [0.0238, 0.0263, 0.0278, 0.0294, 0.0244],
+            'updated' => [1737590400, 1729900800, 1721865600, 1713916800, 1706227200],
+        ];
+
+        $earnings = new Earnings($response);
+        $output = (string) $earnings;
+
+        $this->assertStringContainsString('5 records', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testNews_toString_returnsFormattedString(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'headline' => ['Apple Reports Record Q4 Earnings'],
+            'content' => ['Apple Inc. today announced financial results for its fiscal 2024 fourth quarter ended September 28, 2024.'],
+            'source' => ['https://www.apple.com/newsroom/'],
+            'publicationDate' => [1706122800],
+        ];
+
+        $news = new News($response);
+        $output = (string) $news;
+
+        $this->assertStringContainsString('AAPL:', $output);
+        $this->assertStringContainsString('Apple Reports Record Q4 Earnings', $output);
+        $this->assertStringContainsString('Published:', $output);
+        $this->assertStringContainsString('Source:', $output);
+        $this->assertStringContainsString('Content:', $output);
+    }
+
+    public function testNews_toString_truncatesLongContent(): void
+    {
+        $longContent = str_repeat('This is test content. ', 50); // > 200 chars
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'headline' => ['Apple Reports Record Q4 Earnings'],
+            'content' => [$longContent],
+            'source' => ['https://www.apple.com/newsroom/'],
+            'publicationDate' => [1706122800],
+        ];
+
+        $news = new News($response);
+        $output = (string) $news;
+
+        $this->assertStringContainsString('Content:', $output);
+        $this->assertStringContainsString('...', $output);
+    }
+
+    public function testPrices_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META'],
+            'mid' => [248.75, 420.40, 175.25, 185.50, 510.25],
+            'change' => [0.97, 1.25, -0.50, 2.15, -1.75],
+            'changepct' => [0.0039, 0.003, -0.0028, 0.0117, -0.0034],
+            'updated' => [1706122800, 1706122800, 1706122800, 1706122800, 1706122800],
+        ];
+
+        $prices = new Prices($response);
+        $output = (string) $prices;
+
+        $this->assertStringContainsString('5 symbols', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testStockQuote_toString_with52WeekRange(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [248.80],
+            'askSize' => [200],
+            'bid' => [248.70],
+            'bidSize' => [600],
+            'mid' => [248.75],
+            'last' => [248.65],
+            'change' => [0.97],
+            'changepct' => [0.0039],
+            'volume' => [54900000],
+            'updated' => [1706122800],
+            '52weekHigh' => [280.50],
+            '52weekLow' => [165.25],
+        ];
+
+        $quote = new Quote($response);
+        $output = (string) $quote;
+
+        $this->assertStringContainsString('52-Week Range:', $output);
+        $this->assertStringContainsString('$165.25', $output);
+        $this->assertStringContainsString('$280.50', $output);
+    }
+
+    public function testStockQuotes_toString_truncatesLargeCollections(): void
+    {
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META'],
+            'ask' => [248.80, 420.50, 175.50, 186.00, 511.00],
+            'askSize' => [200, 300, 400, 500, 600],
+            'bid' => [248.70, 420.30, 175.00, 185.00, 509.50],
+            'bidSize' => [600, 400, 500, 600, 700],
+            'mid' => [248.75, 420.40, 175.25, 185.50, 510.25],
+            'last' => [248.65, 420.35, 175.10, 185.25, 509.75],
+            'change' => [0.97, 1.25, -0.50, 2.15, -1.75],
+            'changepct' => [0.0039, 0.003, -0.0028, 0.0117, -0.0034],
+            'volume' => [54900000, 32000000, 28000000, 45000000, 38000000],
+            'updated' => [1706122800, 1706122800, 1706122800, 1706122800, 1706122800],
+        ];
+
+        $quotes = new Quotes($response);
+        $output = (string) $quotes;
+
+        $this->assertStringContainsString('5 symbols', $output);
+        $this->assertStringContainsString('... and 2 more', $output);
+    }
+
+    public function testHeaders_toString_withArrayValue(): void
+    {
+        $response = (object) [
+            'Content-Type' => 'application/json',
+            'Accept-Encoding' => ['gzip', 'deflate'],
+        ];
+
+        $headers = new Headers($response);
+        $output = (string) $headers;
+
+        $this->assertStringContainsString('Accept-Encoding: gzip, deflate', $output);
+    }
 }
