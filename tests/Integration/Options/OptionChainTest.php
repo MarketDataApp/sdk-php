@@ -4,7 +4,7 @@ namespace MarketDataApp\Tests\Integration\Options;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Requests\Parameters;
-use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
+use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Enums\Expiration;
 use MarketDataApp\Enums\Format;
@@ -32,7 +32,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertNotEmpty($option_chain);
 
         $option_strike = array_pop($option_chain);
-        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertInstanceOf(OptionQuote::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));
         $this->assertEquals('string', gettype($option_strike->underlying));
         $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
@@ -93,7 +93,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertNotEmpty($option_chain);
 
         $option_strike = array_pop($option_chain);
-        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertInstanceOf(OptionQuote::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));
         $this->assertEquals('string', gettype($option_strike->underlying));
         $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
@@ -141,7 +141,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertNotEmpty($option_chain);
 
         $option_strike = array_pop($option_chain);
-        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertInstanceOf(OptionQuote::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));
         $this->assertEquals('string', gettype($option_strike->underlying));
         $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
@@ -177,7 +177,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertNotEmpty($option_chain);
 
         $option_strike = array_pop($option_chain);
-        $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+        $this->assertInstanceOf(OptionQuote::class, $option_strike);
         $this->assertEquals('string', gettype($option_strike->option_symbol));
         $this->assertEquals('string', gettype($option_strike->underlying));
     }

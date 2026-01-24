@@ -12,8 +12,32 @@
   - Added `#[\AllowDynamicProperties]` attribute to Headers class
 - Fixed integration test skipping issue in PHP 8.5 (environment variable cleanup in SettingsTest)
 - Updated GitHub Actions workflow to test on PHP 8.5
-- Added comprehensive testing strategy documentation (`TESTING_STRATEGY.md`)
 - Updated README badge to reflect PHP 8.5 support
+
+**BREAKING CHANGE**: Unified Options Quote Classes
+
+The `Quote` and `OptionChainStrike` classes have been consolidated into a single `OptionQuote` class:
+
+- **`OptionChainStrike` renamed to `OptionQuote`** - The class now has a more accurate name reflecting that it represents an option quote
+- **`Quote` class removed** - It was a redundant subset of `OptionQuote` and has been deleted
+- **`Quotes` response now captures all fields** - Previously missing 6 fields are now parsed:
+  - `underlying` - Ticker symbol of the underlying security
+  - `expiration` - Option's expiration date
+  - `side` - Call or put (using `Side` enum)
+  - `strike` - Exercise price
+  - `first_traded` - Date option was first traded
+  - `dte` - Days to expiration
+- **New `OptionChains::toQuotes()` method** - Flattens option chains into a `Quotes` object, enabling you to treat a chain as a simple collection of quotes
+
+**Migration Guide:**
+```php
+// Before
+use MarketDataApp\Endpoints\Responses\Options\Quote;
+use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
+
+// After
+use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
+```
 
 ## v0.7.0-beta
 

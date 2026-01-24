@@ -6,13 +6,13 @@ use Carbon\Carbon;
 use MarketDataApp\Enums\Side;
 
 /**
- * Represents a single option chain strike with associated data.
+ * Represents a single option quote with associated data.
  */
-class OptionChainStrike
+class OptionQuote
 {
 
     /**
-     * Constructs a new OptionChainStrike instance.
+     * Constructs a new OptionQuote instance.
      *
      * @param string     $option_symbol      The option symbol according to OCC symbology.
      * @param string     $underlying         The ticker symbol of the underlying security.

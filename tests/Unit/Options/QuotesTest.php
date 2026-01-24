@@ -6,10 +6,11 @@ use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use MarketDataApp\Endpoints\Requests\Parameters;
-use MarketDataApp\Endpoints\Responses\Options\Quote;
+use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Side;
 
 /**
  * Unit tests for the Options Quotes endpoint.
@@ -25,6 +26,12 @@ class QuotesTest extends OptionsTestCase
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1686873600, 1686873600],
+            'side'            => ['call', 'call'],
+            'strike'          => [60, 65],
+            'firstTraded'     => [1617197400, 1617197400],
+            'dte'             => [30, 30],
             'ask'             => [116.9, 112.15],
             'askSize'         => [90, 90],
             'bid'             => [114.1, 108.6],
@@ -53,7 +60,7 @@ class QuotesTest extends OptionsTestCase
         $this->assertCount(2, $response->quotes);
 
         for ($i = 0; $i < count($response->quotes); $i++) {
-            $this->assertInstanceOf(Quote::class, $response->quotes[$i]);
+            $this->assertInstanceOf(OptionQuote::class, $response->quotes[$i]);
             $this->assertEquals($mocked_response['optionSymbol'][$i], $response->quotes[$i]->option_symbol);
             $this->assertEquals($mocked_response['ask'][$i], $response->quotes[$i]->ask);
             $this->assertEquals($mocked_response['askSize'][$i], $response->quotes[$i]->ask_size);
@@ -158,7 +165,7 @@ class QuotesTest extends OptionsTestCase
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertEquals('ok', $response->status);
         $this->assertCount(1, $response->quotes);
-        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertInstanceOf(OptionQuote::class, $response->quotes[0]);
         $this->assertEquals($mocked_response['Symbol'][0], $response->quotes[0]->option_symbol);
         $this->assertEquals($mocked_response['Ask'][0], $response->quotes[0]->ask);
         $this->assertEquals($mocked_response['Ask Size'][0], $response->quotes[0]->ask_size);
@@ -244,6 +251,12 @@ class QuotesTest extends OptionsTestCase
         $response1 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -267,6 +280,12 @@ class QuotesTest extends OptionsTestCase
         $response2 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117P00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['put'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [4.20],
             'askSize'         => [50],
             'bid'             => [4.10],
@@ -315,6 +334,12 @@ class QuotesTest extends OptionsTestCase
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -352,6 +377,12 @@ class QuotesTest extends OptionsTestCase
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -426,6 +457,12 @@ class QuotesTest extends OptionsTestCase
         $okResponse = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -569,6 +606,12 @@ class QuotesTest extends OptionsTestCase
         $response1 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -592,6 +635,12 @@ class QuotesTest extends OptionsTestCase
         $response2 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117P00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['put'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [4.20],
             'askSize'         => [50],
             'bid'             => [4.10],
@@ -636,6 +685,12 @@ class QuotesTest extends OptionsTestCase
         $response1 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000', 'AAPL250117C00150000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1737072000, 1737072000],
+            'side'            => ['call', 'call'],
+            'strike'          => [150, 150],
+            'firstTraded'     => [1617197400, 1617197400],
+            'dte'             => [30, 29],
             'ask'             => [5.50, 5.60],
             'askSize'         => [100, 100],
             'bid'             => [5.40, 5.50],
@@ -659,6 +714,12 @@ class QuotesTest extends OptionsTestCase
         $response2 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117P00150000', 'AAPL250117P00150000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1737072000, 1737072000],
+            'side'            => ['put', 'put'],
+            'strike'          => [150, 150],
+            'firstTraded'     => [1617197400, 1617197400],
+            'dte'             => [30, 29],
             'ask'             => [4.20, 4.30],
             'askSize'         => [50, 50],
             'bid'             => [4.10, 4.20],
@@ -709,6 +770,12 @@ class QuotesTest extends OptionsTestCase
             $responses[] = new Response(200, [], json_encode([
                 's'               => 'ok',
                 'optionSymbol'    => ["AAPL25011{$i}C00150000"],
+                'underlying'      => ['AAPL'],
+                'expiration'      => [1737072000],
+                'side'            => ['call'],
+                'strike'          => [150],
+                'firstTraded'     => [1617197400],
+                'dte'             => [30],
                 'ask'             => [5.50 + $i * 0.1],
                 'askSize'         => [100],
                 'bid'             => [5.40 + $i * 0.1],
@@ -749,8 +816,14 @@ class QuotesTest extends OptionsTestCase
      */
     public function testQuotes_createMerged_success(): void
     {
-        $quote1 = new Quote(
+        $quote1 = new OptionQuote(
             option_symbol: 'AAPL250117C00150000',
+            underlying: 'AAPL',
+            expiration: Carbon::parse('2025-01-17'),
+            side: Side::CALL,
+            strike: 150.00,
+            first_traded: Carbon::parse('2021-03-31'),
+            dte: 30,
             ask: 5.50,
             ask_size: 100,
             bid: 5.40,
@@ -809,6 +882,12 @@ class QuotesTest extends OptionsTestCase
         $successResponse = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -860,6 +939,12 @@ class QuotesTest extends OptionsTestCase
         $response1 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],
@@ -883,6 +968,12 @@ class QuotesTest extends OptionsTestCase
         $response2 = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117P00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['put'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [4.20],
             'askSize'         => [50],
             'bid'             => [4.10],
@@ -958,8 +1049,14 @@ class QuotesTest extends OptionsTestCase
      */
     public function testQuotes_createMerged_withErrors(): void
     {
-        $quote1 = new Quote(
+        $quote1 = new OptionQuote(
             option_symbol: 'AAPL250117C00150000',
+            underlying: 'AAPL',
+            expiration: Carbon::parse('2025-01-17'),
+            side: Side::CALL,
+            strike: 150.00,
+            first_traded: Carbon::parse('2021-03-31'),
+            dte: 30,
             ask: 5.50,
             ask_size: 100,
             bid: 5.40,
@@ -1002,6 +1099,12 @@ class QuotesTest extends OptionsTestCase
         $mocked_response = [
             's'               => 'ok',
             'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
             'ask'             => [5.50],
             'askSize'         => [100],
             'bid'             => [5.40],

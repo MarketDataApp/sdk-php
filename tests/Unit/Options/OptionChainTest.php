@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use MarketDataApp\Endpoints\Requests\Parameters;
-use MarketDataApp\Endpoints\Responses\Options\OptionChainStrike;
+use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
@@ -63,7 +63,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertCount(1, $response->option_chains['2023-06-17']);
 
         foreach (array_merge(...array_values($response->option_chains)) as $i => $option_strike) {
-            $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+            $this->assertInstanceOf(OptionQuote::class, $option_strike);
             $this->assertEquals($mocked_response['optionSymbol'][$i], $option_strike->option_symbol);
             $this->assertEquals($mocked_response['underlying'][$i], $option_strike->underlying);
             $this->assertEquals(Carbon::parse($mocked_response['expiration'][$i]),
@@ -184,7 +184,7 @@ class OptionChainTest extends OptionsTestCase
         $option_strikes = $response->option_chains['2023-06-16'];
         for ($i = 0; $i < count($option_strikes); $i++) {
             $option_strike = $option_strikes[$i];
-            $this->assertInstanceOf(OptionChainStrike::class, $option_strike);
+            $this->assertInstanceOf(OptionQuote::class, $option_strike);
             $this->assertEquals($mocked_response['Symbol'][$i], $option_strike->option_symbol);
             $this->assertEquals($mocked_response['Underlying'][$i], $option_strike->underlying);
             $this->assertEquals(Carbon::parse($mocked_response['Expiration Date'][$i]),

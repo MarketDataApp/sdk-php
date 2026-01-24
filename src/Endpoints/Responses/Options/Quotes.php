@@ -4,6 +4,7 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Enums\Side;
 
 /**
  * Represents a collection of option quotes with associated data.
@@ -33,9 +34,9 @@ class Quotes extends ResponseBase
     public Carbon $prev_time;
 
     /**
-     * Array of Quote objects.
+     * Array of OptionQuote objects.
      *
-     * @var Quote[]
+     * @var OptionQuote[]
      */
     public array $quotes = [];
 
@@ -57,7 +58,7 @@ class Quotes extends ResponseBase
      * to create a Quotes object from multiple merged responses.
      *
      * @param string               $status   The overall status ('ok' or 'no_data').
-     * @param Quote[]              $quotes   Array of Quote objects.
+     * @param OptionQuote[]        $quotes   Array of OptionQuote objects.
      * @param Carbon|null          $nextTime Time of next quote if no data (for no_data status).
      * @param Carbon|null          $prevTime Time of previous quote if no data (for no_data status).
      * @param array<string,string> $errors   Array of errors for failed symbols (symbol => error message).
@@ -117,11 +118,17 @@ class Quotes extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             $this->status = 'ok';
-            
+
             $count = count($responseArray['Symbol']);
             for ($i = 0; $i < $count; $i++) {
-                $this->quotes[] = new Quote(
+                $this->quotes[] = new OptionQuote(
                     option_symbol: $responseArray['Symbol'][$i],
+                    underlying: $responseArray['Underlying'][$i],
+                    expiration: Carbon::parse($responseArray['Expiration Date'][$i]),
+                    side: Side::from($responseArray['Option Side'][$i]),
+                    strike: $responseArray['Strike'][$i],
+                    first_traded: Carbon::parse($responseArray['First Traded'][$i]),
+                    dte: $responseArray['Days To Expiration'][$i],
                     ask: $responseArray['Ask'][$i],
                     ask_size: $responseArray['Ask Size'][$i],
                     bid: $responseArray['Bid'][$i],
@@ -149,8 +156,14 @@ class Quotes extends ResponseBase
             switch ($this->status) {
                 case 'ok':
                     for ($i = 0; $i < count($response->optionSymbol); $i++) {
-                        $this->quotes[] = new Quote(
+                        $this->quotes[] = new OptionQuote(
                             option_symbol: $response->optionSymbol[$i],
+                            underlying: $response->underlying[$i],
+                            expiration: Carbon::parse($response->expiration[$i]),
+                            side: Side::from($response->side[$i]),
+                            strike: $response->strike[$i],
+                            first_traded: Carbon::parse($response->firstTraded[$i]),
+                            dte: $response->dte[$i],
                             ask: $response->ask[$i],
                             ask_size: $response->askSize[$i],
                             bid: $response->bid[$i],

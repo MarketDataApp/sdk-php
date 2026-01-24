@@ -4,7 +4,7 @@ namespace MarketDataApp\Tests\Integration\Options;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Requests\Parameters;
-use MarketDataApp\Endpoints\Responses\Options\Quote;
+use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
@@ -25,7 +25,7 @@ class QuotesTest extends OptionsTestCase
         $this->assertEquals('ok', $response->status);
         $this->assertNotEmpty($response->quotes);
 
-        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertInstanceOf(OptionQuote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
         $this->assertEquals('double', gettype($response->quotes[0]->ask));
         $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
@@ -74,7 +74,7 @@ class QuotesTest extends OptionsTestCase
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertEquals('ok', $response->status);
         $this->assertNotEmpty($response->quotes);
-        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertInstanceOf(OptionQuote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
         $this->assertEquals('double', gettype($response->quotes[0]->ask));
         $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
@@ -107,7 +107,7 @@ class QuotesTest extends OptionsTestCase
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertEquals('ok', $response->status);
         $this->assertNotEmpty($response->quotes);
-        $this->assertInstanceOf(Quote::class, $response->quotes[0]);
+        $this->assertInstanceOf(OptionQuote::class, $response->quotes[0]);
         $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
     }
 

@@ -34,9 +34,9 @@ class OptionChains extends ResponseBase
     public Carbon $prev_time;
 
     /**
-     * Multidimensional array of OptionChainStrike objects organized by date.
+     * Multidimensional array of OptionQuote objects organized by date.
      *
-     * @var array<string, OptionChainStrike[]>
+     * @var array<string, OptionQuote[]>
      */
     public array $option_chains = [];
 
@@ -66,7 +66,7 @@ class OptionChains extends ResponseBase
             $count = count($responseArray['Symbol']);
             for ($i = 0; $i < $count; $i++) {
                 $expiration = Carbon::parse($responseArray['Expiration Date'][$i]);
-                $this->option_chains[$expiration->toDateString()][] = new OptionChainStrike(
+                $this->option_chains[$expiration->toDateString()][] = new OptionQuote(
                     option_symbol: $responseArray['Symbol'][$i],
                     underlying: $responseArray['Underlying'][$i],
                     expiration: $expiration,
@@ -102,7 +102,7 @@ class OptionChains extends ResponseBase
                 case 'ok':
                     for ($i = 0; $i < count($response->optionSymbol); $i++) {
                         $expiration = Carbon::parse($response->expiration[$i]);
-                        $this->option_chains[$expiration->toDateString()][] = new OptionChainStrike(
+                        $this->option_chains[$expiration->toDateString()][] = new OptionQuote(
                             option_symbol: $response->optionSymbol[$i],
                             underlying: $response->underlying[$i],
                             expiration: $expiration,
@@ -143,5 +143,29 @@ class OptionChains extends ResponseBase
                     break;
             }
         }
+    }
+
+    /**
+     * Convert the option chains to a flat Quotes object.
+     *
+     * This flattens all option quotes from all expiration dates into a single
+     * Quotes container, useful when you want to treat a chain as a simple
+     * collection of quotes.
+     *
+     * @return Quotes A Quotes object containing all option quotes from this chain.
+     */
+    public function toQuotes(): Quotes
+    {
+        $allQuotes = [];
+        foreach ($this->option_chains as $quotes) {
+            $allQuotes = array_merge($allQuotes, $quotes);
+        }
+
+        return Quotes::createMerged(
+            $this->status,
+            $allQuotes,
+            $this->next_time ?? null,
+            $this->prev_time ?? null
+        );
     }
 }
