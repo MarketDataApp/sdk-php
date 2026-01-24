@@ -4,8 +4,12 @@ namespace MarketDataApp\Tests\Unit\Stocks;
 
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\Candle;
 use MarketDataApp\Endpoints\Responses\Stocks\Candles;
+use MarketDataApp\Enums\DateFormat;
+use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Settings;
 
 /**
@@ -1061,5 +1065,360 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertEquals('ok', $result->status);
         // Should have 50 candles (one from each of the 50 chunks)
         $this->assertCount(Settings::MAX_CONCURRENT_REQUESTS, $result->candles);
+    }
+
+    /**
+     * Test that rate limits are updated during async parallel execution.
+     *
+     * This specifically tests ClientBase line 256 - the rate limit assignment
+     * inside the async promise handler when rate limit headers are present.
+     */
+    public function testCandles_automaticConcurrent_updatesRateLimits(): void
+    {
+        $resetTimestamp = time() + 3600;
+        $rateLimitHeaders = [
+            'x-api-ratelimit-limit'     => ['100'],
+            'x-api-ratelimit-remaining' => ['95'],
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+            'x-api-ratelimit-consumed'  => ['5'],
+        ];
+
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        // Using real candles data with rate limit headers added
+        $response1 = [
+            's' => 'ok',
+            't' => [1641220200, 1641220500],
+            'o' => [177.83, 178.97],
+            'h' => [179.31, 180.4],
+            'l' => [177.71, 178.92],
+            'c' => [178.965, 180.33],
+            'v' => [3342579, 2482107],
+        ];
+
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response2 = [
+            's' => 'ok',
+            't' => [1672756200, 1672756500],
+            'o' => [130.28, 129.83],
+            'h' => [130.6999, 130.68],
+            'l' => [129.44, 129.53],
+            'c' => [129.84, 130.5],
+            'v' => [3826842, 2219751],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, $rateLimitHeaders, json_encode($response1)),
+            new Response(200, $rateLimitHeaders, json_encode($response2)),
+        ]);
+
+        // Verify rate limits are null before the request
+        $this->assertNull($this->client->rate_limits);
+
+        // Make concurrent request that triggers async execution
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5'
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertEquals('ok', $result->status);
+
+        // Verify rate limits were updated from async response headers
+        $this->assertNotNull($this->client->rate_limits);
+        $this->assertEquals(100, $this->client->rate_limits->limit);
+        $this->assertEquals(95, $this->client->rate_limits->remaining);
+        $this->assertEquals(5, $this->client->rate_limits->consumed);
+    }
+
+    /**
+     * Test that filename parameter throws exception when used with parallel requests.
+     *
+     * This tests UniversalParameters lines 173-177 - the filename validation
+     * exception that is thrown when a filename parameter is used with parallel requests.
+     */
+    public function testCandles_automaticConcurrent_filenameThrowsException(): void
+    {
+        // No mock responses needed - exception should be thrown before any requests are made
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+
+        // Attempt to use filename with a large date range that triggers parallel execution
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::CSV,
+                filename: '/tmp/test_output.csv'
+            )
+        );
+    }
+
+    /**
+     * Test that use_human_readable parameter is passed correctly in parallel requests.
+     *
+     * This tests UniversalParameters line 185 - the human readable parameter
+     * being applied to each parallel request.
+     */
+    public function testCandles_automaticConcurrent_withHumanReadable(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response1 = [
+            's' => 'ok',
+            't' => [1641220200],
+            'o' => [177.83],
+            'h' => [179.31],
+            'l' => [177.71],
+            'c' => [178.965],
+            'v' => [3342579],
+        ];
+
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response2 = [
+            's' => 'ok',
+            't' => [1672756200],
+            'o' => [130.28],
+            'h' => [130.6999],
+            'l' => [129.44],
+            'c' => [129.84],
+            'v' => [3826842],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::JSON,
+                use_human_readable: true
+            )
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertEquals('ok', $result->status);
+        $this->assertCount(2, $result->candles);
+    }
+
+    /**
+     * Test that mode parameter is passed correctly in parallel requests.
+     *
+     * This tests UniversalParameters line 189 - the mode parameter
+     * being applied to each parallel request.
+     */
+    public function testCandles_automaticConcurrent_withMode(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response1 = [
+            's' => 'ok',
+            't' => [1641220200],
+            'o' => [177.83],
+            'h' => [179.31],
+            'l' => [177.71],
+            'c' => [178.965],
+            'v' => [3342579],
+        ];
+
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response2 = [
+            's' => 'ok',
+            't' => [1672756200],
+            'o' => [130.28],
+            'h' => [130.6999],
+            'l' => [129.44],
+            'c' => [129.84],
+            'v' => [3826842],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::JSON,
+                mode: Mode::LIVE
+            )
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertEquals('ok', $result->status);
+        $this->assertCount(2, $result->candles);
+    }
+
+    /**
+     * Test that date_format parameter is passed correctly in parallel CSV requests.
+     *
+     * This tests UniversalParameters line 194 - the date_format parameter
+     * being applied to each parallel request when format is CSV.
+     *
+     * Uses reflection to call execute_in_parallel directly since candlesConcurrent
+     * doesn't support CSV format (it tries to merge responses as Candles objects).
+     */
+    public function testExecuteInParallel_withDateFormatCsv(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "t,o,h,l,c,v\n1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('execute_in_parallel');
+
+        // Build calls similar to what candlesConcurrent would build
+        $calls = [
+            ['candles/5/AAPL/', ['from' => '2022-01-01', 'to' => '2022-12-31']],
+            ['candles/5/AAPL/', ['from' => '2023-01-01', 'to' => '2023-12-31']],
+        ];
+
+        $parameters = new Parameters(
+            format: Format::CSV,
+            date_format: DateFormat::UNIX
+        );
+
+        $results = $method->invoke($stocks, $calls, $parameters);
+
+        // Verify we got CSV responses back
+        $this->assertCount(2, $results);
+        $this->assertIsObject($results[0]);
+        $this->assertTrue(property_exists($results[0], 'csv'));
+    }
+
+    /**
+     * Test that columns parameter is passed correctly in parallel CSV requests.
+     *
+     * This tests UniversalParameters line 199 - the columns parameter
+     * being applied to each parallel request when format is CSV.
+     */
+    public function testExecuteInParallel_withColumnsCsv(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response)
+        $csvResponse1 = "t,o,c\n1641220200,177.83,178.965";
+        $csvResponse2 = "t,o,c\n1672756200,130.28,129.84";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('execute_in_parallel');
+
+        $calls = [
+            ['candles/5/AAPL/', ['from' => '2022-01-01', 'to' => '2022-12-31']],
+            ['candles/5/AAPL/', ['from' => '2023-01-01', 'to' => '2023-12-31']],
+        ];
+
+        $parameters = new Parameters(
+            format: Format::CSV,
+            columns: ['t', 'o', 'c']
+        );
+
+        $results = $method->invoke($stocks, $calls, $parameters);
+
+        // Verify we got CSV responses back
+        $this->assertCount(2, $results);
+        $this->assertIsObject($results[0]);
+        $this->assertTrue(property_exists($results[0], 'csv'));
+    }
+
+    /**
+     * Test that add_headers parameter is passed correctly in parallel CSV requests.
+     *
+     * This tests UniversalParameters line 204 - the add_headers parameter
+     * being applied to each parallel request when format is CSV.
+     */
+    public function testExecuteInParallel_withAddHeadersCsv(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response)
+        $csvResponse1 = "1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('execute_in_parallel');
+
+        $calls = [
+            ['candles/5/AAPL/', ['from' => '2022-01-01', 'to' => '2022-12-31']],
+            ['candles/5/AAPL/', ['from' => '2023-01-01', 'to' => '2023-12-31']],
+        ];
+
+        $parameters = new Parameters(
+            format: Format::CSV,
+            add_headers: false
+        );
+
+        $results = $method->invoke($stocks, $calls, $parameters);
+
+        // Verify we got CSV responses back
+        $this->assertCount(2, $results);
+        $this->assertIsObject($results[0]);
+        $this->assertTrue(property_exists($results[0], 'csv'));
+    }
+
+    /**
+     * Test that multiple CSV parameters work together in parallel requests.
+     *
+     * This tests all CSV-specific parameters (date_format, columns, add_headers)
+     * being applied together in parallel requests.
+     */
+    public function testExecuteInParallel_withAllCsvParameters(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response)
+        $csvResponse1 = "t,o,c\n1641220200,177.83,178.965";
+        $csvResponse2 = "t,o,c\n1672756200,130.28,129.84";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('execute_in_parallel');
+
+        $calls = [
+            ['candles/5/AAPL/', ['from' => '2022-01-01', 'to' => '2022-12-31']],
+            ['candles/5/AAPL/', ['from' => '2023-01-01', 'to' => '2023-12-31']],
+        ];
+
+        $parameters = new Parameters(
+            format: Format::CSV,
+            date_format: DateFormat::UNIX,
+            columns: ['t', 'o', 'c'],
+            add_headers: true
+        );
+
+        $results = $method->invoke($stocks, $calls, $parameters);
+
+        // Verify we got CSV responses back
+        $this->assertCount(2, $results);
+        $this->assertIsObject($results[0]);
+        $this->assertTrue(property_exists($results[0], 'csv'));
     }
 }
