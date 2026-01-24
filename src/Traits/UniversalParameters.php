@@ -157,14 +157,17 @@ trait UniversalParameters
     /**
      * Execute multiple API requests in parallel with universal parameters.
      *
-     * @param array           $calls      An array of method calls, each containing the method name and arguments.
-     * @param Parameters|null $parameters Optional Parameters object for additional settings.
+     * @param array           $calls           An array of method calls, each containing the method name and arguments.
+     * @param Parameters|null $parameters      Optional Parameters object for additional settings.
+     * @param array|null      &$failedRequests Optional by-reference array to collect failed requests instead of throwing.
+     *                                         When provided, exceptions are stored here keyed by their call index.
      *
-     * @return array An array of API responses.
-     * @throws \Throwable
+     * @return array An array of API responses. When $failedRequests is provided, results are keyed by original call index.
+     * @throws \Throwable When $failedRequests is not provided and any request fails.
      */
-    protected function execute_in_parallel(array $calls, ?Parameters $parameters = null): array
+    protected function execute_in_parallel(array $calls, ?Parameters $parameters = null, ?array &$failedRequests = null): array
     {
+        $tolerateFailed = func_num_args() >= 3;
         // Merge method parameters with client defaults
         $parameters = $this->mergeParameters($parameters);
 
@@ -205,6 +208,9 @@ trait UniversalParameters
             }
         }
 
+        if ($tolerateFailed) {
+            return $this->client->execute_in_parallel($calls, $failedRequests);
+        }
         return $this->client->execute_in_parallel($calls);
     }
 }

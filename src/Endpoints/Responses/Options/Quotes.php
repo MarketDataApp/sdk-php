@@ -40,6 +40,56 @@ class Quotes extends ResponseBase
     public array $quotes = [];
 
     /**
+     * Array of errors for failed symbol requests (multi-symbol requests only).
+     *
+     * This property is populated only when using multi-symbol quotes() requests.
+     * Each key is the option symbol that failed, and the value is the error message.
+     * Empty array means no errors occurred.
+     *
+     * @var array<string, string>
+     */
+    public array $errors = [];
+
+    /**
+     * Create a Quotes object from pre-merged data.
+     *
+     * This static factory method is used by the concurrent request feature
+     * to create a Quotes object from multiple merged responses.
+     *
+     * @param string               $status   The overall status ('ok' or 'no_data').
+     * @param Quote[]              $quotes   Array of Quote objects.
+     * @param Carbon|null          $nextTime Time of next quote if no data (for no_data status).
+     * @param Carbon|null          $prevTime Time of previous quote if no data (for no_data status).
+     * @param array<string,string> $errors   Array of errors for failed symbols (symbol => error message).
+     *
+     * @return self A new Quotes instance with the merged data.
+     */
+    public static function createMerged(
+        string $status,
+        array $quotes,
+        ?Carbon $nextTime = null,
+        ?Carbon $prevTime = null,
+        array $errors = []
+    ): self {
+        // Create a minimal response object to satisfy the parent constructor
+        $response = (object) ['s' => $status, '_merged' => true];
+
+        $instance = new self($response);
+        $instance->status = $status;
+        $instance->quotes = $quotes;
+        $instance->errors = $errors;
+
+        if ($nextTime !== null) {
+            $instance->next_time = $nextTime;
+        }
+        if ($prevTime !== null) {
+            $instance->prev_time = $prevTime;
+        }
+
+        return $instance;
+    }
+
+    /**
      * Constructs a new Quotes instance from the given response object.
      *
      * @param object $response The response object containing quotes data.
@@ -48,6 +98,13 @@ class Quotes extends ResponseBase
     {
         parent::__construct($response);
         if (!$this->isJson()) {
+            return;
+        }
+
+        // Check for merged response flag (used by createMerged())
+        // The factory method sets these properties directly after construction
+        if (isset($response->_merged) && $response->_merged === true) {
+            $this->status = $response->s ?? 'no_data';
             return;
         }
 

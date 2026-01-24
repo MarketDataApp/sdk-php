@@ -53,7 +53,7 @@ class QuotesTest extends OptionsTestCase
     public function testQuotes_csv_success()
     {
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL281215C00400000',
+            option_symbols: 'AAPL281215C00400000',
             parameters: new Parameters(format: Format::CSV),
         );
 
@@ -67,7 +67,7 @@ class QuotesTest extends OptionsTestCase
     public function testQuotes_humanReadable_returnsHumanReadableKeys()
     {
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL281215C00400000',
+            option_symbols: 'AAPL281215C00400000',
             parameters: new Parameters(use_human_readable: true)
         );
 
@@ -100,7 +100,7 @@ class QuotesTest extends OptionsTestCase
     public function testQuotes_humanReadableFalse_returnsRegularKeys()
     {
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL281215C00400000',
+            option_symbols: 'AAPL281215C00400000',
             parameters: new Parameters(use_human_readable: false)
         );
 
@@ -117,7 +117,7 @@ class QuotesTest extends OptionsTestCase
     public function testQuotes_csv_dateFormat_timestamp_returnsCsv(): void
     {
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL',
+            option_symbols: 'AAPL',
             parameters: new Parameters(format: Format::CSV, date_format: DateFormat::TIMESTAMP)
         );
 
@@ -126,5 +126,40 @@ class QuotesTest extends OptionsTestCase
 
         $csv = $response->getCsv();
         $this->assertNotEmpty($csv);
+    }
+
+    /**
+     * Test successful retrieval of multiple option quotes concurrently.
+     */
+    public function testQuotes_multipleSymbols_success(): void
+    {
+        $response = $this->client->options->quotes([
+            'AAPL281215C00400000',
+            'AAPL281215P00400000',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertGreaterThanOrEqual(2, count($response->quotes));
+
+        // Verify quotes from both symbols are present
+        $symbols = array_map(fn($q) => $q->option_symbol, $response->quotes);
+        $this->assertContains('AAPL281215C00400000', $symbols);
+        $this->assertContains('AAPL281215P00400000', $symbols);
+    }
+
+    /**
+     * Test multiple option quotes with human-readable format.
+     */
+    public function testQuotes_multipleSymbols_humanReadable_success(): void
+    {
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL281215C00400000', 'AAPL281215P00400000'],
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertGreaterThanOrEqual(2, count($response->quotes));
     }
 }

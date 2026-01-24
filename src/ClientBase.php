@@ -153,16 +153,21 @@ abstract class ClientBase
      * Unlike batch processing, this approach starts new requests as soon as previous
      * ones complete, maintaining optimal throughput up to MAX_CONCURRENT_REQUESTS (50).
      *
-     * @param array $calls An array of method calls, each containing the method name and arguments.
+     * @param array      $calls           An array of method calls, each containing the method name and arguments.
+     * @param array|null &$failedRequests Optional by-reference array to collect failed requests instead of throwing.
+     *                                    When provided, exceptions are stored here keyed by their call index,
+     *                                    allowing callers to handle partial failures.
      *
-     * @return array An array of decoded JSON responses in the same order as input calls.
-     * @throws \Throwable
+     * @return array An array of decoded JSON responses. When $failedRequests is provided, successful responses
+     *               are keyed by their original call index. Otherwise, returns a sequential array.
+     * @throws \Throwable When $failedRequests is not provided and any request fails.
      */
-    public function execute_in_parallel(array $calls): array
+    public function execute_in_parallel(array $calls, ?array &$failedRequests = null): array
     {
         $maxConcurrent = Settings::MAX_CONCURRENT_REQUESTS;
         $results = [];
         $exceptions = [];
+        $tolerateFailed = func_num_args() >= 2;
 
         // Create a generator that yields promises with their original indices
         $promiseGenerator = function () use ($calls) {
@@ -191,16 +196,26 @@ abstract class ClientBase
         // Wait for all promises to complete
         $eachPromise->promise()->wait();
 
-        // If any requests failed, throw the first exception
+        // Handle exceptions based on tolerance mode
         if (!empty($exceptions)) {
             ksort($exceptions);
-            throw reset($exceptions);
+            if ($tolerateFailed) {
+                // Return exceptions via by-reference parameter
+                $failedRequests = $exceptions;
+            } else {
+                // Default behavior: throw first exception
+                throw reset($exceptions);
+            }
+        } elseif ($tolerateFailed) {
+            $failedRequests = [];
         }
 
         // Sort by index to maintain original order
         ksort($results);
 
-        return array_values($results);
+        // When tolerating failures, preserve indices for caller to correlate with failures
+        // Otherwise, return sequential array for backward compatibility
+        return $tolerateFailed ? $results : array_values($results);
     }
 
     /**

@@ -86,7 +86,7 @@ class QuotesTest extends OptionsTestCase
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL250117C00150000',
+            option_symbols: 'AAPL250117C00150000',
             parameters: new Parameters(Format::CSV)
         );
 
@@ -151,7 +151,7 @@ class QuotesTest extends OptionsTestCase
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
 
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL281215C00400000',
+            option_symbols: 'AAPL281215C00400000',
             parameters: new Parameters(use_human_readable: true)
         );
 
@@ -190,7 +190,7 @@ class QuotesTest extends OptionsTestCase
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL250117C00150000',
+            option_symbols: 'AAPL250117C00150000',
             parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
         );
 
@@ -208,7 +208,7 @@ class QuotesTest extends OptionsTestCase
         $this->setMockResponses([new Response(200, [], $mocked_response)]);
 
         $response = $this->client->options->quotes(
-            option_symbol: 'AAPL250117C00150000',
+            option_symbols: 'AAPL250117C00150000',
             parameters: new Parameters(format: Format::CSV, date_format: DateFormat::SPREADSHEET)
         );
 
@@ -225,9 +225,807 @@ class QuotesTest extends OptionsTestCase
         $this->expectExceptionMessage('`from` date must be before `to` date');
 
         $this->client->options->quotes(
-            option_symbol: 'AAPL250117C00150000',
+            option_symbols: 'AAPL250117C00150000',
             from: '2024-01-31',
             to: '2024-01-01'
         );
+    }
+
+    // =========================================================================
+    // Multi-Symbol (Array) Tests
+    // =========================================================================
+
+    /**
+     * Test quotes endpoint with multiple symbols returns merged response.
+     */
+    public function testQuotes_multipleSymbols_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $response1 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+
+        $response2 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117P00150000'],
+            'ask'             => [4.20],
+            'askSize'         => [50],
+            'bid'             => [4.10],
+            'bidSize'         => [50],
+            'mid'             => [4.15],
+            'last'            => [4.15],
+            'openInterest'    => [800],
+            'volume'          => [300],
+            'inTheMoney'      => [true],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.28],
+            'delta'           => [-0.45],
+            'gamma'           => [0.04],
+            'theta'           => [-0.01],
+            'vega'            => [0.08],
+            'intrinsicValue'  => [5.00],
+            'extrinsicValue'  => [-0.85],
+            'updated'         => [1684702880],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'AAPL250117C00150000',
+            'AAPL250117P00150000',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->quotes);
+
+        // Verify both quotes are present
+        $this->assertEquals('AAPL250117C00150000', $response->quotes[0]->option_symbol);
+        $this->assertEquals('AAPL250117P00150000', $response->quotes[1]->option_symbol);
+    }
+
+    /**
+     * Test quotes endpoint with single symbol array delegates to single request.
+     */
+    public function testQuotes_singleSymbolArray_delegatesToSingleRequest(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->quotes(['AAPL250117C00150000']);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint with duplicate symbols deduplicates.
+     */
+    public function testQuotes_duplicateSymbols_deduplicated(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+        // Only one request should be made (duplicates removed, single symbol delegates)
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->quotes([
+            'AAPL250117C00150000',
+            'AAPL250117C00150000',
+            ' AAPL250117C00150000 ', // With whitespace
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertCount(1, $response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint with empty array throws exception.
+     */
+    public function testQuotes_emptyArray_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`option_symbols` array cannot be empty');
+
+        $this->client->options->quotes([]);
+    }
+
+    /**
+     * Test quotes endpoint with array containing empty string throws exception.
+     */
+    public function testQuotes_arrayWithEmptyString_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All elements in `option_symbols` must be non-empty strings');
+
+        $this->client->options->quotes(['AAPL250117C00150000', '']);
+    }
+
+    /**
+     * Test quotes endpoint with array containing non-string throws exception.
+     */
+    public function testQuotes_arrayWithNonString_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All elements in `option_symbols` must be non-empty strings');
+
+        $this->client->options->quotes(['AAPL250117C00150000', 123]);
+    }
+
+    /**
+     * Test quotes endpoint with partial no_data returns ok status.
+     */
+    public function testQuotes_partialNoData_returnsOkStatus(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $okResponse = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+
+        $noDataResponse = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000,
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($okResponse)),
+            new Response(200, [], json_encode($noDataResponse)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'AAPL250117C00150000',
+            'INVALID_SYMBOL_XYZ',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint with all no_data returns no_data status.
+     */
+    public function testQuotes_allNoData_returnsNoDataStatus(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $noDataResponse1 = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000,
+        ];
+
+        $noDataResponse2 = [
+            's'        => 'no_data',
+            'nextTime' => 1663703000,
+            'prevTime' => 1663706000,
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($noDataResponse1)),
+            new Response(200, [], json_encode($noDataResponse2)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'INVALID_SYMBOL_1',
+            'INVALID_SYMBOL_2',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEmpty($response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint tracks earliest next_time from no_data responses.
+     */
+    public function testQuotes_tracksEarliestNextTime(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $noDataResponse1 = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000, // Later
+        ];
+
+        $noDataResponse2 = [
+            's'        => 'no_data',
+            'nextTime' => 1663703000, // Earlier (should be kept)
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($noDataResponse1)),
+            new Response(200, [], json_encode($noDataResponse2)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'SYMBOL1',
+            'SYMBOL2',
+        ]);
+
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEquals(Carbon::parse(1663703000), $response->next_time);
+    }
+
+    /**
+     * Test quotes endpoint tracks latest prev_time from no_data responses.
+     */
+    public function testQuotes_tracksLatestPrevTime(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $noDataResponse1 = [
+            's'        => 'no_data',
+            'prevTime' => 1663705000, // Earlier
+        ];
+
+        $noDataResponse2 = [
+            's'        => 'no_data',
+            'prevTime' => 1663706000, // Later (should be kept)
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($noDataResponse1)),
+            new Response(200, [], json_encode($noDataResponse2)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'SYMBOL1',
+            'SYMBOL2',
+        ]);
+
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEquals(Carbon::parse(1663706000), $response->prev_time);
+    }
+
+    /**
+     * Test quotes endpoint with multiple symbols and date parameter.
+     */
+    public function testQuotes_multipleSymbols_withDate(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $response1 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+
+        $response2 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117P00150000'],
+            'ask'             => [4.20],
+            'askSize'         => [50],
+            'bid'             => [4.10],
+            'bidSize'         => [50],
+            'mid'             => [4.15],
+            'last'            => [4.15],
+            'openInterest'    => [800],
+            'volume'          => [300],
+            'inTheMoney'      => [true],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.28],
+            'delta'           => [-0.45],
+            'gamma'           => [0.04],
+            'theta'           => [-0.01],
+            'vega'            => [0.08],
+            'intrinsicValue'  => [5.00],
+            'extrinsicValue'  => [-0.85],
+            'updated'         => [1684702880],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            date: '2024-01-15'
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint with multiple symbols and date range.
+     */
+    public function testQuotes_multipleSymbols_withDateRange(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $response1 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000', 'AAPL250117C00150000'],
+            'ask'             => [5.50, 5.60],
+            'askSize'         => [100, 100],
+            'bid'             => [5.40, 5.50],
+            'bidSize'         => [100, 100],
+            'mid'             => [5.45, 5.55],
+            'last'            => [5.45, 5.55],
+            'openInterest'    => [1000, 1000],
+            'volume'          => [500, 600],
+            'inTheMoney'      => [false, false],
+            'underlyingPrice' => [145.00, 146.00],
+            'iv'              => [0.25, 0.26],
+            'delta'           => [0.50, 0.51],
+            'gamma'           => [0.05, 0.05],
+            'theta'           => [-0.02, -0.02],
+            'vega'            => [0.10, 0.10],
+            'intrinsicValue'  => [0.00, 0.00],
+            'extrinsicValue'  => [5.45, 5.55],
+            'updated'         => [1684702875, 1684789275],
+        ];
+
+        $response2 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117P00150000', 'AAPL250117P00150000'],
+            'ask'             => [4.20, 4.30],
+            'askSize'         => [50, 50],
+            'bid'             => [4.10, 4.20],
+            'bidSize'         => [50, 50],
+            'mid'             => [4.15, 4.25],
+            'last'            => [4.15, 4.25],
+            'openInterest'    => [800, 800],
+            'volume'          => [300, 400],
+            'inTheMoney'      => [true, true],
+            'underlyingPrice' => [145.00, 146.00],
+            'iv'              => [0.28, 0.29],
+            'delta'           => [-0.45, -0.44],
+            'gamma'           => [0.04, 0.04],
+            'theta'           => [-0.01, -0.01],
+            'vega'            => [0.08, 0.08],
+            'intrinsicValue'  => [5.00, 4.00],
+            'extrinsicValue'  => [-0.85, 0.25],
+            'updated'         => [1684702880, 1684789280],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            from: '2024-01-01',
+            to: '2024-01-15'
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Each response has 2 quotes (date range), so 4 total
+        $this->assertCount(4, $response->quotes);
+    }
+
+    /**
+     * Test quotes endpoint with many symbols (tests sliding window concurrency).
+     */
+    public function testQuotes_manySymbols_allProcessed(): void
+    {
+        // Mock responses: NOT from real API output (synthetic/test data)
+        $responses = [];
+        $symbolCount = 5; // Use 5 symbols to verify concurrent handling
+
+        for ($i = 0; $i < $symbolCount; $i++) {
+            $responses[] = new Response(200, [], json_encode([
+                's'               => 'ok',
+                'optionSymbol'    => ["AAPL25011{$i}C00150000"],
+                'ask'             => [5.50 + $i * 0.1],
+                'askSize'         => [100],
+                'bid'             => [5.40 + $i * 0.1],
+                'bidSize'         => [100],
+                'mid'             => [5.45 + $i * 0.1],
+                'last'            => [5.45 + $i * 0.1],
+                'openInterest'    => [1000],
+                'volume'          => [500],
+                'inTheMoney'      => [false],
+                'underlyingPrice' => [145.00],
+                'iv'              => [0.25],
+                'delta'           => [0.50],
+                'gamma'           => [0.05],
+                'theta'           => [-0.02],
+                'vega'            => [0.10],
+                'intrinsicValue'  => [0.00],
+                'extrinsicValue'  => [5.45 + $i * 0.1],
+                'updated'         => [1684702875],
+            ]));
+        }
+
+        $this->setMockResponses($responses);
+
+        $symbols = [];
+        for ($i = 0; $i < $symbolCount; $i++) {
+            $symbols[] = "AAPL25011{$i}C00150000";
+        }
+
+        $response = $this->client->options->quotes($symbols);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount($symbolCount, $response->quotes);
+    }
+
+    /**
+     * Test createMerged factory method on Quotes response class.
+     */
+    public function testQuotes_createMerged_success(): void
+    {
+        $quote1 = new Quote(
+            option_symbol: 'AAPL250117C00150000',
+            ask: 5.50,
+            ask_size: 100,
+            bid: 5.40,
+            bid_size: 100,
+            mid: 5.45,
+            last: 5.45,
+            volume: 500,
+            open_interest: 1000,
+            underlying_price: 145.00,
+            in_the_money: false,
+            intrinsic_value: 0.00,
+            extrinsic_value: 5.45,
+            implied_volatility: 0.25,
+            delta: 0.50,
+            gamma: 0.05,
+            theta: -0.02,
+            vega: 0.10,
+            updated: Carbon::now()
+        );
+
+        $merged = Quotes::createMerged('ok', [$quote1]);
+
+        $this->assertInstanceOf(Quotes::class, $merged);
+        $this->assertEquals('ok', $merged->status);
+        $this->assertCount(1, $merged->quotes);
+        $this->assertSame($quote1, $merged->quotes[0]);
+    }
+
+    /**
+     * Test createMerged factory method with no_data status.
+     */
+    public function testQuotes_createMerged_noData_withTimes(): void
+    {
+        $nextTime = Carbon::parse('2024-01-15 10:00:00');
+        $prevTime = Carbon::parse('2024-01-14 16:00:00');
+
+        $merged = Quotes::createMerged('no_data', [], $nextTime, $prevTime);
+
+        $this->assertInstanceOf(Quotes::class, $merged);
+        $this->assertEquals('no_data', $merged->status);
+        $this->assertEmpty($merged->quotes);
+        $this->assertEquals($nextTime, $merged->next_time);
+        $this->assertEquals($prevTime, $merged->prev_time);
+    }
+
+    // =========================================================================
+    // Partial Failure Tests
+    // =========================================================================
+
+    /**
+     * Test quotes endpoint returns partial data when some symbols fail.
+     */
+    public function testQuotes_partialFailure_returnsSuccessfulData(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $successResponse = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+
+        // Set up mock: first succeeds, second returns 400 error
+        $this->setMockResponses([
+            new Response(200, [], json_encode($successResponse)),
+            new Response(400, [], json_encode(['s' => 'error', 'errmsg' => 'Invalid option symbol'])),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'AAPL250117C00150000',
+            'INVALID_SYMBOL',
+        ]);
+
+        // Should return the successful data
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->quotes);
+        $this->assertEquals('AAPL250117C00150000', $response->quotes[0]->option_symbol);
+
+        // Should have error for the failed symbol
+        $this->assertNotEmpty($response->errors);
+        $this->assertArrayHasKey('INVALID_SYMBOL', $response->errors);
+    }
+
+    /**
+     * Test quotes endpoint errors property is empty when all succeed.
+     */
+    public function testQuotes_allSuccess_errorsEmpty(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $response1 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+
+        $response2 = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117P00150000'],
+            'ask'             => [4.20],
+            'askSize'         => [50],
+            'bid'             => [4.10],
+            'bidSize'         => [50],
+            'mid'             => [4.15],
+            'last'            => [4.15],
+            'openInterest'    => [800],
+            'volume'          => [300],
+            'inTheMoney'      => [true],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.28],
+            'delta'           => [-0.45],
+            'gamma'           => [0.04],
+            'theta'           => [-0.01],
+            'vega'            => [0.08],
+            'intrinsicValue'  => [5.00],
+            'extrinsicValue'  => [-0.85],
+            'updated'         => [1684702880],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        $response = $this->client->options->quotes([
+            'AAPL250117C00150000',
+            'AAPL250117P00150000',
+        ]);
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->quotes);
+        $this->assertEmpty($response->errors);
+    }
+
+    /**
+     * Test quotes endpoint throws when ALL symbols fail.
+     */
+    public function testQuotes_allFail_throwsException(): void
+    {
+        // Set up mock: both return 400 error
+        $this->setMockResponses([
+            new Response(400, [], json_encode(['s' => 'error', 'errmsg' => 'Invalid option symbol'])),
+            new Response(400, [], json_encode(['s' => 'error', 'errmsg' => 'Invalid option symbol'])),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\BadStatusCodeError::class);
+
+        $this->client->options->quotes([
+            'INVALID_SYMBOL_1',
+            'INVALID_SYMBOL_2',
+        ]);
+    }
+
+    /**
+     * Test single symbol request still throws on error (backward compatible).
+     */
+    public function testQuotes_singleSymbol_error_throwsException(): void
+    {
+        // Set up mock: returns 400 error
+        $this->setMockResponses([
+            new Response(400, [], json_encode(['s' => 'error', 'errmsg' => 'Invalid option symbol'])),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\BadStatusCodeError::class);
+
+        $this->client->options->quotes('INVALID_SYMBOL');
+    }
+
+    /**
+     * Test createMerged factory method with errors.
+     */
+    public function testQuotes_createMerged_withErrors(): void
+    {
+        $quote1 = new Quote(
+            option_symbol: 'AAPL250117C00150000',
+            ask: 5.50,
+            ask_size: 100,
+            bid: 5.40,
+            bid_size: 100,
+            mid: 5.45,
+            last: 5.45,
+            volume: 500,
+            open_interest: 1000,
+            underlying_price: 145.00,
+            in_the_money: false,
+            intrinsic_value: 0.00,
+            extrinsic_value: 5.45,
+            implied_volatility: 0.25,
+            delta: 0.50,
+            gamma: 0.05,
+            theta: -0.02,
+            vega: 0.10,
+            updated: Carbon::now()
+        );
+
+        $errors = [
+            'INVALID_SYMBOL' => 'Invalid option symbol',
+        ];
+
+        $merged = Quotes::createMerged('ok', [$quote1], null, null, $errors);
+
+        $this->assertInstanceOf(Quotes::class, $merged);
+        $this->assertEquals('ok', $merged->status);
+        $this->assertCount(1, $merged->quotes);
+        $this->assertNotEmpty($merged->errors);
+        $this->assertEquals('Invalid option symbol', $merged->errors['INVALID_SYMBOL']);
+    }
+
+    /**
+     * Test errors property defaults to empty array for single requests.
+     */
+    public function testQuotes_singleSymbol_errorsPropertyEmpty(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'ask'             => [5.50],
+            'askSize'         => [100],
+            'bid'             => [5.40],
+            'bidSize'         => [100],
+            'mid'             => [5.45],
+            'last'            => [5.45],
+            'openInterest'    => [1000],
+            'volume'          => [500],
+            'inTheMoney'      => [false],
+            'underlyingPrice' => [145.00],
+            'iv'              => [0.25],
+            'delta'           => [0.50],
+            'gamma'           => [0.05],
+            'theta'           => [-0.02],
+            'vega'            => [0.10],
+            'intrinsicValue'  => [0.00],
+            'extrinsicValue'  => [5.45],
+            'updated'         => [1684702875],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->quotes('AAPL250117C00150000');
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEmpty($response->errors);
     }
 }

@@ -14,6 +14,7 @@ use MarketDataApp\Enums\Expiration;
 use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Settings;
 use MarketDataApp\Traits\UniversalParameters;
 use MarketDataApp\Traits\ValidatesInputs;
 
@@ -369,51 +370,174 @@ class Options
     }
 
     /**
-     * Get a current or historical end of day quote for a single options contract.
+     * Get current or historical end of day quotes for one or more options contracts.
      *
-     * @param string          $option_symbol The option symbol (as defined by the OCC) for the option you wish to
-     *                                       lookup. Use the current OCC option symbol format, even for historic
-     *                                       options that quoted before the format change in 2010.
+     * When multiple option symbols are provided, requests are made concurrently using
+     * a sliding window of up to 50 concurrent requests for optimal throughput.
      *
-     * @param string|null     $date          Use to lookup a historical end of day quote from a specific trading day.
-     *                                       If no date is specified the quote will be the most current price available
-     *                                       during market hours. When the market is closed the quote will be from the
-     *                                       last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     * @param string|array    $option_symbols The option symbol(s) (as defined by the OCC) for the option(s) you wish
+     *                                        to lookup. Use the current OCC option symbol format, even for historic
+     *                                        options that quoted before the format change in 2010.
+     *                                        Can be a single string or an array of strings for multiple symbols.
      *
-     * @param string|null     $from          Use to lookup a series of end of day quotes. From is the oldest (leftmost)
-     *                                       date to return (inclusive). If from/to is not specified the quote will be
-     *                                       the most current price available during market hours. When the market is
-     *                                       closed the quote will be from the last trading day. Accepted timestamp
-     *                                       inputs: ISO
-     *                                       8601, unix, spreadsheet.
+     * @param string|null     $date           Use to lookup a historical end of day quote from a specific trading day.
+     *                                        If no date is specified the quote will be the most current price available
+     *                                        during market hours. When the market is closed the quote will be from the
+     *                                        last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
-     * @param string|null     $to            Use to lookup a series of end of day quotes. From is the newest
-     *                                       (rightmost) date to return
-     *                                       (exclusive). If from/to is not specified the quote will be the most
-     *                                       current price available during market hours. When the market is closed the
-     *                                       quote will be from the last trading day. Accepted timestamp inputs: ISO
-     *                                       8601, unix, spreadsheet.
+     * @param string|null     $from           Use to lookup a series of end of day quotes. From is the oldest (leftmost)
+     *                                        date to return (inclusive). If from/to is not specified the quote will be
+     *                                        the most current price available during market hours. When the market is
+     *                                        closed the quote will be from the last trading day. Accepted timestamp
+     *                                        inputs: ISO 8601, unix, spreadsheet.
      *
-     * @param Parameters|null $parameters    Universal parameters for all methods (such as format).
+     * @param string|null     $to             Use to lookup a series of end of day quotes. To is the newest (rightmost)
+     *                                        date to return (exclusive). If from/to is not specified the quote will be
+     *                                        the most current price available during market hours. When the market is
+     *                                        closed the quote will be from the last trading day. Accepted timestamp
+     *                                        inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
      * @return Quotes
      *
-     * @throws ApiException|GuzzleException
+     * @throws ApiException|GuzzleException|\Throwable
      */
     public function quotes(
-        string $option_symbol,
+        string|array $option_symbols,
         ?string $date = null,
         ?string $from = null,
         ?string $to = null,
         ?Parameters $parameters = null
     ): Quotes {
-        // Validate inputs
-        $this->validateNonEmptyString($option_symbol, 'option_symbol');
-        
         // Validate date range
         $this->validateDateRange($from, $to);
 
-        return new Quotes($this->execute("quotes/$option_symbol/",
-            compact('date', 'from', 'to'), $parameters));
+        // Handle single symbol (string) - existing behavior
+        if (is_string($option_symbols)) {
+            $this->validateNonEmptyString($option_symbols, 'option_symbols');
+
+            return new Quotes($this->execute("quotes/$option_symbols/",
+                compact('date', 'from', 'to'), $parameters));
+        }
+
+        // Handle multiple symbols (array)
+        return $this->quotesMultiple($option_symbols, $date, $from, $to, $parameters);
+    }
+
+    /**
+     * Get quotes for multiple option symbols concurrently.
+     *
+     * Uses a sliding window of up to 50 concurrent requests. As each request completes,
+     * the next one starts immediately for optimal throughput.
+     *
+     * @param array           $option_symbols Array of option symbols (OCC format).
+     * @param string|null     $date           Historical date for EOD quotes.
+     * @param string|null     $from           Start date for series of EOD quotes.
+     * @param string|null     $to             End date for series of EOD quotes.
+     * @param Parameters|null $parameters     Universal parameters.
+     *
+     * @return Quotes Merged quotes from all symbols.
+     * @throws \Throwable
+     */
+    protected function quotesMultiple(
+        array $option_symbols,
+        ?string $date,
+        ?string $from,
+        ?string $to,
+        ?Parameters $parameters
+    ): Quotes {
+        // Validate non-empty array with non-empty string elements
+        if (empty($option_symbols)) {
+            throw new \InvalidArgumentException('`option_symbols` array cannot be empty.');
+        }
+
+        foreach ($option_symbols as $symbol) {
+            if (!is_string($symbol) || trim($symbol) === '') {
+                throw new \InvalidArgumentException(
+                    'All elements in `option_symbols` must be non-empty strings.'
+                );
+            }
+        }
+
+        // Deduplicate and normalize symbols
+        $symbols = array_values(array_unique(array_map('trim', $option_symbols)));
+
+        // If only one symbol after deduplication, delegate to single-symbol path
+        if (count($symbols) === 1) {
+            return new Quotes($this->execute("quotes/{$symbols[0]}/",
+                compact('date', 'from', 'to'), $parameters));
+        }
+
+        // Build API calls for all symbols
+        $calls = [];
+        foreach ($symbols as $symbol) {
+            $calls[] = [
+                "quotes/{$symbol}/",
+                compact('date', 'from', 'to'),
+            ];
+        }
+
+        // Execute all requests concurrently with partial failure tolerance
+        // (sliding window up to MAX_CONCURRENT_REQUESTS)
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $parameters, $failedRequests);
+
+        // If ALL requests failed, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Merge all successful responses into a single Quotes object
+        // (partial failures are tolerated - we return whatever data we got)
+        return $this->mergeQuotesResponses($responses, $failedRequests, $symbols);
+    }
+
+    /**
+     * Merge multiple quotes responses into a single Quotes object.
+     *
+     * @param array $responses      Array of response objects from execute_in_parallel, keyed by call index.
+     * @param array $failedRequests Array of exceptions from failed requests, keyed by call index.
+     * @param array $symbols        Original symbols array for error reporting.
+     *
+     * @return Quotes Merged quotes response.
+     */
+    protected function mergeQuotesResponses(array $responses, array $failedRequests = [], array $symbols = []): Quotes
+    {
+        $allQuotes = [];
+        $overallStatus = 'no_data';
+        $nextTime = null;
+        $prevTime = null;
+
+        foreach ($responses as $response) {
+            $quotesResponse = new Quotes($response);
+
+            if ($quotesResponse->status === 'ok') {
+                $overallStatus = 'ok';
+                $allQuotes = array_merge($allQuotes, $quotesResponse->quotes);
+            } elseif ($quotesResponse->status === 'no_data') {
+                // Track earliest next_time
+                if (isset($quotesResponse->next_time)) {
+                    if ($nextTime === null || $quotesResponse->next_time->lt($nextTime)) {
+                        $nextTime = $quotesResponse->next_time;
+                    }
+                }
+                // Track latest prev_time
+                if (isset($quotesResponse->prev_time)) {
+                    if ($prevTime === null || $quotesResponse->prev_time->gt($prevTime)) {
+                        $prevTime = $quotesResponse->prev_time;
+                    }
+                }
+            }
+        }
+
+        // Build errors array for failed requests
+        $errors = [];
+        foreach ($failedRequests as $index => $exception) {
+            $symbol = $symbols[$index] ?? "unknown (index $index)";
+            $errors[$symbol] = $exception->getMessage();
+        }
+
+        return Quotes::createMerged($overallStatus, $allQuotes, $nextTime, $prevTime, $errors);
     }
 }
