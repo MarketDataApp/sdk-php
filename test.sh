@@ -18,6 +18,7 @@ LOG_FILE="test-output-$(date +%Y%m%d-%H%M%S).log"
 COVERAGE_HTML_DIR=""
 COVERAGE_TEXT_FILE=""
 COVERAGE_CLOVER_FILE=""
+COVERAGE_MD_FILE=""
 
 # Function to print usage
 print_usage() {
@@ -293,6 +294,124 @@ run_with_logging() {
     return $exit_code
 }
 
+# Function to generate coverage.md from Clover XML
+generate_coverage_md() {
+    local clover_file="$1"
+    local md_file="$2"
+    local php_bin="$3"
+
+    if [ ! -f "$clover_file" ]; then
+        log_and_echo "Warning: Cannot generate coverage.md - Clover XML not found: $clover_file"
+        return 1
+    fi
+
+    log_and_echo "Generating coverage.md from Clover XML..."
+
+    # Use PHP to parse the Clover XML and generate markdown
+    $php_bin -r '
+    $cloverFile = $argv[1];
+    $mdFile = $argv[2];
+
+    $xml = simplexml_load_file($cloverFile);
+    if ($xml === false) {
+        fwrite(STDERR, "Error: Could not parse Clover XML\n");
+        exit(1);
+    }
+
+    $uncoveredByFile = [];
+    $projectRoot = "";
+
+    // Collect all file elements (both directly under project and inside packages)
+    $allFiles = [];
+    foreach ($xml->project->file as $file) {
+        $allFiles[] = $file;
+    }
+    foreach ($xml->project->package as $package) {
+        foreach ($package->file as $file) {
+            $allFiles[] = $file;
+        }
+    }
+
+    // Find the project root from the first file path with src/
+    foreach ($allFiles as $file) {
+        $filePath = (string)$file["name"];
+        if (preg_match("#^(.+/src/)#", $filePath, $matches)) {
+            $projectRoot = dirname($matches[1]) . "/";
+            break;
+        }
+    }
+
+    // Collect uncovered lines for each file
+    foreach ($allFiles as $file) {
+        $filePath = (string)$file["name"];
+
+        // Make path relative to project root
+        if ($projectRoot && strpos($filePath, $projectRoot) === 0) {
+            $filePath = substr($filePath, strlen($projectRoot));
+        }
+
+        $uncoveredLines = [];
+        foreach ($file->line as $line) {
+            if ((string)$line["type"] === "stmt" && (int)$line["count"] === 0) {
+                $uncoveredLines[] = (int)$line["num"];
+            }
+        }
+
+        if (!empty($uncoveredLines)) {
+            sort($uncoveredLines);
+            $uncoveredByFile[$filePath] = $uncoveredLines;
+        }
+    }
+
+    // Sort files alphabetically
+    ksort($uncoveredByFile);
+
+    // Generate markdown
+    $md = "# Coverage Report - Uncovered Lines\n\n";
+    $md .= "Generated: " . date("Y-m-d H:i:s") . "\n\n";
+
+    if (empty($uncoveredByFile)) {
+        $md .= "**100% coverage - no uncovered lines!**\n";
+    } else {
+        $totalUncovered = 0;
+        foreach ($uncoveredByFile as $lines) {
+            $totalUncovered += count($lines);
+        }
+        $md .= "**Total uncovered lines: {$totalUncovered}**\n\n";
+        $md .= "---\n\n";
+
+        foreach ($uncoveredByFile as $filePath => $lines) {
+            $lineCount = count($lines);
+            $md .= "## {$filePath}\n\n";
+            $md .= "**Uncovered lines ({$lineCount}):** ";
+
+            // Format line numbers, collapsing consecutive ranges
+            $ranges = [];
+            $start = $lines[0];
+            $prev = $lines[0];
+
+            for ($i = 1; $i < count($lines); $i++) {
+                if ($lines[$i] === $prev + 1) {
+                    $prev = $lines[$i];
+                } else {
+                    $ranges[] = $start === $prev ? (string)$start : "{$start}-{$prev}";
+                    $start = $lines[$i];
+                    $prev = $lines[$i];
+                }
+            }
+            $ranges[] = $start === $prev ? (string)$start : "{$start}-{$prev}";
+
+            $md .= implode(", ", $ranges) . "\n\n";
+        }
+    }
+
+    file_put_contents($mdFile, $md);
+    echo "Generated: {$mdFile}\n";
+    ' "$clover_file" "$md_file"
+
+    return $?
+}
+
 # Function to run tests
 run_tests() {
     local test_suite=$1
@@ -432,6 +551,7 @@ case "$TEST_MODE" in
         COVERAGE_HTML_DIR="build/coverage-${timestamp}"
         COVERAGE_TEXT_FILE="build/coverage-${timestamp}.txt"
         COVERAGE_CLOVER_FILE="build/logs/clover-${timestamp}.xml"
+        COVERAGE_MD_FILE="coverage.md"
 
         # Ensure build/logs directory exists
         mkdir -p "build/logs"
@@ -440,6 +560,7 @@ case "$TEST_MODE" in
         log_and_echo "  HTML: ${COVERAGE_HTML_DIR}/"
         log_and_echo "  Text: ${COVERAGE_TEXT_FILE}"
         log_and_echo "  Clover: ${COVERAGE_CLOVER_FILE}"
+        log_and_echo "  Markdown: ${COVERAGE_MD_FILE}"
         log_and_echo ""
 
         # Run both test suites with coverage enabled
@@ -504,6 +625,11 @@ case "$TEST_MODE" in
             coverage_files_exist=false
         fi
 
+        # Generate coverage.md from Clover XML
+        if [ "$coverage_files_exist" = "true" ]; then
+            generate_coverage_md "$COVERAGE_CLOVER_FILE" "$COVERAGE_MD_FILE" "$PHP_BIN"
+        fi
+
         # Only clean up old files if new coverage files were successfully generated
         if [ "$coverage_files_exist" = "true" ]; then
             cleanup_old_coverage_files "$timestamp"
@@ -540,6 +666,7 @@ if [ "$TEST_MODE" = "coverage" ]; then
     log_and_echo "  HTML: ${COVERAGE_HTML_DIR}/"
     log_and_echo "  Text: ${COVERAGE_TEXT_FILE}"
     log_and_echo "  Clover: ${COVERAGE_CLOVER_FILE}"
+    log_and_echo "  Markdown: ${COVERAGE_MD_FILE}"
 fi
 log_and_echo "========================================"
 log_and_echo ""
