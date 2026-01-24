@@ -1129,4 +1129,321 @@ class ToStringTest extends TestCase
 
         $this->assertStringContainsString('Accept-Encoding: gzip, deflate', $output);
     }
+
+    // ========== Non-JSON Format Tests (CSV/HTML responses) ==========
+
+    public function testCandles_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'date,open,high,low,close'];
+        $candles = new Candles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+        $this->assertStringContainsString('getCsv()', $output);
+    }
+
+    public function testBulkCandles_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,date,open,high,low,close'];
+        $candles = new BulkCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testMutualFundCandles_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'date,open,high,low,close'];
+        $candles = new MutualFundCandles($response);
+        $output = (string) $candles;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testStatuses_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'date,status'];
+        $statuses = new Statuses($response);
+        $output = (string) $statuses;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testExpirations_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'expiration'];
+        $expirations = new Expirations($response);
+        $output = (string) $expirations;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testLookup_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'optionSymbol'];
+        $lookup = new Lookup($response);
+        $output = (string) $lookup;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testOptionChains_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'optionSymbol,strike,expiration'];
+        $chains = new OptionChains($response);
+        $output = (string) $chains;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testOptionQuotes_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'optionSymbol,bid,ask'];
+        $quotes = new OptionQuotes($response);
+        $output = (string) $quotes;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testStrikes_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'date,strikes'];
+        $strikes = new Strikes($response);
+        $output = (string) $strikes;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testEarnings_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,fiscalYear,fiscalQuarter'];
+        $earnings = new Earnings($response);
+        $output = (string) $earnings;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testNews_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,headline,content'];
+        $news = new News($response);
+        $output = (string) $news;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testPrices_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,mid,change'];
+        $prices = new Prices($response);
+        $output = (string) $prices;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testStockQuote_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,last,bid,ask'];
+        $quote = new Quote($response);
+        $output = (string) $quote;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    public function testStockQuotes_toString_nonJsonFormat(): void
+    {
+        $response = (object) ['csv' => 'symbol,last,bid,ask'];
+        $quotes = new Quotes($response);
+        $output = (string) $quotes;
+
+        $this->assertStringContainsString('Non-JSON format', $output);
+    }
+
+    // ========== FormatsForDisplay Null Value Tests ==========
+    // Note: formatVolume, formatNumber, formatDate, formatDateTime null branches
+    // are unreachable from current code as all callers pass non-nullable types.
+    // Only formatPercent and formatChange can receive null from Quote's nullable fields.
+
+    public function testFormatPercent_withNullValue(): void
+    {
+        // Quote's change_percent is ?float, so formatPercent can receive null
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [248.80],
+            'askSize' => [200],
+            'bid' => [248.70],
+            'bidSize' => [600],
+            'mid' => [248.75],
+            'last' => [248.65],
+            'change' => [null],
+            'changepct' => [null],
+            'volume' => [54900000],
+            'updated' => [1706122800],
+        ];
+
+        $quote = new Quote($response);
+        $output = (string) $quote;
+
+        // formatPercent(null) and formatChange(null) should return 'N/A'
+        $this->assertStringContainsString('N/A', $output);
+    }
+
+    public function testFormatChange_withNullValue(): void
+    {
+        // Test via Prices with null change value
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [248.75],
+            'change' => [null],
+            'changepct' => [0.0039],
+            'updated' => [1706122800],
+        ];
+
+        $prices = new Prices($response);
+        $output = (string) $prices;
+
+        // formatChange(null) should return 'N/A'
+        $this->assertStringContainsString('Change: N/A', $output);
+    }
+
+    public function testPrices_toString_withNullUpdated(): void
+    {
+        // Prices handles null updated field before calling formatDateTime
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [248.75],
+            'change' => [0.97],
+            'changepct' => [0.0039],
+            // No 'updated' field - should result in null and display N/A
+        ];
+
+        $prices = new Prices($response);
+        $output = (string) $prices;
+
+        // The updated field should show N/A since it's not provided
+        $this->assertStringContainsString('Updated:', $output);
+        $this->assertStringContainsString('N/A', $output);
+    }
+
+    // ========== Parameters Additional Coverage ==========
+
+    public function testParameters_toString_withFilename(): void
+    {
+        $params = new Parameters(
+            format: Format::CSV,
+            filename: '/tmp/test-output.csv'
+        );
+
+        $output = (string) $params;
+
+        $this->assertStringContainsString('filename=/tmp/test-output.csv', $output);
+    }
+
+    public function testOptionQuotes_toString_withErrors(): void
+    {
+        // Test OptionQuotes with errors array populated
+        $quote = new OptionQuote(
+            option_symbol: 'AAPL250221C00250000',
+            underlying: 'AAPL',
+            expiration: Carbon::parse('2025-02-21'),
+            side: Side::CALL,
+            strike: 250.00,
+            first_traded: Carbon::parse('2024-01-15'),
+            dte: 30,
+            ask: 5.35,
+            ask_size: 150,
+            bid: 5.20,
+            bid_size: 100,
+            mid: 5.275,
+            last: 5.25,
+            volume: 1500,
+            open_interest: 15234,
+            underlying_price: 245.50,
+            in_the_money: false,
+            intrinsic_value: 0.00,
+            extrinsic_value: 5.275,
+            implied_volatility: 0.325,
+            delta: 0.452,
+            gamma: 0.032,
+            theta: -0.085,
+            vega: 0.21,
+            updated: Carbon::parse('2026-01-24')
+        );
+
+        // Create quotes with errors
+        $quotes = OptionQuotes::createMerged(
+            status: 'ok',
+            quotes: [$quote],
+            errors: [
+                'INVALID250221C00250000' => 'Symbol not found',
+                'BADOPTION' => 'Invalid option symbol',
+            ]
+        );
+
+        $output = (string) $quotes;
+
+        $this->assertStringContainsString('Errors: 2 failed symbol(s)', $output);
+    }
+
+    // ========== Direct FormatsForDisplay Trait Tests ==========
+    // These directly test the defensive null branches that are unreachable via normal callers
+
+    public function testFormatsForDisplay_formatVolume_withNull(): void
+    {
+        $helper = new class {
+            use \MarketDataApp\Traits\FormatsForDisplay;
+
+            public function testFormatVolume(?int $value): string
+            {
+                return $this->formatVolume($value);
+            }
+        };
+
+        $this->assertEquals('N/A', $helper->testFormatVolume(null));
+    }
+
+    public function testFormatsForDisplay_formatDateTime_withNull(): void
+    {
+        $helper = new class {
+            use \MarketDataApp\Traits\FormatsForDisplay;
+
+            public function testFormatDateTime(?\Carbon\Carbon $date): string
+            {
+                return $this->formatDateTime($date);
+            }
+        };
+
+        $this->assertEquals('N/A', $helper->testFormatDateTime(null));
+    }
+
+    public function testFormatsForDisplay_formatDate_withNull(): void
+    {
+        $helper = new class {
+            use \MarketDataApp\Traits\FormatsForDisplay;
+
+            public function testFormatDate(?\Carbon\Carbon $date): string
+            {
+                return $this->formatDate($date);
+            }
+        };
+
+        $this->assertEquals('N/A', $helper->testFormatDate(null));
+    }
+
+    public function testFormatsForDisplay_formatNumber_withNull(): void
+    {
+        $helper = new class {
+            use \MarketDataApp\Traits\FormatsForDisplay;
+
+            public function testFormatNumber(?int $value): string
+            {
+                return $this->formatNumber($value);
+            }
+        };
+
+        $this->assertEquals('N/A', $helper->testFormatNumber(null));
+    }
 }

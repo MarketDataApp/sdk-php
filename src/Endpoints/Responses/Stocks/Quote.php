@@ -193,7 +193,7 @@ class Quote extends ResponseBase
     public function __toString(): string
     {
         if (!$this->isJson()) {
-            return "Quote ({$this->symbol}) - Non-JSON format, use getCsv() or getHtml()";
+            return "Quote - Non-JSON format, use getCsv() or getHtml()";
         }
 
         $lines = [];
