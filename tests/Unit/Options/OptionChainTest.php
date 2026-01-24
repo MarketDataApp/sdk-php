@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Options\OptionQuote;
 use MarketDataApp\Endpoints\Responses\Options\OptionChains;
+use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Side;
 
@@ -304,5 +305,434 @@ class OptionChainTest extends OptionsTestCase
             min_bid: 100.0,
             max_bid: 50.0
         );
+    }
+
+    /**
+     * Test getAllQuotes returns a flat array of all quotes.
+     */
+    public function testOptionChain_getAllQuotes(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data with calls and puts)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616P00060000', 'AAPL230617C00065000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1687045600],
+            'side'            => ['call', 'put', 'call'],
+            'strike'          => [60, 60, 65],
+            'firstTraded'     => [1617197400, 1617197400, 1616592600],
+            'dte'             => [26, 26, 33],
+            'updated'         => [1684702875, 1684702875, 1684702876],
+            'bid'             => [114.1, 0.05, 108.6],
+            'bidSize'         => [90, 100, 90],
+            'mid'             => [115.5, 0.06, 110.38],
+            'ask'             => [116.9, 0.07, 112.15],
+            'askSize'         => [90, 100, 90],
+            'last'            => [115, 0.05, 107.82],
+            'openInterest'    => [21957, 5000, 3012],
+            'volume'          => [0, 100, 0],
+            'inTheMoney'      => [true, false, true],
+            'intrinsicValue'  => [115.13, 0, 110.13],
+            'extrinsicValue'  => [0.37, 0.05, 0.25],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 0.5, 1.923],
+            'delta'           => [1, -0.01, 1],
+            'gamma'           => [0, 0.001, 0],
+            'theta'           => [-0.009, -0.001, -0.009],
+            'vega'            => [0, 0.001, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $allQuotes = $response->getAllQuotes();
+        $this->assertCount(3, $allQuotes);
+        $this->assertContainsOnlyInstancesOf(OptionQuote::class, $allQuotes);
+        $this->assertEquals('AAPL230616C00060000', $allQuotes[0]->option_symbol);
+        $this->assertEquals('AAPL230616P00060000', $allQuotes[1]->option_symbol);
+        $this->assertEquals('AAPL230617C00065000', $allQuotes[2]->option_symbol);
+    }
+
+    /**
+     * Test getExpirationDates returns all unique expiration dates.
+     */
+    public function testOptionChain_getExpirationDates(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230617C00065000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1687045600],
+            'side'            => ['call', 'call'],
+            'strike'          => [60, 65],
+            'firstTraded'     => [1617197400, 1616592600],
+            'dte'             => [26, 33],
+            'updated'         => [1684702875, 1684702876],
+            'bid'             => [114.1, 108.6],
+            'bidSize'         => [90, 90],
+            'mid'             => [115.5, 110.38],
+            'ask'             => [116.9, 112.15],
+            'askSize'         => [90, 90],
+            'last'            => [115, 107.82],
+            'openInterest'    => [21957, 3012],
+            'volume'          => [0, 0],
+            'inTheMoney'      => [true, true],
+            'intrinsicValue'  => [115.13, 110.13],
+            'extrinsicValue'  => [0.37, 0.25],
+            'underlyingPrice' => [175.13, 175.13],
+            'iv'              => [1.629, 1.923],
+            'delta'           => [1, 1],
+            'gamma'           => [0, 0],
+            'theta'           => [-0.009, -0.009],
+            'vega'            => [0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $expirationDates = $response->getExpirationDates();
+        $this->assertCount(2, $expirationDates);
+        $this->assertEquals(['2023-06-16', '2023-06-17'], $expirationDates);
+    }
+
+    /**
+     * Test getQuotesByExpiration returns quotes for a specific date.
+     */
+    public function testOptionChain_getQuotesByExpiration(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000', 'AAPL230617C00070000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1687045600],
+            'side'            => ['call', 'call', 'call'],
+            'strike'          => [60, 65, 70],
+            'firstTraded'     => [1617197400, 1617197400, 1616592600],
+            'dte'             => [26, 26, 33],
+            'updated'         => [1684702875, 1684702875, 1684702876],
+            'bid'             => [114.1, 108.6, 100.0],
+            'bidSize'         => [90, 90, 90],
+            'mid'             => [115.5, 110.38, 101.0],
+            'ask'             => [116.9, 112.15, 102.0],
+            'askSize'         => [90, 90, 90],
+            'last'            => [115, 107.82, 100.5],
+            'openInterest'    => [21957, 3012, 5000],
+            'volume'          => [0, 0, 100],
+            'inTheMoney'      => [true, true, true],
+            'intrinsicValue'  => [115.13, 110.13, 105.13],
+            'extrinsicValue'  => [0.37, 0.25, 0.13],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 1.923, 1.5],
+            'delta'           => [1, 1, 1],
+            'gamma'           => [0, 0, 0],
+            'theta'           => [-0.009, -0.009, -0.009],
+            'vega'            => [0, 0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        // Test getting quotes for existing date
+        $quotesFor0616 = $response->getQuotesByExpiration('2023-06-16');
+        $this->assertCount(2, $quotesFor0616);
+        $this->assertEquals('AAPL230616C00060000', $quotesFor0616[0]->option_symbol);
+        $this->assertEquals('AAPL230616C00065000', $quotesFor0616[1]->option_symbol);
+
+        // Test getting quotes for non-existent date returns empty array
+        $quotesForMissing = $response->getQuotesByExpiration('2023-06-20');
+        $this->assertEmpty($quotesForMissing);
+    }
+
+    /**
+     * Test count returns total number of quotes.
+     */
+    public function testOptionChain_count(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000', 'AAPL230617C00070000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1687045600],
+            'side'            => ['call', 'call', 'call'],
+            'strike'          => [60, 65, 70],
+            'firstTraded'     => [1617197400, 1617197400, 1616592600],
+            'dte'             => [26, 26, 33],
+            'updated'         => [1684702875, 1684702875, 1684702876],
+            'bid'             => [114.1, 108.6, 100.0],
+            'bidSize'         => [90, 90, 90],
+            'mid'             => [115.5, 110.38, 101.0],
+            'ask'             => [116.9, 112.15, 102.0],
+            'askSize'         => [90, 90, 90],
+            'last'            => [115, 107.82, 100.5],
+            'openInterest'    => [21957, 3012, 5000],
+            'volume'          => [0, 0, 100],
+            'inTheMoney'      => [true, true, true],
+            'intrinsicValue'  => [115.13, 110.13, 105.13],
+            'extrinsicValue'  => [0.37, 0.25, 0.13],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 1.923, 1.5],
+            'delta'           => [1, 1, 1],
+            'gamma'           => [0, 0, 0],
+            'theta'           => [-0.009, -0.009, -0.009],
+            'vega'            => [0, 0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $this->assertEquals(3, $response->count());
+    }
+
+    /**
+     * Test getCalls returns only call options.
+     */
+    public function testOptionChain_getCalls(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data with calls and puts)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616P00060000', 'AAPL230616C00065000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1686945600],
+            'side'            => ['call', 'put', 'call'],
+            'strike'          => [60, 60, 65],
+            'firstTraded'     => [1617197400, 1617197400, 1617197400],
+            'dte'             => [26, 26, 26],
+            'updated'         => [1684702875, 1684702875, 1684702875],
+            'bid'             => [114.1, 0.05, 108.6],
+            'bidSize'         => [90, 100, 90],
+            'mid'             => [115.5, 0.06, 110.38],
+            'ask'             => [116.9, 0.07, 112.15],
+            'askSize'         => [90, 100, 90],
+            'last'            => [115, 0.05, 107.82],
+            'openInterest'    => [21957, 5000, 3012],
+            'volume'          => [0, 100, 0],
+            'inTheMoney'      => [true, false, true],
+            'intrinsicValue'  => [115.13, 0, 110.13],
+            'extrinsicValue'  => [0.37, 0.05, 0.25],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 0.5, 1.923],
+            'delta'           => [1, -0.01, 1],
+            'gamma'           => [0, 0.001, 0],
+            'theta'           => [-0.009, -0.001, -0.009],
+            'vega'            => [0, 0.001, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $calls = $response->getCalls();
+        $this->assertCount(2, $calls);
+        foreach ($calls as $call) {
+            $this->assertEquals(Side::CALL, $call->side);
+        }
+    }
+
+    /**
+     * Test getPuts returns only put options.
+     */
+    public function testOptionChain_getPuts(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data with calls and puts)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616P00060000', 'AAPL230616P00065000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1686945600],
+            'side'            => ['call', 'put', 'put'],
+            'strike'          => [60, 60, 65],
+            'firstTraded'     => [1617197400, 1617197400, 1617197400],
+            'dte'             => [26, 26, 26],
+            'updated'         => [1684702875, 1684702875, 1684702875],
+            'bid'             => [114.1, 0.05, 0.10],
+            'bidSize'         => [90, 100, 100],
+            'mid'             => [115.5, 0.06, 0.12],
+            'ask'             => [116.9, 0.07, 0.14],
+            'askSize'         => [90, 100, 100],
+            'last'            => [115, 0.05, 0.11],
+            'openInterest'    => [21957, 5000, 4000],
+            'volume'          => [0, 100, 50],
+            'inTheMoney'      => [true, false, false],
+            'intrinsicValue'  => [115.13, 0, 0],
+            'extrinsicValue'  => [0.37, 0.05, 0.11],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 0.5, 0.6],
+            'delta'           => [1, -0.01, -0.02],
+            'gamma'           => [0, 0.001, 0.001],
+            'theta'           => [-0.009, -0.001, -0.001],
+            'vega'            => [0, 0.001, 0.001]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $puts = $response->getPuts();
+        $this->assertCount(2, $puts);
+        foreach ($puts as $put) {
+            $this->assertEquals(Side::PUT, $put->side);
+        }
+    }
+
+    /**
+     * Test getByStrike returns quotes for a specific strike price.
+     */
+    public function testOptionChain_getByStrike(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616P00060000', 'AAPL230616C00065000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1686945600],
+            'side'            => ['call', 'put', 'call'],
+            'strike'          => [60, 60, 65],
+            'firstTraded'     => [1617197400, 1617197400, 1617197400],
+            'dte'             => [26, 26, 26],
+            'updated'         => [1684702875, 1684702875, 1684702875],
+            'bid'             => [114.1, 0.05, 108.6],
+            'bidSize'         => [90, 100, 90],
+            'mid'             => [115.5, 0.06, 110.38],
+            'ask'             => [116.9, 0.07, 112.15],
+            'askSize'         => [90, 100, 90],
+            'last'            => [115, 0.05, 107.82],
+            'openInterest'    => [21957, 5000, 3012],
+            'volume'          => [0, 100, 0],
+            'inTheMoney'      => [true, false, true],
+            'intrinsicValue'  => [115.13, 0, 110.13],
+            'extrinsicValue'  => [0.37, 0.05, 0.25],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 0.5, 1.923],
+            'delta'           => [1, -0.01, 1],
+            'gamma'           => [0, 0.001, 0],
+            'theta'           => [-0.009, -0.001, -0.009],
+            'vega'            => [0, 0.001, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $quotesAt60 = $response->getByStrike(60);
+        $this->assertCount(2, $quotesAt60);
+        foreach ($quotesAt60 as $quote) {
+            $this->assertEquals(60, $quote->strike);
+        }
+
+        $quotesAt65 = $response->getByStrike(65);
+        $this->assertCount(1, $quotesAt65);
+    }
+
+    /**
+     * Test getStrikes returns all unique strike prices sorted ascending.
+     */
+    public function testOptionChain_getStrikes(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00070000', 'AAPL230616P00060000', 'AAPL230616C00065000', 'AAPL230616P00070000'],
+            'underlying'      => ['AAPL', 'AAPL', 'AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600, 1686945600, 1686945600],
+            'side'            => ['call', 'put', 'call', 'put'],
+            'strike'          => [70, 60, 65, 70],
+            'firstTraded'     => [1617197400, 1617197400, 1617197400, 1617197400],
+            'dte'             => [26, 26, 26, 26],
+            'updated'         => [1684702875, 1684702875, 1684702875, 1684702875],
+            'bid'             => [100.0, 0.05, 108.6, 0.10],
+            'bidSize'         => [90, 100, 90, 100],
+            'mid'             => [101.0, 0.06, 110.38, 0.12],
+            'ask'             => [102.0, 0.07, 112.15, 0.14],
+            'askSize'         => [90, 100, 90, 100],
+            'last'            => [100.5, 0.05, 107.82, 0.11],
+            'openInterest'    => [5000, 5000, 3012, 4000],
+            'volume'          => [100, 100, 0, 50],
+            'inTheMoney'      => [true, false, true, false],
+            'intrinsicValue'  => [105.13, 0, 110.13, 0],
+            'extrinsicValue'  => [0.13, 0.05, 0.25, 0.11],
+            'underlyingPrice' => [175.13, 175.13, 175.13, 175.13],
+            'iv'              => [1.5, 0.5, 1.923, 0.6],
+            'delta'           => [1, -0.01, 1, -0.02],
+            'gamma'           => [0, 0.001, 0, 0.001],
+            'theta'           => [-0.009, -0.001, -0.009, -0.001],
+            'vega'            => [0, 0.001, 0, 0.001]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $strikes = $response->getStrikes();
+        $this->assertCount(3, $strikes);
+        $this->assertEquals([60, 65, 70], $strikes);
+    }
+
+    /**
+     * Test toQuotes converts option chain to a Quotes object.
+     */
+    public function testOptionChain_toQuotes(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230617C00065000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1687045600],
+            'side'            => ['call', 'call'],
+            'strike'          => [60, 65],
+            'firstTraded'     => [1617197400, 1616592600],
+            'dte'             => [26, 33],
+            'updated'         => [1684702875, 1684702876],
+            'bid'             => [114.1, 108.6],
+            'bidSize'         => [90, 90],
+            'mid'             => [115.5, 110.38],
+            'ask'             => [116.9, 112.15],
+            'askSize'         => [90, 90],
+            'last'            => [115, 107.82],
+            'openInterest'    => [21957, 3012],
+            'volume'          => [0, 0],
+            'inTheMoney'      => [true, true],
+            'intrinsicValue'  => [115.13, 110.13],
+            'extrinsicValue'  => [0.37, 0.25],
+            'underlyingPrice' => [175.13, 175.13],
+            'iv'              => [1.629, 1.923],
+            'delta'           => [1, 1],
+            'gamma'           => [0, 0],
+            'theta'           => [-0.009, -0.009],
+            'vega'            => [0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $quotes = $response->toQuotes();
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertEquals('ok', $quotes->status);
+        $this->assertCount(2, $quotes->quotes);
+        $this->assertEquals('AAPL230616C00060000', $quotes->quotes[0]->option_symbol);
+        $this->assertEquals('AAPL230617C00065000', $quotes->quotes[1]->option_symbol);
+    }
+
+    /**
+     * Test toQuotes preserves next_time and prev_time from no_data response.
+     */
+    public function testOptionChain_toQuotes_withNoData(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain('AAPL');
+
+        $quotes = $response->toQuotes();
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertEquals('no_data', $quotes->status);
+        $this->assertEmpty($quotes->quotes);
+        $this->assertEquals(Carbon::parse(1663704000), $quotes->next_time);
+        $this->assertEquals(Carbon::parse(1663705000), $quotes->prev_time);
     }
 }
