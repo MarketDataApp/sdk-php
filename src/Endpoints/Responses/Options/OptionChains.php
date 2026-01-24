@@ -156,16 +156,108 @@ class OptionChains extends ResponseBase
      */
     public function toQuotes(): Quotes
     {
+        return Quotes::createMerged(
+            $this->status,
+            $this->getAllQuotes(),
+            $this->next_time ?? null,
+            $this->prev_time ?? null
+        );
+    }
+
+    /**
+     * Get all option quotes as a flat array.
+     *
+     * @return OptionQuote[] All option quotes from all expiration dates.
+     */
+    public function getAllQuotes(): array
+    {
         $allQuotes = [];
         foreach ($this->option_chains as $quotes) {
             $allQuotes = array_merge($allQuotes, $quotes);
         }
 
-        return Quotes::createMerged(
-            $this->status,
-            $allQuotes,
-            $this->next_time ?? null,
-            $this->prev_time ?? null
-        );
+        return $allQuotes;
+    }
+
+    /**
+     * Get all expiration dates in the chain.
+     *
+     * @return string[] Array of expiration date strings (YYYY-MM-DD format).
+     */
+    public function getExpirationDates(): array
+    {
+        return array_keys($this->option_chains);
+    }
+
+    /**
+     * Get option quotes for a specific expiration date.
+     *
+     * @param string $date The expiration date in YYYY-MM-DD format.
+     *
+     * @return OptionQuote[] Array of option quotes for the given date, or empty array if not found.
+     */
+    public function getQuotesByExpiration(string $date): array
+    {
+        return $this->option_chains[$date] ?? [];
+    }
+
+    /**
+     * Get the total count of option quotes across all expirations.
+     *
+     * @return int The total number of option quotes.
+     */
+    public function count(): int
+    {
+        $count = 0;
+        foreach ($this->option_chains as $quotes) {
+            $count += count($quotes);
+        }
+
+        return $count;
+    }
+
+    /**
+     * Get only call options from the chain.
+     *
+     * @return OptionQuote[] Array of call option quotes.
+     */
+    public function getCalls(): array
+    {
+        return array_filter($this->getAllQuotes(), fn(OptionQuote $q) => $q->side === Side::CALL);
+    }
+
+    /**
+     * Get only put options from the chain.
+     *
+     * @return OptionQuote[] Array of put option quotes.
+     */
+    public function getPuts(): array
+    {
+        return array_filter($this->getAllQuotes(), fn(OptionQuote $q) => $q->side === Side::PUT);
+    }
+
+    /**
+     * Get option quotes for a specific strike price.
+     *
+     * @param float $strike The strike price to filter by.
+     *
+     * @return OptionQuote[] Array of option quotes with the given strike price.
+     */
+    public function getByStrike(float $strike): array
+    {
+        return array_filter($this->getAllQuotes(), fn(OptionQuote $q) => $q->strike === $strike);
+    }
+
+    /**
+     * Get all unique strike prices in the chain, sorted ascending.
+     *
+     * @return float[] Array of unique strike prices.
+     */
+    public function getStrikes(): array
+    {
+        $strikes = array_unique(array_map(fn(OptionQuote $q) => $q->strike, $this->getAllQuotes()));
+        sort($strikes);
+
+        return array_values($strikes);
     }
 }

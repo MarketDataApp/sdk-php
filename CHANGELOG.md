@@ -27,7 +27,16 @@ The `Quote` and `OptionChainStrike` classes have been consolidated into a single
   - `strike` - Exercise price
   - `first_traded` - Date option was first traded
   - `dte` - Days to expiration
-- **New `OptionChains::toQuotes()` method** - Flattens option chains into a `Quotes` object, enabling you to treat a chain as a simple collection of quotes
+- **New `OptionChains` convenience methods**:
+  - `toQuotes()` - Flattens option chains into a `Quotes` object
+  - `getAllQuotes()` - Get all quotes as a flat array
+  - `getExpirationDates()` - Get all expiration date strings
+  - `getQuotesByExpiration(string $date)` - Get quotes for a specific expiration
+  - `count()` - Get total number of quotes across all expirations
+  - `getCalls()` - Get only call options
+  - `getPuts()` - Get only put options
+  - `getByStrike(float $strike)` - Get quotes for a specific strike price
+  - `getStrikes()` - Get all unique strike prices, sorted ascending
 
 **Migration Guide:**
 ```php
