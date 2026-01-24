@@ -80,7 +80,7 @@ class Options
         $this->validateNonEmptyString($symbol, 'symbol');
         $this->validatePositiveInteger($strike, 'strike');
 
-        return new Expirations($this->execute("expirations/$symbol",
+        return new Expirations($this->execute("expirations/$symbol/",
             compact('strike', 'date'), $parameters));
     }
 
@@ -106,7 +106,7 @@ class Options
         // Validate input
         $this->validateNonEmptyString($input, 'input');
 
-        return new Lookup($this->execute("lookup/" . $input, [], $parameters));
+        return new Lookup($this->execute("lookup/" . $input . "/", [], $parameters));
     }
 
     /**
@@ -139,7 +139,7 @@ class Options
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
 
-        return new Strikes($this->execute("strikes/$symbol",
+        return new Strikes($this->execute("strikes/$symbol/",
             compact('expiration', 'date'), $parameters));
     }
 
@@ -340,7 +340,7 @@ class Options
         $this->validateNumericRange($min_bid, $max_bid, 'min_bid', 'max_bid');
         $this->validateNumericRange($min_ask, $max_ask, 'min_ask', 'max_ask');
 
-        return new OptionChains($this->execute("chain/$symbol", [
+        return new OptionChains($this->execute("chain/$symbol/", [
             'date'               => $date,
             'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
             'from'               => $from,

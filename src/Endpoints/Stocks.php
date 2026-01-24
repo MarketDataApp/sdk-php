@@ -515,7 +515,7 @@ class Stocks
         // Validate symbol
         $this->validateNonEmptyString($symbol, 'symbol');
 
-        return new Quote($this->execute("quotes/{$symbol}",
+        return new Quote($this->execute("quotes/{$symbol}/",
             ['52week' => $fifty_two_week], $parameters));
     }
 
@@ -632,7 +632,7 @@ class Stocks
         // Validate date range and countback
         $this->validateDateRange($from, $to, $countback);
 
-        return new Earnings($this->execute("earnings/{$symbol}",
+        return new Earnings($this->execute("earnings/{$symbol}/",
             compact('from', 'to', 'countback', 'date', 'datekey'), $parameters));
     }
 
@@ -676,7 +676,7 @@ class Stocks
         // Validate date range and countback
         $this->validateDateRange($from, $to, $countback);
 
-        return new News($this->execute("news/{$symbol}",
+        return new News($this->execute("news/{$symbol}/",
             compact('from', 'to', 'countback', 'date'), $parameters));
     }
 }
