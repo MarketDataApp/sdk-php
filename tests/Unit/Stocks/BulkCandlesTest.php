@@ -168,6 +168,37 @@ class BulkCandlesTest extends StocksTestCase
     }
 
     /**
+     * Test bulkCandles endpoint rejects empty strings in symbols array.
+     *
+     * Bug #012: bulkCandles was not validating symbols, allowing empty strings
+     * to pass through and create malformed query strings like "symbols=,AAPL".
+     */
+    public function testBulkCandles_emptySymbolInArray_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All elements in `symbols` must be non-empty strings');
+
+        $this->client->stocks->bulkCandles(
+            symbols: ['', 'AAPL'],
+            resolution: 'D'
+        );
+    }
+
+    /**
+     * Test bulkCandles endpoint rejects whitespace-only symbols.
+     */
+    public function testBulkCandles_whitespaceOnlySymbol_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All elements in `symbols` must be non-empty strings');
+
+        $this->client->stocks->bulkCandles(
+            symbols: ['AAPL', '   '],
+            resolution: 'D'
+        );
+    }
+
+    /**
      * Test bulkCandles endpoint with snapshot=true parameter.
      */
     public function testBulkCandles_withSnapshot_success(): void

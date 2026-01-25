@@ -314,6 +314,11 @@ class Stocks
             throw new \InvalidArgumentException('Either symbols or snapshot must be set');
         }
 
+        // Validate symbols if provided
+        if (!empty($symbols)) {
+            $this->validateSymbols($symbols);
+        }
+
         // Validate resolution
         $this->validateResolution($resolution);
 
