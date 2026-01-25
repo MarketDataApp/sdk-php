@@ -870,4 +870,236 @@ class OptionChainTest extends OptionsTestCase
         $this->assertInstanceOf(OptionChains::class, $response);
         $this->assertEquals('ok', $response->status);
     }
+
+    /**
+     * Test option_chain endpoint with max_bid_ask_spread parameter.
+     */
+    public function testOptionChain_withMaxBidAskSpread_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // Options with tight bid-ask spreads (all <= 0.30)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000'],
+            'underlying'      => ['AAPL', 'AAPL'],
+            'expiration'      => [1686945600, 1686945600],
+            'side'            => ['call', 'call'],
+            'strike'          => [60, 65],
+            'firstTraded'     => [1617197400, 1617197400],
+            'dte'             => [26, 26],
+            'updated'         => [1684702875, 1684702875],
+            'bid'             => [114.10, 108.60],
+            'bidSize'         => [90, 90],
+            'mid'             => [114.20, 108.75],
+            'ask'             => [114.30, 108.90],  // Spreads: 0.20, 0.30
+            'askSize'         => [90, 90],
+            'last'            => [115, 107.82],
+            'openInterest'    => [21957, 3012],
+            'volume'          => [0, 0],
+            'inTheMoney'      => [true, true],
+            'intrinsicValue'  => [115.13, 110.13],
+            'extrinsicValue'  => [0.37, 0.25],
+            'underlyingPrice' => [175.13, 175.13],
+            'iv'              => [1.629, 1.923],
+            'delta'           => [1, 1],
+            'gamma'           => [0, 0],
+            'theta'           => [-0.009, -0.009],
+            'vega'            => [0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            max_bid_ask_spread: 0.30
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->option_chains);
+        $this->assertCount(2, $response->option_chains['2023-06-16']);
+    }
+
+    /**
+     * Test option_chain endpoint with am=true parameter for AM-settled index options.
+     */
+    public function testOptionChain_withAmTrue_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // SPX AM-settled options (standard SPX, not SPXW)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['SPX230616C06000000'],
+            'underlying'      => ['SPX'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [6000],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [100.00],
+            'bidSize'         => [50],
+            'mid'             => [102.50],
+            'ask'             => [105.00],
+            'askSize'         => [50],
+            'last'            => [101.00],
+            'openInterest'    => [5000],
+            'volume'          => [100],
+            'inTheMoney'      => [false],
+            'intrinsicValue'  => [0],
+            'extrinsicValue'  => [102.50],
+            'underlyingPrice' => [5800],
+            'iv'              => [0.20],
+            'delta'           => [0.45],
+            'gamma'           => [0.001],
+            'theta'           => [-1.50],
+            'vega'            => [5.00]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'SPX',
+            am: true
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->option_chains);
+    }
+
+    /**
+     * Test option_chain endpoint with pm=true parameter for PM-settled index options.
+     */
+    public function testOptionChain_withPmTrue_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // SPXW PM-settled options (weekly SPX)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['SPXW230616C06000000'],
+            'underlying'      => ['SPX'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [6000],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [100.00],
+            'bidSize'         => [50],
+            'mid'             => [102.50],
+            'ask'             => [105.00],
+            'askSize'         => [50],
+            'last'            => [101.00],
+            'openInterest'    => [5000],
+            'volume'          => [100],
+            'inTheMoney'      => [false],
+            'intrinsicValue'  => [0],
+            'extrinsicValue'  => [102.50],
+            'underlyingPrice' => [5800],
+            'iv'              => [0.20],
+            'delta'           => [0.45],
+            'gamma'           => [0.001],
+            'theta'           => [-1.50],
+            'vega'            => [5.00]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'SPX',
+            pm: true
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->option_chains);
+    }
+
+    /**
+     * Test option_chain endpoint with am=false parameter.
+     */
+    public function testOptionChain_withAmFalse_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['SPXW230616C06000000'],
+            'underlying'      => ['SPX'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [6000],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [100.00],
+            'bidSize'         => [50],
+            'mid'             => [102.50],
+            'ask'             => [105.00],
+            'askSize'         => [50],
+            'last'            => [101.00],
+            'openInterest'    => [5000],
+            'volume'          => [100],
+            'inTheMoney'      => [false],
+            'intrinsicValue'  => [0],
+            'extrinsicValue'  => [102.50],
+            'underlyingPrice' => [5800],
+            'iv'              => [0.20],
+            'delta'           => [0.45],
+            'gamma'           => [0.001],
+            'theta'           => [-1.50],
+            'vega'            => [5.00]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'SPX',
+            am: false
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
+
+    /**
+     * Test option_chain endpoint with pm=false parameter.
+     */
+    public function testOptionChain_withPmFalse_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['SPX230616C06000000'],
+            'underlying'      => ['SPX'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [6000],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [100.00],
+            'bidSize'         => [50],
+            'mid'             => [102.50],
+            'ask'             => [105.00],
+            'askSize'         => [50],
+            'last'            => [101.00],
+            'openInterest'    => [5000],
+            'volume'          => [100],
+            'inTheMoney'      => [false],
+            'intrinsicValue'  => [0],
+            'extrinsicValue'  => [102.50],
+            'underlyingPrice' => [5800],
+            'iv'              => [0.20],
+            'delta'           => [0.45],
+            'gamma'           => [0.001],
+            'theta'           => [-1.50],
+            'vega'            => [5.00]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'SPX',
+            pm: false
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
 }

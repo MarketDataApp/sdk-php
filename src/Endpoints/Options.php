@@ -270,7 +270,7 @@ class Options
      * @param float|null        $max_ask                Limit the option chain to options with an ask price less than
      *                                                  or equal to the number provided.
      *
-     * @param float|null        $min_bid_ask_spread     Limit the option chain to options with a bid-ask spread less
+     * @param float|null        $max_bid_ask_spread     Limit the option chain to options with a bid-ask spread less
      *                                                  than or equal to the number provided.
      *
      * @param float|null        $max_bid_ask_spread_pct Limit the option chain to options with a bid-ask spread less
@@ -284,6 +284,16 @@ class Options
      *
      * @param int|null          $min_volume             Limit the option chain to options with a volume transacted
      *                                                  greater than or equal to the number provided.
+     *
+     * @param bool|null         $am                     Limit the option chain to AM-settled index options. These are
+     *                                                  options that settle based on the opening price of the index on
+     *                                                  expiration day. Only applicable to index options like SPX.
+     *                                                  When true, only AM-settled options are returned.
+     *
+     * @param bool|null         $pm                     Limit the option chain to PM-settled index options. These are
+     *                                                  options that settle based on the closing price of the index on
+     *                                                  expiration day. Only applicable to index options like SPX.
+     *                                                  When true, only PM-settled options are returned.
      *
      * @param Parameters|null   $parameters             Universal parameters for all methods (such as format).
      *
@@ -313,10 +323,12 @@ class Options
         ?float $max_bid = null,
         ?float $min_ask = null,
         ?float $max_ask = null,
-        ?float $min_bid_ask_spread = null,
+        ?float $max_bid_ask_spread = null,
         ?float $max_bid_ask_spread_pct = null,
         ?int $min_open_interest = null,
         ?int $min_volume = null,
+        ?bool $am = null,
+        ?bool $pm = null,
         ?Parameters $parameters = null
     ): OptionChains {
         // Validate inputs
@@ -357,11 +369,19 @@ class Options
             'maxBid'             => $max_bid,
             'minAsk'             => $min_ask,
             'maxAsk'             => $max_ask,
-            'minBidAskSpread'    => $min_bid_ask_spread,
+            'maxBidAskSpread'    => $max_bid_ask_spread,
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
             'minOpenInterest'    => $min_open_interest,
             'minVolume'          => $min_volume,
         ];
+
+        // am and pm are boolean filters for index options settlement type
+        if ($am !== null) {
+            $arguments['am'] = $am ? 'true' : 'false';
+        }
+        if ($pm !== null) {
+            $arguments['pm'] = $pm ? 'true' : 'false';
+        }
 
         // Boolean params: weekly, monthly, quarterly default to true on API, send 'false' when false
         if (!$weekly) {
