@@ -46,7 +46,7 @@ trait ValidatesInputs
     /**
      * Parse a date string to unix timestamp.
      * Handles ISO 8601, unix timestamps, spreadsheet dates, and American format.
-     * 
+     *
      * @param string|null $value The date string to parse
      * @return int|null Unix timestamp or null if cannot be parsed
      */
@@ -55,14 +55,9 @@ trait ValidatesInputs
         if ($value === null) {
             return null;
         }
-        
-        // Try strtotime first (handles ISO 8601, American format, etc.)
-        $timestamp = strtotime($value);
-        if ($timestamp !== false) {
-            return $timestamp;
-        }
-        
-        // Try numeric (unix timestamp or spreadsheet)
+
+        // Check numeric FIRST (unix timestamp or spreadsheet) to avoid
+        // strtotime() misinterpreting timestamps like "1234567890" as dates
         if (is_numeric($value)) {
             $num = (float)$value;
             // Spreadsheet dates are typically < 100000
@@ -75,7 +70,13 @@ trait ValidatesInputs
             // Unix timestamp
             return (int)$num;
         }
-        
+
+        // Try strtotime (handles ISO 8601, American format, etc.)
+        $timestamp = strtotime($value);
+        if ($timestamp !== false) {
+            return $timestamp;
+        }
+
         return null;
     }
     

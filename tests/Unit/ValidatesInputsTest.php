@@ -123,10 +123,33 @@ class ValidatesInputsTest extends TestCase
         // Test with unix timestamp that strtotime() cannot parse
         $result = $this->invokeMethod('parseDateToTimestamp', ['1704067200']);
         $this->assertEquals(1704067200, $result);
-        
+
         // Test with another unix timestamp that strtotime() cannot parse (>= 100000)
         $result2 = $this->invokeMethod('parseDateToTimestamp', ['1000000000']);
         $this->assertEquals(1000000000, $result2);
+    }
+
+    /**
+     * Test parseDateToTimestamp handles timestamps that strtotime() would misinterpret.
+     * Bug 009: strtotime("1234567890") was incorrectly parsed before checking is_numeric().
+     */
+    public function testParseDateToTimestamp_ambiguousTimestamp_returnsCorrectValue(): void
+    {
+        // 1234567890 is Fri Feb 13 2009 23:31:30 UTC
+        // strtotime("1234567890") could misinterpret this as a date format
+        $result = $this->invokeMethod('parseDateToTimestamp', ['1234567890']);
+        $this->assertEquals(1234567890, $result);
+    }
+
+    /**
+     * Test validateDateRange with valid Unix timestamp range.
+     * Bug 009: from=1234567890 (2009) and to=1700000000 (2023) was incorrectly rejected.
+     */
+    public function testValidateDateRange_unixTimestampRange_noException(): void
+    {
+        $this->expectNotToPerformAssertions();
+        // Unix timestamps: 2009-02-13 (1234567890) to 2023-11-14 (1700000000)
+        $this->invokeMethod('validateDateRange', ['1234567890', '1700000000', null]);
     }
 
     /**
