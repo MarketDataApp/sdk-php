@@ -1554,4 +1554,263 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertIsObject($results[0]);
         $this->assertTrue(property_exists($results[0], 'csv'));
     }
+
+    /**
+     * Test that HTML format throws exception for split requests.
+     *
+     * Bug #016: HTML format is not supported for intraday candle requests spanning
+     * more than 1 year because the API doesn't support HTML for combined results.
+     */
+    public function testCandles_automaticConcurrent_htmlFormatThrowsException(): void
+    {
+        // No mock responses needed - exception should be thrown before any requests are made
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('HTML format is not supported for intraday candle requests spanning more than 1 year');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::HTML)
+        );
+    }
+
+    /**
+     * Test that CSV format works correctly with split requests.
+     *
+     * Bug #016: CSV format should combine individual CSV responses correctly,
+     * with headers only on the first request.
+     */
+    public function testCandles_automaticConcurrent_csvFormat(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579\n1641220500,178.97,180.4,178.92,180.33,2482107";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842\n1672756500,129.83,130.68,129.53,130.5,2219751";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        // Should be able to get CSV content
+        $csv = $result->getCsv();
+        $this->assertNotEmpty($csv);
+        // Should contain both sets of data combined
+        $this->assertStringContainsString('1641220200', $csv);
+        $this->assertStringContainsString('1672756200', $csv);
+    }
+
+    /**
+     * Test that CSV format respects user's add_headers=false setting.
+     *
+     * Bug #016: When user explicitly requests no headers, all requests should omit headers.
+     */
+    public function testCandles_automaticConcurrent_csvFormatNoHeaders(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        // No headers in either response since user requested no headers
+        $csvResponse1 = "1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        $this->assertNotEmpty($csv);
+        // Should NOT contain header row
+        $this->assertStringNotContainsString('t,o,h,l,c,v', $csv);
+        // Should contain data rows
+        $this->assertStringContainsString('1641220200', $csv);
+        $this->assertStringContainsString('1672756200', $csv);
+    }
+
+    /**
+     * Test that CSV format handles partial failures gracefully.
+     *
+     * Bug #016: When some chunks fail with 404, the successful chunks should still
+     * be combined into the output.
+     */
+    public function testCandles_automaticConcurrent_csvFormatPartialFailure(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+
+        // Second chunk returns 404 (simulating no historical data for that year)
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        // Should contain data from the successful chunk only
+        $this->assertStringContainsString('1641220200', $csv);
+    }
+
+    /**
+     * Test that CSV format throws exception when ALL chunks fail.
+     *
+     * Bug #016: When every chunk returns a failure, an exception should be thrown.
+     */
+    public function testCandles_automaticConcurrent_csvFormatAllFailures(): void
+    {
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
+
+        $this->setMockResponses([
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
+    /**
+     * Test that CSV format works with 3+ year range (multiple chunks).
+     *
+     * Bug #016: CSV format should combine many chunks correctly.
+     */
+    public function testCandles_automaticConcurrent_csvFormatThreeYears(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1609770600,133.52,133.6116,132.39,132.81,4815264";
+        $csvResponse2 = "1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse3 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+            new Response(200, [], $csvResponse3),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2021-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        // Should contain all three years of data
+        $this->assertStringContainsString('1609770600', $csv);  // 2021
+        $this->assertStringContainsString('1641220200', $csv);  // 2022
+        $this->assertStringContainsString('1672756200', $csv);  // 2023
+        // Should only have one header row
+        $this->assertEquals(1, substr_count($csv, 't,o,h,l,c,v'));
+    }
+
+    /**
+     * Test that CSV format passes date_format parameter correctly.
+     *
+     * Bug #016: CSV-specific parameters like date_format should be preserved.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithDateFormat(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n2022-01-03T09:30:00Z,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "2023-01-03T09:30:00Z,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::CSV,
+                date_format: DateFormat::TIMESTAMP
+            )
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        // Should contain ISO 8601 formatted dates
+        $this->assertStringContainsString('2022-01-03T09:30:00Z', $csv);
+        $this->assertStringContainsString('2023-01-03T09:30:00Z', $csv);
+    }
+
+    /**
+     * Test that CSV format passes columns parameter correctly.
+     *
+     * Bug #016: CSV-specific parameters like columns should be preserved.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithColumns(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,c\n1641220200,177.83,178.965";
+        $csvResponse2 = "1672756200,130.28,129.84";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::CSV,
+                columns: ['t', 'o', 'c']
+            )
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        // Should only have the specified columns
+        $this->assertStringContainsString('t,o,c', $csv);
+        // Should NOT contain h,l,v columns
+        $this->assertStringNotContainsString(',h,', $csv);
+        $this->assertStringNotContainsString(',l,', $csv);
+        $this->assertStringNotContainsString(',v', $csv);
+    }
 }

@@ -1131,4 +1131,215 @@ class QuotesTest extends OptionsTestCase
         $this->assertInstanceOf(Quotes::class, $response);
         $this->assertEmpty($response->errors);
     }
+
+    // =========================================================================
+    // Multi-Symbol CSV/HTML Format Tests (Bug #015)
+    // =========================================================================
+
+    /**
+     * Test that HTML format throws exception for multi-symbol requests.
+     */
+    public function testQuotes_multipleSymbols_htmlFormat_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('HTML format is not supported for multi-symbol options quotes');
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::HTML)
+        );
+    }
+
+    /**
+     * Test that single-symbol HTML still works (not affected by multi-symbol restriction).
+     */
+    public function testQuotes_singleSymbol_htmlFormat_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "<html><body>data</body></html>";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: 'AAPL250117C00150000',
+            parameters: new Parameters(format: Format::HTML)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isHtml());
+        $this->assertEquals($mocked_response, $response->getHtml());
+    }
+
+    /**
+     * Test CSV multi-symbol combines responses with headers on first request only.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_combinesWithHeaders(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // First response should have headers, second should not
+        $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $csv2 = "AAPL250117P00150000,4.20,4.10";
+
+        $this->setMockResponses([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        // Combined CSV should have both data rows
+        $combinedCsv = $response->getCsv();
+        $this->assertStringContainsString('AAPL250117C00150000', $combinedCsv);
+        $this->assertStringContainsString('AAPL250117P00150000', $combinedCsv);
+    }
+
+    /**
+     * Test CSV multi-symbol respects user's add_headers=false setting.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_respectsNoHeaders(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // Both responses should have no headers when user requests add_headers=false
+        $csv1 = "AAPL250117C00150000,5.50,5.40";
+        $csv2 = "AAPL250117P00150000,4.20,4.10";
+
+        $this->setMockResponses([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        // Combined CSV should have both data rows without headers
+        $combinedCsv = $response->getCsv();
+        $this->assertStringContainsString('AAPL250117C00150000', $combinedCsv);
+        $this->assertStringContainsString('AAPL250117P00150000', $combinedCsv);
+    }
+
+    /**
+     * Test CSV multi-symbol sends correct headers parameter to API.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_sendsCorrectHeadersParam(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $csv2 = "AAPL250117P00150000,4.20,4.10";
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ], $history);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // Verify first request has headers=true, second has headers=false
+        $this->assertCount(2, $history);
+
+        // First request should have headers=true
+        $firstRequest = $history[0]['request'];
+        $firstQuery = [];
+        parse_str($firstRequest->getUri()->getQuery(), $firstQuery);
+        $this->assertEquals('true', $firstQuery['headers']);
+
+        // Second request should have headers=false
+        $secondRequest = $history[1]['request'];
+        $secondQuery = [];
+        parse_str($secondRequest->getUri()->getQuery(), $secondQuery);
+        $this->assertEquals('false', $secondQuery['headers']);
+    }
+
+    /**
+     * Test CSV multi-symbol with user-specified add_headers=false sends headers=false for all.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_userNoHeaders_sendsAllFalse(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $csv1 = "AAPL250117C00150000,5.50,5.40";
+        $csv2 = "AAPL250117P00150000,4.20,4.10";
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ], $history);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        // Verify both requests have headers=false
+        $this->assertCount(2, $history);
+
+        $firstRequest = $history[0]['request'];
+        $firstQuery = [];
+        parse_str($firstRequest->getUri()->getQuery(), $firstQuery);
+        $this->assertEquals('false', $firstQuery['headers']);
+
+        $secondRequest = $history[1]['request'];
+        $secondQuery = [];
+        parse_str($secondRequest->getUri()->getQuery(), $secondQuery);
+        $this->assertEquals('false', $secondQuery['headers']);
+    }
+
+    /**
+     * Test CSV multi-symbol handles empty responses gracefully.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_handlesEmptyResponse(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $csv2 = ""; // Empty response for second symbol
+
+        $this->setMockResponses([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        // Should still have the first symbol's data
+        $combinedCsv = $response->getCsv();
+        $this->assertStringContainsString('AAPL250117C00150000', $combinedCsv);
+    }
+
+    /**
+     * Test that single-symbol array with CSV still works normally (delegates to single path).
+     */
+    public function testQuotes_singleSymbolArray_csvFormat_delegatesToSingle(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
 }
