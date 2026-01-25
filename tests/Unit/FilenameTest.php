@@ -192,13 +192,13 @@ class FilenameTest extends TestCase
     public function testParameters_filename_nonExistentDirectory_throwsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('No existing parent directory found');
+        $this->expectExceptionMessage('Directory does not exist');
 
         $tempDir = $this->createTempDir();
         chdir($tempDir);
 
         $nonExistentDir = 'nonexistent_' . uniqid();
-        $testFile = $nonExistentDir . '/subdir/test.csv';
+        $testFile = $nonExistentDir . '/test.csv';
 
         new Parameters(format: Format::CSV, filename: $testFile);
     }

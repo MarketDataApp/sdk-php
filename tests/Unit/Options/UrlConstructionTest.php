@@ -126,6 +126,29 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test expirations URL with decimal strike parameter.
+     *
+     * This verifies the fix for Bug 007: strike should accept decimal values
+     * (e.g., 12.5) for non-standard options strikes, not just integers.
+     */
+    public function testExpirations_withDecimalStrike_preservesDecimal(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'expirations' => ['2024-01-19'],
+                'updated' => 1234567890
+            ]))
+        ]);
+
+        $this->client->options->expirations('AAPL', strike: 12.5);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('strike', $query);
+        $this->assertEquals('12.5', $query['strike']);
+    }
+
+    /**
      * Test expirations URL with date parameter.
      */
     public function testExpirations_withDate_addsParameter(): void
@@ -193,6 +216,33 @@ class UrlConstructionTest extends TestCase
         $path = $this->getLastRequestPath();
         $this->assertStringStartsWith('v1/options/lookup/', $path);
         $this->assertStringContainsString('AAPL', $path);
+    }
+
+    /**
+     * Test lookup URL properly encodes slashes in user input.
+     *
+     * This verifies the fix for Bug 001: slashes in dates (e.g., 7/28/23)
+     * must be encoded as %2F to remain a single path segment.
+     */
+    public function testLookup_withSlashesInInput_properlyEncodes(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => 'AAPL230728C00200000'
+            ]))
+        ]);
+
+        $input = 'AAPL 7/28/23 $200 Call';
+        $this->client->options->lookup($input);
+
+        $path = $this->getLastRequestPath();
+        $expectedPath = 'v1/options/lookup/' . rawurlencode($input) . '/';
+
+        // Slashes must be encoded as %2F, not left as path separators
+        $this->assertEquals($expectedPath, $path);
+        $this->assertStringContainsString('%2F', $path);
+        $this->assertStringNotContainsString('7/28/23', $path);
     }
 
     // ========================================================================
@@ -309,6 +359,53 @@ class UrlConstructionTest extends TestCase
 
         $this->assertCount(1, $this->history);
         $this->assertEquals('v1/options/chain/AAPL/', $this->getLastRequestPath());
+    }
+
+    /**
+     * Test option chain URL omits expiration parameter when not specified.
+     *
+     * This verifies the fix for Bug 002: when expiration is not specified,
+     * the parameter should be omitted so the API applies its default
+     * (next monthly expiration) instead of returning the full chain.
+     */
+    public function testOptionChain_withoutExpiration_omitsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('expiration', $query);
     }
 
     /**
@@ -796,6 +893,102 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test option chain URL omits nonstandard parameter when not specified.
+     *
+     * This verifies the fix for Bug 006: when non_standard is not specified,
+     * the parameter should be omitted so the API applies its default (false)
+     * instead of sending nonstandard=true.
+     */
+    public function testOptionChain_withoutNonStandard_omitsParameter(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('nonstandard', $query);
+    }
+
+    /**
+     * Test option chain URL with nonstandard=false sends parameter.
+     *
+     * When explicitly set to false, the parameter should be sent to override
+     * any API default behavior.
+     */
+    public function testOptionChain_withNonStandardFalse_addsParameter(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', non_standard: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('nonstandard', $query);
+        $this->assertEquals('false', $query['nonstandard']);
+    }
+
+    /**
      * Test option chain URL with nonstandard=true sends parameter.
      */
     public function testOptionChain_withNonStandardTrue_addsParameter(): void
@@ -881,6 +1074,191 @@ class UrlConstructionTest extends TestCase
         $query = $this->parseQuery($this->getLastRequestQuery());
         $this->assertArrayHasKey('minBid', $query);
         $this->assertEquals('1', $query['minBid']);
+    }
+
+    /**
+     * Test option chain URL with delta as float value.
+     */
+    public function testOptionChain_withDeltaFloat_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', delta: 0.50);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('delta', $query);
+        $this->assertEquals('0.5', $query['delta']);
+    }
+
+    /**
+     * Test option chain URL with delta as string expression (comparison).
+     *
+     * This verifies the fix for Bug 003: delta should accept string expressions
+     * like ">.50" for range comparisons, not just float values.
+     */
+    public function testOptionChain_withDeltaStringComparison_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', delta: '>.50');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('delta', $query);
+        $this->assertEquals('>.50', $query['delta']);
+    }
+
+    /**
+     * Test option chain URL with delta as string expression (range).
+     *
+     * This verifies the fix for Bug 003: delta should accept string expressions
+     * like ".30-.60" for range filtering.
+     */
+    public function testOptionChain_withDeltaStringRange_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.45],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', delta: '.30-.60');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('delta', $query);
+        $this->assertEquals('.30-.60', $query['delta']);
+    }
+
+    /**
+     * Test option chain URL with delta as string expression (comma-separated list).
+     *
+     * This verifies the fix for Bug 003: delta should accept string expressions
+     * like ".60,.30" for multiple specific deltas.
+     */
+    public function testOptionChain_withDeltaStringList_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000', 'AAPL240119C00160000'],
+                'underlying' => ['AAPL', 'AAPL'],
+                'expiration' => [1705622400, 1705622400],
+                'side' => ['call', 'call'],
+                'strike' => [150.0, 160.0],
+                'firstTraded' => [1234567890, 1234567890],
+                'dte' => [30, 30],
+                'updated' => [1234567890, 1234567890],
+                'bid' => [5.0, 3.0],
+                'bidSize' => [10, 10],
+                'mid' => [5.5, 3.5],
+                'ask' => [6.0, 4.0],
+                'askSize' => [10, 10],
+                'last' => [5.5, 3.5],
+                'openInterest' => [1000, 800],
+                'volume' => [500, 300],
+                'inTheMoney' => [true, false],
+                'intrinsicValue' => [10.0, 0.0],
+                'extrinsicValue' => [5.0, 3.5],
+                'underlyingPrice' => [160.0, 160.0],
+                'iv' => [0.25, 0.28],
+                'delta' => [0.60, 0.30],
+                'gamma' => [0.02, 0.03],
+                'theta' => [-0.05, -0.04],
+                'vega' => [0.15, 0.12],
+                'rho' => [0.03, 0.02]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', delta: '.60,.30');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('delta', $query);
+        $this->assertEquals('.60,.30', $query['delta']);
     }
 
     /**

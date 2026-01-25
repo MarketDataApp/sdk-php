@@ -136,8 +136,31 @@ class ExpirationsTest extends OptionsTestCase
     public function testExpirations_invalidStrike_throwsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('must be a positive integer');
+        $this->expectExceptionMessage('must be a positive number');
 
         $this->client->options->expirations('AAPL', strike: 0);
+    }
+
+    /**
+     * Test expirations endpoint accepts decimal strike values.
+     *
+     * This verifies the fix for Bug 007: strike should accept decimal values
+     * (e.g., 12.5) for non-standard options strikes.
+     */
+    public function testExpirations_decimalStrike_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'           => 'ok',
+            'expirations' => ['2024-01-19'],
+            'updated'     => 1234567890
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // Should not throw - decimal strikes are valid
+        $response = $this->client->options->expirations('AAPL', strike: 12.5);
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals('ok', $response->status);
     }
 }

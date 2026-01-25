@@ -1027,19 +1027,20 @@ class CandlesConcurrentTest extends StocksTestCase
     }
 
     /**
-     * Test candlesConcurrent limits to MAX_CONCURRENT_REQUESTS when chunks exceed limit.
+     * Test candlesConcurrent requests all chunks even when exceeding MAX_CONCURRENT_REQUESTS.
      *
-     * Tests the edge case where the date range generates more than the API-wide
-     * MAX_CONCURRENT_REQUESTS limit of year-long chunks. The candlesConcurrent method
-     * pre-limits chunks to this value, and execute_in_parallel enforces the hard limit.
+     * Tests the behavior where the date range generates more than the API-wide
+     * MAX_CONCURRENT_REQUESTS limit of year-long chunks. All chunks are requested
+     * (batched by execute_in_parallel's concurrency limit), not truncated.
      */
-    public function testCandles_automaticConcurrent_maxConcurrentRequestsLimit(): void
+    public function testCandles_automaticConcurrent_allChunksRequested(): void
     {
         // Mock response: NOT from real API output (synthetic edge case)
-        // This test requires 50 mock responses to test the MAX_CONCURRENT_REQUESTS limit
+        // This test requires 55 mock responses for a 55-year range
         // Using synthetic data with incrementing values for each year chunk
+        $numChunks = 55;
         $responses = [];
-        for ($i = 0; $i < Settings::MAX_CONCURRENT_REQUESTS; $i++) {
+        for ($i = 0; $i < $numChunks; $i++) {
             $responses[] = new Response(200, [], json_encode([
                 's' => 'ok',
                 't' => [1640995200 + ($i * 31536000)], // Add 1 year in seconds for each
@@ -1053,7 +1054,7 @@ class CandlesConcurrentTest extends StocksTestCase
 
         $this->setMockResponses($responses);
 
-        // Request a 55-year range - should only make 50 requests
+        // Request a 55-year range - should make ALL 55 requests (not truncated to 50)
         $result = $this->client->stocks->candles(
             symbol: 'AAPL',
             from: '1970-01-01',
@@ -1063,8 +1064,84 @@ class CandlesConcurrentTest extends StocksTestCase
 
         $this->assertInstanceOf(Candles::class, $result);
         $this->assertEquals('ok', $result->status);
-        // Should have 50 candles (one from each of the 50 chunks)
-        $this->assertCount(Settings::MAX_CONCURRENT_REQUESTS, $result->candles);
+        // Should have 55 candles (one from each of the 55 chunks - no truncation)
+        $this->assertCount($numChunks, $result->candles);
+    }
+
+    /**
+     * Test candlesConcurrent tolerates partial 404 failures.
+     *
+     * When some chunks return 404 (no historical data available), those failures
+     * are tolerated and data from successful chunks is still returned.
+     */
+    public function testCandles_automaticConcurrent_toleratesPartial404s(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-01-25)
+        // First chunk has real data
+        $response1 = [
+            's' => 'ok',
+            't' => [1641220200, 1641220500],
+            'o' => [177.83, 178.97],
+            'h' => [179.31, 180.4],
+            'l' => [177.71, 178.92],
+            'c' => [178.965, 180.33],
+            'v' => [3342579, 2482107],
+        ];
+
+        // Second chunk returns 404 (simulating no historical data for that year)
+        // Use ClientException to simulate Guzzle's http_errors behavior
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+        ]);
+
+        // Request 2-year range where second year has no data
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5'
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        // Should still be 'ok' since at least one chunk succeeded
+        $this->assertEquals('ok', $result->status);
+        // Should have 2 candles from the successful chunk
+        $this->assertCount(2, $result->candles);
+    }
+
+    /**
+     * Test candlesConcurrent throws when ALL chunks fail with 404.
+     *
+     * When every chunk returns a 404, an exception should be thrown
+     * since there's no data to return at all. The exception is ApiException
+     * because 404 responses return a response body with s: error that gets
+     * processed by processResponse which throws ApiException.
+     */
+    public function testCandles_automaticConcurrent_throwsWhenAll404s(): void
+    {
+        // Use ClientException to simulate Guzzle's http_errors behavior
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
+
+        $this->setMockResponses([
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request, $response404),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available');
+
+        // Request 2-year range where both years have no data
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5'
+        );
     }
 
     /**

@@ -692,6 +692,33 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test bulkCandles URL with snapshot=true and no symbols omits symbols parameter.
+     *
+     * Bug 004: When snapshot=true and no symbols provided, symbols should be omitted entirely,
+     * not sent as an empty string (symbols=).
+     */
+    public function testBulkCandles_withSnapshotNoSymbols_omitsSymbolsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'o' => [150.0],
+                'h' => [155.0],
+                'l' => [149.0],
+                'c' => [154.0],
+                'v' => [1000000],
+                't' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->bulkCandles([], 'D', snapshot: true);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('symbols', $query, 'symbols parameter should be omitted when empty');
+    }
+
+    /**
      * Test bulkCandles URL with date parameter.
      */
     public function testBulkCandles_withDate_addsParameter(): void

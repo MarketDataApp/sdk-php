@@ -312,12 +312,14 @@ class Stocks
         // Validate resolution
         $this->validateResolution($resolution);
 
-        $symbols = implode(',', array_map('trim', $symbols));
+        $symbolsString = implode(',', array_map('trim', $symbols));
 
         $arguments = [
-            'symbols' => $symbols,
-            'date'    => $date,
+            'date' => $date,
         ];
+        if ($symbolsString !== '') {
+            $arguments['symbols'] = $symbolsString;
+        }
         if ($snapshot) {
             $arguments['snapshot'] = 'true';
         }
@@ -476,14 +478,6 @@ class Stocks
         // Split the date range into year-long chunks
         $chunks = $this->splitDateRangeIntoYearChunks($from, $to);
 
-        // Limit chunks to MAX_CONCURRENT_REQUESTS
-        $maxChunks = Settings::MAX_CONCURRENT_REQUESTS;
-        if (count($chunks) > $maxChunks) {
-            // Take the first MAX_CONCURRENT_REQUESTS chunks
-            // This covers up to 50 years of data, which should be more than enough
-            $chunks = array_slice($chunks, 0, $maxChunks);
-        }
-
         // Build the API calls for parallel execution
         $calls = [];
         foreach ($chunks as $chunk) {
@@ -509,10 +503,18 @@ class Stocks
             ];
         }
 
-        // Execute all requests in parallel
-        $responses = $this->execute_in_parallel($calls, $parameters);
+        // Execute all requests in parallel with partial failure tolerance
+        // (some chunks may 404 if historical data doesn't exist for that range)
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $parameters, $failedRequests);
 
-        // Merge all responses into a single Candles object
+        // If ALL requests failed, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Merge all successful responses into a single Candles object
+        // (partial failures are tolerated - we return whatever data we got)
         return $this->mergeCandleResponses($responses);
     }
 

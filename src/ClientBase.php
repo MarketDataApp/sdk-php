@@ -179,7 +179,7 @@ abstract class ClientBase
         // Use EachPromise for concurrency-limited parallel execution
         $eachPromise = new EachPromise($promiseGenerator(), [
             'concurrency' => $maxConcurrent,
-            'fulfilled' => function ($response, $index) use (&$results, $calls) {
+            'fulfilled' => function ($response, $index) use (&$results, &$exceptions, $calls, $tolerateFailed) {
                 // Extract format from the call arguments, default to 'json'
                 $format = $calls[$index][1]['format'] ?? 'json';
                 $arguments = $calls[$index][1];
@@ -192,7 +192,16 @@ abstract class ClientBase
                 }
 
                 // Process and store result at original index to maintain order
-                $results[$index] = $this->processResponse($response, $format, $arguments, $requestUrl);
+                // When tolerating failures, catch exceptions from processResponse (e.g., ApiException for 404s)
+                if ($tolerateFailed) {
+                    try {
+                        $results[$index] = $this->processResponse($response, $format, $arguments, $requestUrl);
+                    } catch (\Throwable $e) {
+                        $exceptions[$index] = $e;
+                    }
+                } else {
+                    $results[$index] = $this->processResponse($response, $format, $arguments, $requestUrl);
+                }
             },
             'rejected' => function ($reason, $index) use (&$exceptions) {
                 // Store exception at index for later throwing

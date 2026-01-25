@@ -95,43 +95,12 @@ class Parameters implements \Stringable
                 );
             }
 
-            // Validate that a parent directory exists (nested subdirectories will be created during file writing)
-            // We use mkdir(..., true) which creates directories recursively, so we only need to ensure
-            // that at least one parent in the path exists (to prevent creating directories in completely invalid locations)
+            // Validate that the parent directory exists (SDK does not create directories)
             $directory = dirname($filename);
-            if ($directory !== '.' && $directory !== '') {
-                // Check if the directory itself exists
-                if (!is_dir($directory)) {
-                    // Directory doesn't exist - check if any parent directory exists
-                    // Walk up the directory tree to find the first existing parent
-                    $currentDir = $directory;
-                    $foundExistingParent = false;
-                    
-                    while ($currentDir !== '.' && $currentDir !== '' && $currentDir !== dirname($currentDir)) {
-                        $parentDir = dirname($currentDir);
-                        
-                        // If we've reached root or current directory, stop
-                        if ($parentDir === $currentDir || $parentDir === '.' || $parentDir === '') {
-                            break;
-                        }
-                        
-                        // Check if this parent exists
-                        if (is_dir($parentDir)) {
-                            $foundExistingParent = true;
-                            break;
-                        }
-                        
-                        $currentDir = $parentDir;
-                    }
-                    
-                    // If no existing parent was found, the path is invalid
-                    if (!$foundExistingParent) {
-                        throw new \InvalidArgumentException(
-                            "No existing parent directory found in path: {$directory}"
-                        );
-                    }
-                    // An existing parent was found, nested subdirectories will be created during file writing - this is OK
-                }
+            if ($directory !== '.' && $directory !== '' && !is_dir($directory)) {
+                throw new \InvalidArgumentException(
+                    "Directory does not exist: {$directory}. Please create the directory before specifying this filename."
+                );
             }
 
             // Validate file does not exist (prevent overwrites)

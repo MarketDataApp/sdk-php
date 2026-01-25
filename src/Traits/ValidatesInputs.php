@@ -123,7 +123,7 @@ trait ValidatesInputs
     
     /**
      * Validate that an integer is positive if provided.
-     * 
+     *
      * @param int|null $value The value to validate
      * @param string $fieldName The field name for error messages
      * @return void
@@ -134,6 +134,23 @@ trait ValidatesInputs
         if ($value !== null && $value <= 0) {
             throw new \InvalidArgumentException(
                 "`{$fieldName}` must be a positive integer. Got: {$value}"
+            );
+        }
+    }
+
+    /**
+     * Validate that a number (int or float) is positive if provided.
+     *
+     * @param int|float|null $value The value to validate
+     * @param string $fieldName The field name for error messages
+     * @return void
+     * @throws \InvalidArgumentException If value is not positive
+     */
+    protected function validatePositiveNumber(int|float|null $value, string $fieldName): void
+    {
+        if ($value !== null && $value <= 0) {
+            throw new \InvalidArgumentException(
+                "`{$fieldName}` must be a positive number. Got: {$value}"
             );
         }
     }

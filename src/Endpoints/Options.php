@@ -57,8 +57,9 @@ class Options
      *
      * @param string          $symbol     The underlying ticker symbol for the options chain you wish to lookup.
      *
-     * @param int|null        $strike     Limit the lookup of expiration dates to the strike provided. This will cause
+     * @param int|float|null  $strike     Limit the lookup of expiration dates to the strike provided. This will cause
      *                                    the endpoint to only return expiration dates that include this strike.
+     *                                    Accepts decimal values (e.g., 12.5) for non-standard strikes.
      *
      * @param string|null     $date       Use to lookup a historical list of expiration dates from a specific previous
      *                                    trading day. If date is omitted the expiration dates will be from the current
@@ -73,13 +74,13 @@ class Options
      */
     public function expirations(
         string $symbol,
-        ?int $strike = null,
+        int|float|null $strike = null,
         ?string $date = null,
         ?Parameters $parameters = null
     ): Expirations {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
-        $this->validatePositiveInteger($strike, 'strike');
+        $this->validatePositiveNumber($strike, 'strike');
 
         return new Expirations($this->execute("expirations/$symbol/",
             compact('strike', 'date'), $parameters));
@@ -107,7 +108,7 @@ class Options
         // Validate input
         $this->validateNonEmptyString($input, 'input');
 
-        return new Lookup($this->execute("lookup/" . $input . "/", [], $parameters));
+        return new Lookup($this->execute("lookup/" . rawurlencode($input) . "/", [], $parameters));
     }
 
     /**
@@ -212,7 +213,7 @@ class Options
      *                                                  can return. If you are using the date parameter, dte is
      *                                                  relative to the date provided.
      *
-     * @param float|null        $delta
+     * @param string|float|null $delta
      *                                                  - Limit the option chain to a single strike closest to the
      *                                                  delta provided. (e.g. .50)
      *                                                  - Limit the option chain to a specific set of deltas (e.g.
@@ -291,7 +292,7 @@ class Options
     public function option_chain(
         string $symbol,
         ?string $date = null,
-        string|Expiration $expiration = Expiration::ALL,
+        string|Expiration|null $expiration = null,
         ?string $from = null,
         ?string $to = null,
         ?int $month = null,
@@ -299,9 +300,9 @@ class Options
         bool $weekly = true,
         bool $monthly = true,
         bool $quarterly = true,
-        bool $non_standard = true,
+        ?bool $non_standard = null,
         ?int $dte = null,
-        ?float $delta = null,
+        string|float|null $delta = null,
         ?Side $side = null,
         Range $range = Range::ALL,
         ?string $strike = null,
@@ -369,9 +370,9 @@ class Options
         if (!$quarterly) {
             $arguments['quarterly'] = 'false';
         }
-        // nonstandard defaults to false on API, send 'true' when true
-        if ($non_standard) {
-            $arguments['nonstandard'] = 'true';
+        // nonstandard defaults to false on API, only send when explicitly set
+        if ($non_standard !== null) {
+            $arguments['nonstandard'] = $non_standard ? 'true' : 'false';
         }
 
         return new OptionChains($this->execute("chain/$symbol/", $arguments, $parameters));
