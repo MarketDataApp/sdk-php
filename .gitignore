@@ -29,6 +29,7 @@ act-test-results.log
 # -----------------------------------------------------------------------------
 build
 coverage
+coverage-html
 coverage.md
 COVERAGE_REPORT.md
 
@@ -45,6 +46,7 @@ request_logs.md
 CLAUDE.md
 SDK_FEATURE_COMPARISON.md
 documentation-tests/*
+bug-reports/
 
 # -----------------------------------------------------------------------------
 # OS
