@@ -302,7 +302,7 @@ class Stocks
         string $resolution = 'D',
         bool $snapshot = false,
         ?string $date = null,
-        bool $adjust_splits = false,
+        ?bool $adjust_splits = null,
         ?Parameters $parameters = null
     ): BulkCandles {
         if (empty($symbols) && !$snapshot) {
@@ -323,8 +323,8 @@ class Stocks
         if ($snapshot) {
             $arguments['snapshot'] = 'true';
         }
-        if ($adjust_splits) {
-            $arguments['adjustsplits'] = 'true';
+        if ($adjust_splits !== null) {
+            $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
         }
 
         return new BulkCandles($this->execute("bulkcandles/{$resolution}/", $arguments, $parameters));
@@ -391,8 +391,8 @@ class Stocks
         ?string $exchange = null,
         bool $extended = false,
         ?string $country = null,
-        bool $adjust_splits = false,
-        bool $adjust_dividends = false,
+        ?bool $adjust_splits = null,
+        ?bool $adjust_dividends = null,
         ?Parameters $parameters = null
     ): Candles {
         // Validate inputs
@@ -427,11 +427,11 @@ class Stocks
         if ($extended) {
             $arguments['extended'] = 'true';
         }
-        if ($adjust_splits) {
-            $arguments['adjustsplits'] = 'true';
+        if ($adjust_splits !== null) {
+            $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
         }
-        if ($adjust_dividends) {
-            $arguments['adjustdividends'] = 'true';
+        if ($adjust_dividends !== null) {
+            $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
         }
 
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/", $arguments, $parameters));
@@ -471,8 +471,8 @@ class Stocks
         ?string $exchange,
         bool $extended,
         ?string $country,
-        bool $adjust_splits,
-        bool $adjust_dividends,
+        ?bool $adjust_splits,
+        ?bool $adjust_dividends,
         ?Parameters $parameters
     ): Candles {
         // Split the date range into year-long chunks
@@ -490,11 +490,11 @@ class Stocks
             if ($extended) {
                 $arguments['extended'] = 'true';
             }
-            if ($adjust_splits) {
-                $arguments['adjustsplits'] = 'true';
+            if ($adjust_splits !== null) {
+                $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
             }
-            if ($adjust_dividends) {
-                $arguments['adjustdividends'] = 'true';
+            if ($adjust_dividends !== null) {
+                $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
             }
 
             $calls[] = [

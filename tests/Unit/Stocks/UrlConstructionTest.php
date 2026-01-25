@@ -510,7 +510,7 @@ class UrlConstructionTest extends TestCase
      *
      * API expects: ?adjustsplits=true
      */
-    public function testCandles_withAdjustSplits_addsParameter(): void
+    public function testCandles_withAdjustSplitsTrue_addsParameter(): void
     {
         $this->setMockResponsesWithHistory([
             new Response(200, [], json_encode([
@@ -529,6 +529,58 @@ class UrlConstructionTest extends TestCase
         $query = $this->parseQuery($this->getLastRequestQuery());
         $this->assertArrayHasKey('adjustsplits', $query);
         $this->assertEquals('true', $query['adjustsplits']);
+    }
+
+    /**
+     * Test candles URL with adjustsplits=false adds parameter.
+     *
+     * Bug 010: When adjust_splits is explicitly set to false, the SDK should send
+     * adjustsplits=false to override the API default (which is true for daily candles).
+     *
+     * API expects: ?adjustsplits=false
+     */
+    public function testCandles_withAdjustSplitsFalse_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'o' => [150.0],
+                'h' => [155.0],
+                'l' => [149.0],
+                'c' => [154.0],
+                'v' => [1000000],
+                't' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->candles('AAPL', '2024-01-01', '2024-01-31', 'D', adjust_splits: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('adjustsplits', $query);
+        $this->assertEquals('false', $query['adjustsplits']);
+    }
+
+    /**
+     * Test candles URL without adjust_splits omits parameter (uses API default).
+     */
+    public function testCandles_withoutAdjustSplits_omitsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'o' => [150.0],
+                'h' => [155.0],
+                'l' => [149.0],
+                'c' => [154.0],
+                'v' => [1000000],
+                't' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->candles('AAPL', '2024-01-01', '2024-01-31', 'D');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('adjustsplits', $query);
     }
 
     /**
@@ -746,7 +798,7 @@ class UrlConstructionTest extends TestCase
     /**
      * Test bulkCandles URL with adjustsplits=true adds parameter.
      */
-    public function testBulkCandles_withAdjustSplits_addsParameter(): void
+    public function testBulkCandles_withAdjustSplitsTrue_addsParameter(): void
     {
         $this->setMockResponsesWithHistory([
             new Response(200, [], json_encode([
@@ -766,6 +818,58 @@ class UrlConstructionTest extends TestCase
         $query = $this->parseQuery($this->getLastRequestQuery());
         $this->assertArrayHasKey('adjustsplits', $query);
         $this->assertEquals('true', $query['adjustsplits']);
+    }
+
+    /**
+     * Test bulkCandles URL with adjustsplits=false adds parameter.
+     *
+     * Bug 010: When adjust_splits is explicitly set to false, the SDK should send
+     * adjustsplits=false to override the API default.
+     */
+    public function testBulkCandles_withAdjustSplitsFalse_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'META'],
+                'o' => [150.0, 300.0],
+                'h' => [155.0, 310.0],
+                'l' => [149.0, 295.0],
+                'c' => [154.0, 305.0],
+                'v' => [1000000, 2000000],
+                't' => [1234567890, 1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->bulkCandles(['AAPL', 'META'], 'D', adjust_splits: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('adjustsplits', $query);
+        $this->assertEquals('false', $query['adjustsplits']);
+    }
+
+    /**
+     * Test bulkCandles URL without adjust_splits omits parameter (uses API default).
+     */
+    public function testBulkCandles_withoutAdjustSplits_omitsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'META'],
+                'o' => [150.0, 300.0],
+                'h' => [155.0, 310.0],
+                'l' => [149.0, 295.0],
+                'c' => [154.0, 305.0],
+                'v' => [1000000, 2000000],
+                't' => [1234567890, 1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->bulkCandles(['AAPL', 'META'], 'D');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('adjustsplits', $query);
     }
 
     // ========================================================================
