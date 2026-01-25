@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests\Integration;
+namespace MarketDataApp\Tests\Integration\MutualFunds;
 
 use Carbon\Carbon;
 use MarketDataApp\Client;

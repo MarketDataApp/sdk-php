@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests\Unit;
+namespace MarketDataApp\Tests\Unit\Markets;
 
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;

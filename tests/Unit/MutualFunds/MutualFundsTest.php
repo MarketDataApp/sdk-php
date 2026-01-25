@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests\Unit;
+namespace MarketDataApp\Tests\Unit\MutualFunds;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;

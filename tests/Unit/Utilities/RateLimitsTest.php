@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketDataApp\Tests\Unit;
+namespace MarketDataApp\Tests\Unit\Utilities;
 
 use Carbon\Carbon;
 use GuzzleHttp\Exception\ClientException;
