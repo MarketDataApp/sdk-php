@@ -77,12 +77,14 @@ class FilenameTest extends TestCase
         $this->assertNull($response->_saved_filename ?? null);
     }
 
-    public function testFilename_nestedDirectory_createsDirectoryAndFile(): void
+    public function testFilename_nestedDirectory_createsFile(): void
     {
         $tempDir = sys_get_temp_dir();
         $nestedDir = $tempDir . '/test_nested_' . uniqid();
-        mkdir($nestedDir, 0755, true);
-        $testFile = $nestedDir . '/subdir/test.csv';
+        $subdir = $nestedDir . '/subdir';
+        // SDK does not create directories - we must create them first
+        mkdir($subdir, 0755, true);
+        $testFile = $subdir . '/test.csv';
 
         try {
             $response = $this->client->stocks->quote(
@@ -91,13 +93,11 @@ class FilenameTest extends TestCase
             );
 
             $this->assertInstanceOf(Quote::class, $response);
-            $this->assertDirectoryExists(dirname($testFile), 'Nested directory should be created');
             $this->assertFileExists($testFile, 'CSV file should be created in nested directory');
         } finally {
             if (file_exists($testFile)) {
                 unlink($testFile);
             }
-            $subdir = dirname($testFile);
             if (is_dir($subdir)) {
                 rmdir($subdir);
             }

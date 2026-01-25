@@ -22,9 +22,9 @@ class UseHumanReadableTest extends UniversalParametersTestCase
     public function testUseHumanReadable_quote_returnsValidData(): void
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(use_human_readable: true)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -43,9 +43,9 @@ class UseHumanReadableTest extends UniversalParametersTestCase
     public function testUseHumanReadable_false_returnsValidData(): void
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(use_human_readable: false)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: false)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -57,9 +57,9 @@ class UseHumanReadableTest extends UniversalParametersTestCase
     public function testUseHumanReadable_quotes_returnsValidData(): void
     {
         $response = $this->client->stocks->quotes(
-            ['AAPL'],
-            false,
-            new Parameters(use_human_readable: true)
+            symbols: ['AAPL'],
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quotes::class, $response);

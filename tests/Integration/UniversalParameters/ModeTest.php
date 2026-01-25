@@ -18,9 +18,9 @@ class ModeTest extends UniversalParametersTestCase
     public function testMode_live_returnsValidQuote(): void
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::LIVE)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::LIVE)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -33,9 +33,9 @@ class ModeTest extends UniversalParametersTestCase
     public function testMode_cached_returnsValidQuote(): void
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::CACHED)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::CACHED)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -47,9 +47,9 @@ class ModeTest extends UniversalParametersTestCase
     public function testMode_delayed_returnsValidQuote(): void
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::DELAYED)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::DELAYED)
         );
 
         $this->assertInstanceOf(Quote::class, $response);

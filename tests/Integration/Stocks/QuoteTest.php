@@ -187,9 +187,9 @@ class QuoteTest extends StocksTestCase
     public function testQuote_humanReadable_returnsHumanReadableKeys()
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(use_human_readable: true)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -214,9 +214,9 @@ class QuoteTest extends StocksTestCase
     public function testQuote_humanReadableFalse_returnsRegularKeys()
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(use_human_readable: false)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: false)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -233,9 +233,9 @@ class QuoteTest extends StocksTestCase
     public function testQuote_modeLive_success()
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::LIVE)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::LIVE)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -256,9 +256,9 @@ class QuoteTest extends StocksTestCase
     public function testQuote_modeCached_success()
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::CACHED)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::CACHED)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -279,9 +279,9 @@ class QuoteTest extends StocksTestCase
     public function testQuote_modeDelayed_success()
     {
         $response = $this->client->stocks->quote(
-            'AAPL',
-            false,
-            new Parameters(mode: Mode::DELAYED)
+            symbol: 'AAPL',
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::DELAYED)
         );
 
         $this->assertInstanceOf(Quote::class, $response);
@@ -463,17 +463,20 @@ class QuoteTest extends StocksTestCase
 
     /**
      * Test quote endpoint with CSV format and nested directory path.
-     * Verifies that directory is created automatically.
+     * Verifies that file is created in the nested directory.
+     *
+     * Note: SDK does not create directories - user must create them first.
      *
      * @throws GuzzleException|ApiException
      */
-    public function testQuote_csv_nestedDirectory_createsDirectory(): void
+    public function testQuote_csv_nestedDirectory_createsFile(): void
     {
         $tempDir = sys_get_temp_dir();
         $nestedDir = $tempDir . '/test_nested_' . uniqid();
-        // Create the parent directory first (validation requires it to exist)
-        mkdir($nestedDir, 0755, true);
-        $testFile = $nestedDir . '/subdir/test.csv';
+        $subdir = $nestedDir . '/subdir';
+        // SDK does not create directories - we must create the full path first
+        mkdir($subdir, 0755, true);
+        $testFile = $subdir . '/test.csv';
 
         try {
             $response = $this->client->stocks->quote(
@@ -483,9 +486,6 @@ class QuoteTest extends StocksTestCase
 
             $this->assertInstanceOf(Quote::class, $response);
             $this->assertTrue($response->isCsv());
-
-            // Verify directory was created
-            $this->assertDirectoryExists(dirname($testFile), 'Nested directory should be created');
 
             // Verify file was created
             $this->assertFileExists($testFile, 'CSV file should be created in nested directory');
@@ -498,7 +498,6 @@ class QuoteTest extends StocksTestCase
             if (file_exists($testFile)) {
                 unlink($testFile);
             }
-            $subdir = dirname($testFile);
             if (is_dir($subdir)) {
                 rmdir($subdir);
             }

@@ -74,9 +74,9 @@ class QuotesTest extends StocksTestCase
     public function testQuotes_humanReadable_returnsHumanReadableKeys()
     {
         $response = $this->client->stocks->quotes(
-            ['AAPL'],
-            false,
-            new Parameters(use_human_readable: true)
+            symbols: ['AAPL'],
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quotes::class, $response);
