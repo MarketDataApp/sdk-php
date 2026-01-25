@@ -172,6 +172,8 @@ trait UniversalParameters
         $parameters = $this->mergeParameters($parameters);
 
         // Validate that filename is not provided with parallel requests
+        // Defensive code: callers validate filename before calling this method
+        // @codeCoverageIgnoreStart
         if ($parameters->filename !== null) {
             throw new \InvalidArgumentException(
                 'filename parameter cannot be used with parallel requests. ' .
@@ -179,6 +181,7 @@ trait UniversalParameters
                 'Use filename only with single requests, or use saveToFile() method on individual response objects.'
             );
         }
+        // @codeCoverageIgnoreEnd
 
         for ($i = 0; $i < count($calls); $i++) {
             $calls[$i][0] = self::BASE_URL . $calls[$i][0];

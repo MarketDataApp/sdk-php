@@ -1955,4 +1955,69 @@ class CandlesConcurrentTest extends StocksTestCase
             parameters: new Parameters(format: Format::CSV, filename: '/tmp/test.csv')
         );
     }
+
+    /**
+     * Test CSV format when ALL requests fail with non-404 HTTP errors.
+     *
+     * This test covers line 661 in Stocks.php where the first exception
+     * is re-thrown when ALL parallel requests fail with exceptions.
+     *
+     * Key difference from testCandles_automaticConcurrent_csvFormatAllFailures:
+     * - That test uses 404 errors which are handled specially (response body is parsed for error message)
+     * - This test uses 401 errors which throw exceptions directly and go to $failedRequests
+     */
+    public function testCandles_automaticConcurrent_csvFormatAll401Failures(): void
+    {
+        // Use 401 Unauthorized which throws immediately (no retries, no special 404 handling)
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response401 = new Response(401, [], json_encode(['s' => 'error', 'errmsg' => 'Unauthorized']));
+
+        $this->setMockResponses([
+            new \GuzzleHttp\Exception\ClientException('Unauthorized', $request, $response401),
+            new \GuzzleHttp\Exception\ClientException('Unauthorized', $request, $response401),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\UnauthorizedException::class);
+
+        // Request 2-year range where both years fail with 401
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
+    /**
+     * Test CSV format when some responses are empty and some fail with exceptions.
+     *
+     * This test covers line 701 in Stocks.php where an exception is thrown
+     * when there's no valid CSV data, no JSON error messages, but there are failed requests.
+     */
+    public function testCandles_automaticConcurrent_csvFormatEmptyAndFailure(): void
+    {
+        // First request returns empty CSV (valid 200 response but no data)
+        $emptyCsvResponse = new Response(200, [], '');
+
+        // Second request fails with 401 (throws exception, stored in $failedRequests)
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/stocks/candles/5/AAPL/');
+        $response401 = new Response(401, [], json_encode(['s' => 'error', 'errmsg' => 'Unauthorized']));
+
+        $this->setMockResponses([
+            $emptyCsvResponse,
+            new \GuzzleHttp\Exception\ClientException('Unauthorized', $request, $response401),
+        ]);
+
+        // The exception from the failed request should be re-thrown
+        $this->expectException(\MarketDataApp\Exceptions\UnauthorizedException::class);
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
 }
