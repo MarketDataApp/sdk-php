@@ -72,6 +72,7 @@ class MutualFunds
     ): Candles {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
         $this->validateResolution($resolution);
         $this->validateDateRange($from, $to, $countback);
 

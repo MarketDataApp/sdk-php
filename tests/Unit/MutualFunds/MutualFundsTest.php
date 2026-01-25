@@ -237,4 +237,42 @@ class MutualFundsTest extends TestCase
             countback: -5
         );
     }
+
+    // ========================================================================
+    // SYMBOL TRIMMING
+    // Bug 019: MutualFunds::candles() should trim whitespace from symbols
+    // ========================================================================
+
+    /**
+     * Test candles() trims whitespace from symbol.
+     *
+     * Bug 019: Symbols with leading/trailing whitespace should be trimmed
+     * before being used in the URL path to avoid encoded spaces (%20).
+     */
+    public function testCandles_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'o' => [100.0],
+                'h' => [101.0],
+                'l' => [99.0],
+                'c' => [100.5],
+                't' => [1704153600],
+            ])),
+        ], $history);
+
+        $this->client->mutual_funds->candles(
+            symbol: ' VFIAX ',
+            from: '2024-01-01',
+            to: '2024-01-05',
+            resolution: 'D'
+        );
+
+        $path = $history[0]['request']->getUri()->getPath();
+        $this->assertEquals('v1/funds/candles/D/VFIAX/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
 }
