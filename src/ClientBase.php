@@ -184,8 +184,15 @@ abstract class ClientBase
                 $format = $calls[$index][1]['format'] ?? 'json';
                 $arguments = $calls[$index][1];
 
+                // Build URL for exception context
+                $method = $calls[$index][0];
+                $requestUrl = self::API_URL . $method;
+                if (!empty($arguments)) {
+                    $requestUrl .= '?' . http_build_query($arguments);
+                }
+
                 // Process and store result at original index to maintain order
-                $results[$index] = $this->processResponse($response, $format, $arguments);
+                $results[$index] = $this->processResponse($response, $format, $arguments, $requestUrl);
             },
             'rejected' => function ($reason, $index) use (&$exceptions) {
                 // Store exception at index for later throwing
@@ -263,7 +270,7 @@ abstract class ClientBase
 
                     // Validate status code
                     try {
-                        $this->validateResponseStatusCode($response, true);
+                        $this->validateResponseStatusCode($response, true, $fullUrl);
 
                         // Automatically update rate limits from response headers
                         $rateLimits = $this->extractRateLimitsFromResponse($response);
@@ -311,7 +318,8 @@ abstract class ClientBase
                                     $this->getErrorMessage($reason->getResponse()),
                                     $statusCode,
                                     $reason,
-                                    $reason->getResponse()
+                                    $reason->getResponse(),
+                                    $fullUrl
                                 );
                             }
 
@@ -327,14 +335,16 @@ abstract class ClientBase
                                 $this->getErrorMessage($reason->getResponse()),
                                 $statusCode,
                                 $reason,
-                                $reason->getResponse()
+                                $reason->getResponse(),
+                                $fullUrl
                             );
                         }
                         throw new RequestError(
                             $this->getErrorMessage($reason->getResponse()),
                             $statusCode,
                             $reason,
-                            $reason->getResponse()
+                            $reason->getResponse(),
+                            $fullUrl
                         );
                     }
 
@@ -360,7 +370,8 @@ abstract class ClientBase
                                 $this->getErrorMessage($reason->getResponse()),
                                 $statusCode,
                                 $reason,
-                                $reason->getResponse()
+                                $reason->getResponse(),
+                                $fullUrl
                             );
                         }
                         // Other 4xx errors are non-retryable
@@ -368,7 +379,8 @@ abstract class ClientBase
                             $this->getErrorMessage($reason->getResponse()),
                             $statusCode,
                             $reason,
-                            $reason->getResponse()
+                            $reason->getResponse(),
+                            $fullUrl
                         );
                     }
 
@@ -386,7 +398,8 @@ abstract class ClientBase
                             "Request failed: " . $reason->getMessage(),
                             $reason->getCode(),
                             $reason,
-                            $reason->hasResponse() ? $reason->getResponse() : null
+                            $reason->hasResponse() ? $reason->getResponse() : null,
+                            $fullUrl
                         );
                     }
 
@@ -440,7 +453,7 @@ abstract class ClientBase
                 $this->logRequest('GET', $response, $durationMs, $fullUrl, $logLevel);
 
                 // Validate response status code
-                $this->validateResponseStatusCode($response, true);
+                $this->validateResponseStatusCode($response, true, $fullUrl);
 
                 // Automatically update rate limits from response headers
                 $rateLimits = $this->extractRateLimitsFromResponse($response);
@@ -449,7 +462,7 @@ abstract class ClientBase
                 }
 
                 // Success - process response
-                return $this->processResponse($response, $format, $arguments);
+                return $this->processResponse($response, $format, $arguments, $fullUrl);
                 
             } catch (\GuzzleHttp\Exception\ClientException $e) {
                 $durationMs = (microtime(true) - $startTime) * 1000;
@@ -466,25 +479,27 @@ abstract class ClientBase
                     if ($rateLimits !== null) {
                         $this->rate_limits = $rateLimits;
                     }
-                    return $this->processResponse($response, $format, $arguments);
+                    return $this->processResponse($response, $format, $arguments, $fullUrl);
                 }
                 
                 // Non-retryable client errors (4xx except 404)
-                $this->validateResponseStatusCode($e->getResponse(), false);
+                $this->validateResponseStatusCode($e->getResponse(), false, $fullUrl);
                 // 401 UNAUTHORIZED gets a specific exception
                 if ($statusCode === 401) {
                     throw new UnauthorizedException(
                         $this->getErrorMessage($e->getResponse()),
                         $statusCode,
                         $e,
-                        $e->getResponse()
+                        $e->getResponse(),
+                        $fullUrl
                     );
                 }
                 throw new BadStatusCodeError(
                     $this->getErrorMessage($e->getResponse()),
                     $statusCode,
                     $e,
-                    $e->getResponse()
+                    $e->getResponse(),
+                    $fullUrl
                 );
                 
             } catch (\GuzzleHttp\Exception\ServerException $e) {
@@ -503,23 +518,25 @@ abstract class ClientBase
                             $this->getErrorMessage($e->getResponse()),
                             $statusCode,
                             $e,
-                            $e->getResponse()
+                            $e->getResponse(),
+                            $fullUrl
                         );
                     }
-                    
+
                     $attempt++;
                     if ($attempt < $maxAttempts) {
                         $this->waitForRetry($attempt);
                         continue; // Retry
                     }
                 }
-                
+
                 // Retries exhausted or non-retryable 5xx
                 throw new RequestError(
                     $this->getErrorMessage($e->getResponse()),
                     $statusCode,
                     $e,
-                    $e->getResponse()
+                    $e->getResponse(),
+                    $fullUrl
                 );
                 
             } catch (\GuzzleHttp\Exception\RequestException $e) {
@@ -529,13 +546,14 @@ abstract class ClientBase
                     $this->waitForRetry($attempt);
                     continue; // Retry
                 }
-                
+
                 // Retries exhausted
                 throw new RequestError(
                     "Request failed: " . $e->getMessage(),
                     $e->getCode(),
                     $e,
-                    $e->hasResponse() ? $e->getResponse() : null
+                    $e->hasResponse() ? $e->getResponse() : null,
+                    $fullUrl
                 );
                 
             } catch (RequestError $e) {
@@ -561,21 +579,22 @@ abstract class ClientBase
         
         // @codeCoverageIgnoreStart
         // Should never reach here, but just in case
-        throw new RequestError("Request failed after $maxAttempts attempts", 0);
+        throw new RequestError("Request failed after $maxAttempts attempts", 0, null, null, $fullUrl);
         // @codeCoverageIgnoreEnd
     }
 
     /**
      * Process the response and return the appropriate object.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
-     * @param string                                $format   The response format.
-     * @param array                                 $arguments The request arguments.
+     * @param \Psr\Http\Message\ResponseInterface $response   The HTTP response.
+     * @param string                              $format     The response format.
+     * @param array                               $arguments  The request arguments.
+     * @param string|null                         $requestUrl The URL that was requested.
      *
      * @return object The processed response.
      * @throws ApiException
      */
-    protected function processResponse($response, string $format, array $arguments): object
+    protected function processResponse($response, string $format, array $arguments, ?string $requestUrl = null): object
     {
         switch ($format) {
             case 'csv':
@@ -615,7 +634,7 @@ abstract class ClientBase
                 $object_response = json_decode($json_response);
 
                 if (isset($object_response->s) && $object_response->s === 'error') {
-                    throw new ApiException(message: $object_response->errmsg, response: $response);
+                    throw new ApiException(message: $object_response->errmsg, response: $response, requestUrl: $requestUrl);
                 }
 
                 return $object_response;
@@ -625,15 +644,16 @@ abstract class ClientBase
     /**
      * Validate response status code and raise appropriate exceptions.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response.
-     * @param bool                                 $raiseForStatus Whether to raise for non-2xx status codes.
+     * @param \Psr\Http\Message\ResponseInterface $response       The HTTP response.
+     * @param bool                                $raiseForStatus Whether to raise for non-2xx status codes.
+     * @param string|null                         $requestUrl     The URL that was requested.
      *
      * @return void
      * @throws RequestError
      * @throws BadStatusCodeError
      * @throws UnauthorizedException
      */
-    public function validateResponseStatusCode($response, bool $raiseForStatus = true): void
+    public function validateResponseStatusCode($response, bool $raiseForStatus = true, ?string $requestUrl = null): void
     {
         if (!$response) {
             return;
@@ -650,16 +670,16 @@ abstract class ClientBase
 
         // Check if status code is retryable (> 500)
         if (RetryConfig::isRetryableStatusCode($statusCode)) {
-            throw new RequestError($errorMessage, $statusCode, null, $response);
+            throw new RequestError($errorMessage, $statusCode, null, $response, $requestUrl);
         }
 
         // Non-retryable errors (4xx)
         if ($raiseForStatus) {
             // 401 UNAUTHORIZED gets a specific exception
             if ($statusCode === 401) {
-                throw new UnauthorizedException($errorMessage, $statusCode, null, $response);
+                throw new UnauthorizedException($errorMessage, $statusCode, null, $response, $requestUrl);
             }
-            throw new BadStatusCodeError($errorMessage, $statusCode, null, $response);
+            throw new BadStatusCodeError($errorMessage, $statusCode, null, $response, $requestUrl);
         }
     }
 
@@ -997,7 +1017,8 @@ abstract class ClientBase
                     $this->getErrorMessage($e->getResponse()),
                     $statusCode,
                     $e,
-                    $e->getResponse()
+                    $e->getResponse(),
+                    $fullUrl
                 );
             }
             // Re-throw other ClientExceptions
