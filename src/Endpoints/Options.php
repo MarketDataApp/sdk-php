@@ -341,17 +341,13 @@ class Options
         $this->validateNumericRange($min_bid, $max_bid, 'min_bid', 'max_bid');
         $this->validateNumericRange($min_ask, $max_ask, 'min_ask', 'max_ask');
 
-        return new OptionChains($this->execute("chain/$symbol/", [
+        $arguments = [
             'date'               => $date,
             'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
             'from'               => $from,
             'to'                 => $to,
             'month'              => $month,
             'year'               => $year,
-            'weekly'             => $weekly,
-            'monthly'            => $monthly,
-            'quarterly'          => $quarterly,
-            'nonstandard'        => $non_standard,
             'dte'                => $dte,
             'delta'              => $delta,
             'side'               => $side instanceof Side ? $side->value : $side,
@@ -366,7 +362,24 @@ class Options
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
             'minOpenInterest'    => $min_open_interest,
             'minVolume'          => $min_volume,
-        ], $parameters));
+        ];
+
+        // Boolean params: weekly, monthly, quarterly default to true on API, send 'false' when false
+        if (!$weekly) {
+            $arguments['weekly'] = 'false';
+        }
+        if (!$monthly) {
+            $arguments['monthly'] = 'false';
+        }
+        if (!$quarterly) {
+            $arguments['quarterly'] = 'false';
+        }
+        // nonstandard defaults to false on API, send 'true' when true
+        if ($non_standard) {
+            $arguments['nonstandard'] = 'true';
+        }
+
+        return new OptionChains($this->execute("chain/$symbol/", $arguments, $parameters));
     }
 
     /**

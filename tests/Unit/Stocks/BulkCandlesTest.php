@@ -166,4 +166,59 @@ class BulkCandlesTest extends StocksTestCase
             resolution: 'invalid'
         );
     }
+
+    /**
+     * Test bulkCandles endpoint with snapshot=true parameter.
+     */
+    public function testBulkCandles_withSnapshot_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'MSFT'],
+            'o' => [248.7, 452.595],
+            'h' => [251.56, 452.69],
+            'l' => [245.18, 438.68],
+            'c' => [247.65, 444.11],
+            'v' => [54933217, 37939952],
+            't' => [1768971600, 1768971600]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            snapshot: true,
+            resolution: 'D'
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertCount(2, $response->candles);
+    }
+
+    /**
+     * Test bulkCandles endpoint with adjust_splits=true parameter.
+     */
+    public function testBulkCandles_withAdjustSplits_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'o' => [248.7],
+            'h' => [251.56],
+            'l' => [245.18],
+            'c' => [247.65],
+            'v' => [54933217],
+            't' => [1768971600]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ['AAPL'],
+            resolution: 'D',
+            adjust_splits: true
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertCount(1, $response->candles);
+    }
 }

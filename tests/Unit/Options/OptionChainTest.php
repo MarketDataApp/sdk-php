@@ -735,4 +735,139 @@ class OptionChainTest extends OptionsTestCase
         $this->assertEquals(Carbon::parse(1663704000), $quotes->next_time);
         $this->assertEquals(Carbon::parse(1663705000), $quotes->prev_time);
     }
+
+    /**
+     * Test option_chain endpoint with weekly=false parameter.
+     */
+    public function testOptionChain_withWeeklyFalse_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [60],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [114.1],
+            'bidSize'         => [90],
+            'mid'             => [115.5],
+            'ask'             => [116.9],
+            'askSize'         => [90],
+            'last'            => [115],
+            'openInterest'    => [21957],
+            'volume'          => [0],
+            'inTheMoney'      => [true],
+            'intrinsicValue'  => [115.13],
+            'extrinsicValue'  => [0.37],
+            'underlyingPrice' => [175.13],
+            'iv'              => [1.629],
+            'delta'           => [1],
+            'gamma'           => [0],
+            'theta'           => [-0.009],
+            'vega'            => [0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            weekly: false
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
+
+    /**
+     * Test option_chain endpoint with monthly=false parameter.
+     */
+    public function testOptionChain_withMonthlyFalse_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [60],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [114.1],
+            'bidSize'         => [90],
+            'mid'             => [115.5],
+            'ask'             => [116.9],
+            'askSize'         => [90],
+            'last'            => [115],
+            'openInterest'    => [21957],
+            'volume'          => [0],
+            'inTheMoney'      => [true],
+            'intrinsicValue'  => [115.13],
+            'extrinsicValue'  => [0.37],
+            'underlyingPrice' => [175.13],
+            'iv'              => [1.629],
+            'delta'           => [1],
+            'gamma'           => [0],
+            'theta'           => [-0.009],
+            'vega'            => [0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            monthly: false
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
+
+    /**
+     * Test option_chain endpoint with quarterly=false parameter.
+     */
+    public function testOptionChain_withQuarterlyFalse_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1686945600],
+            'side'            => ['call'],
+            'strike'          => [60],
+            'firstTraded'     => [1617197400],
+            'dte'             => [26],
+            'updated'         => [1684702875],
+            'bid'             => [114.1],
+            'bidSize'         => [90],
+            'mid'             => [115.5],
+            'ask'             => [116.9],
+            'askSize'         => [90],
+            'last'            => [115],
+            'openInterest'    => [21957],
+            'volume'          => [0],
+            'inTheMoney'      => [true],
+            'intrinsicValue'  => [115.13],
+            'extrinsicValue'  => [0.37],
+            'underlyingPrice' => [175.13],
+            'iv'              => [1.629],
+            'delta'           => [1],
+            'gamma'           => [0],
+            'theta'           => [-0.009],
+            'vega'            => [0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            quarterly: false
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
 }

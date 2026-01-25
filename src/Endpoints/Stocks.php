@@ -314,14 +314,18 @@ class Stocks
 
         $symbols = implode(',', array_map('trim', $symbols));
 
-        return new BulkCandles($this->execute("bulkcandles/{$resolution}/",
-            [
-                'symbols'      => $symbols,
-                'snapshot'     => $snapshot,
-                'date'         => $date,
-                'adjustsplits' => $adjust_splits
-            ]
-            , $parameters));
+        $arguments = [
+            'symbols' => $symbols,
+            'date'    => $date,
+        ];
+        if ($snapshot) {
+            $arguments['snapshot'] = 'true';
+        }
+        if ($adjust_splits) {
+            $arguments['adjustsplits'] = 'true';
+        }
+
+        return new BulkCandles($this->execute("bulkcandles/{$resolution}/", $arguments, $parameters));
     }
 
     /**
@@ -411,17 +415,24 @@ class Stocks
         }
 
         // Standard single request
-        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", [
-                'from'            => $from,
-                'to'              => $to,
-                'countback'       => $countback,
-                'exchange'        => $exchange,
-                'extended'        => $extended,
-                'country'         => $country,
-                'adjustsplits'    => $adjust_splits,
-                'adjustdividends' => $adjust_dividends
-            ]
-            , $parameters));
+        $arguments = [
+            'from'      => $from,
+            'to'        => $to,
+            'countback' => $countback,
+            'exchange'  => $exchange,
+            'country'   => $country,
+        ];
+        if ($extended) {
+            $arguments['extended'] = 'true';
+        }
+        if ($adjust_splits) {
+            $arguments['adjustsplits'] = 'true';
+        }
+        if ($adjust_dividends) {
+            $arguments['adjustdividends'] = 'true';
+        }
+
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", $arguments, $parameters));
     }
 
     /**
@@ -476,17 +487,25 @@ class Stocks
         // Build the API calls for parallel execution
         $calls = [];
         foreach ($chunks as $chunk) {
+            $arguments = [
+                'from'     => $chunk[0],
+                'to'       => $chunk[1],
+                'exchange' => $exchange,
+                'country'  => $country,
+            ];
+            if ($extended) {
+                $arguments['extended'] = 'true';
+            }
+            if ($adjust_splits) {
+                $arguments['adjustsplits'] = 'true';
+            }
+            if ($adjust_dividends) {
+                $arguments['adjustdividends'] = 'true';
+            }
+
             $calls[] = [
                 "candles/{$resolution}/{$symbol}/",
-                [
-                    'from'            => $chunk[0],
-                    'to'              => $chunk[1],
-                    'exchange'        => $exchange,
-                    'extended'        => $extended,
-                    'country'         => $country,
-                    'adjustsplits'    => $adjust_splits,
-                    'adjustdividends' => $adjust_dividends,
-                ],
+                $arguments,
             ];
         }
 
@@ -515,8 +534,12 @@ class Stocks
         // Validate symbol
         $this->validateNonEmptyString($symbol, 'symbol');
 
-        return new Quote($this->execute("quotes/{$symbol}/",
-            ['52week' => $fifty_two_week], $parameters));
+        $arguments = [];
+        if ($fifty_two_week) {
+            $arguments['52week'] = 'true';
+        }
+
+        return new Quote($this->execute("quotes/{$symbol}/", $arguments, $parameters));
     }
 
     /**
@@ -538,10 +561,12 @@ class Stocks
         // Build comma-separated symbols string
         $symbolsString = implode(',', array_map('trim', $symbols));
 
-        return new Quotes($this->execute("quotes/", [
-            'symbols' => $symbolsString,
-            '52week'  => $fifty_two_week,
-        ], $parameters));
+        $arguments = ['symbols' => $symbolsString];
+        if ($fifty_two_week) {
+            $arguments['52week'] = 'true';
+        }
+
+        return new Quotes($this->execute("quotes/", $arguments, $parameters));
     }
 
     /**
@@ -573,7 +598,11 @@ class Stocks
             $this->validateSymbols($symbols);
         }
 
-        $arguments = ['extended' => $extended];
+        // extended defaults to true on the API, so only send when false
+        $arguments = [];
+        if (!$extended) {
+            $arguments['extended'] = 'false';
+        }
 
         if (is_string($symbols)) {
             // Single symbol: use path format prices/{symbol}/
