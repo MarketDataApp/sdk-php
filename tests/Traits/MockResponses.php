@@ -5,6 +5,7 @@ namespace MarketDataApp\Tests\Traits;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 
 /**
@@ -27,6 +28,27 @@ trait MockResponses
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
+
+        $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
+    }
+
+    /**
+     * Set mock responses for the HTTP client with request history tracking.
+     *
+     * This method creates a new GuzzleHttp client with a mock handler
+     * and history middleware to capture all requests made.
+     *
+     * @param array $responses An array of mock responses to be returned by the client.
+     * @param array &$history  By-reference array that will be populated with request/response history.
+     *                         Each entry contains 'request', 'response', 'error', and 'options' keys.
+     *
+     * @return void
+     */
+    protected function setMockResponsesWithHistory(array $responses, array &$history): void
+    {
+        $mock = new MockHandler($responses);
+        $handlerStack = HandlerStack::create($mock);
+        $handlerStack->push(Middleware::history($history));
 
         $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
     }
