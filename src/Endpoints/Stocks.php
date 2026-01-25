@@ -900,21 +900,20 @@ class Stocks
     }
 
     /**
-     * Retrieve news articles for a given stock symbol within a specified date range.
+     * Retrieve news articles for a given stock symbol.
      *
      * CAUTION: This endpoint is in beta.
      *
      * @param string          $symbol     The ticker symbol of the stock.
      *
-     * @param string|null     $from       The earliest news to include in the output. If you use countback, from is not
-     *                                    required.
+     * @param string|null     $from       The earliest news to include in the output. Optional - if omitted without
+     *                                    countback, returns recent news.
      *
-     * @param string|null     $to         The latest news to include in the output.
+     * @param string|null     $to         The latest news to include in the output. Optional.
      *
-     * @param int|null        $countback  Countback will fetch a specific number of news before to. If you use from,
-     *                                    countback is not required.
+     * @param int|null        $countback  Countback will fetch a specific number of news before to. Optional.
      *
-     * @param string|null     $date       Retrieve news for a specific day.
+     * @param string|null     $date       Retrieve news for a specific day. Optional.
      *
      * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
@@ -933,11 +932,7 @@ class Stocks
         $this->validateNonEmptyString($symbol, 'symbol');
         $symbol = trim($symbol);
 
-        if (is_null($from) && (is_null($countback) || is_null($to))) {
-            throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
-        }
-
-        // Validate date range and countback
+        // Validate date range and countback if provided
         $this->validateDateRange($from, $to, $countback);
 
         return new News($this->execute("news/{$symbol}/",

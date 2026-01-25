@@ -96,14 +96,33 @@ class NewsTest extends StocksTestCase
     }
 
     /**
-     * Test the news endpoint for an exception when neither 'from' nor 'countback' is provided.
+     * Test the news endpoint works without date parameters.
+     *
+     * The API returns recent news when no date parameters are provided.
      *
      * @return void
      */
-    public function testNews_noFromOrCountback_throwsException()
+    public function testNews_withoutDateParams_success()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->client->stocks->news('AAPL');
+        // Mock response: FROM real API output (captured on 2026-01-25)
+        $mocked_response = [
+            's'               => 'ok',
+            'symbol'          => ['AAPL'],
+            'headline'        => ['Dow Jones Futures Due With Trump Tariffs, Government Shutdown, Big Earnings In Focus'],
+            'content'         => ['President Donald Trump threatened a 100% tariff on Canada. Government shutdown risks soared.'],
+            'source'          => ['https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-trump-tariffs-tesla-microsoft-apple-earnings/'],
+            'publicationDate' => [1737856800]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // Call without any date parameters - should work fine
+        $news = $this->client->stocks->news(symbol: 'AAPL');
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals('ok', $news->status);
+        // Note: News class extracts first element from arrays
+        $this->assertEquals('AAPL', $news->symbol);
+        $this->assertEquals('Dow Jones Futures Due With Trump Tariffs, Government Shutdown, Big Earnings In Focus', $news->headline);
     }
 
     /**
