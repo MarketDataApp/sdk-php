@@ -855,19 +855,18 @@ class Stocks
      *
      * @param string          $symbol     The company's ticker symbol.
      *
-     * @param string|null     $from       The earliest earnings report to include in the output. If you use countback,
-     *                                    from is not required.
+     * @param string|null     $from       The earliest earnings report to include in the output. Optional - if omitted
+     *                                    without countback, returns recent/upcoming earnings.
      *
-     * @param string|null     $to         The latest earnings report to include in the output.
+     * @param string|null     $to         The latest earnings report to include in the output. Optional.
      *
-     * @param int|null        $countback  Countback will fetch a specific number of earnings reports before to. If you
-     *                                    use from, countback is not required.
+     * @param int|null        $countback  Countback will fetch a specific number of earnings reports before to. Optional.
      *
-     * @param string|null     $date       Retrieve a specific earnings report by date.
+     * @param string|null     $date       Retrieve a specific earnings report by date. Optional.
      *
      * @param string|null     $datekey    Retrieve a specific earnings report by date and quarter. Example: 2023-Q4.
      *                                    This allows you to retrieve a 4th quarter value without knowing the company's
-     *                                    specific fiscal year.
+     *                                    specific fiscal year. Optional.
      *
      * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
@@ -888,11 +887,7 @@ class Stocks
         $this->validateNonEmptyString($symbol, 'symbol');
         $symbol = trim($symbol);
 
-        if (is_null($from) && (is_null($countback) || is_null($to))) {
-            throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
-        }
-
-        // Validate date range and countback
+        // Validate date range and countback if provided
         $this->validateDateRange($from, $to, $countback);
 
         return new Earnings($this->execute("earnings/{$symbol}/",

@@ -121,14 +121,40 @@ class EarningsTest extends StocksTestCase
     }
 
     /**
-     * Test the earnings endpoint for an exception when neither 'from' nor 'countback' is provided.
+     * Test the earnings endpoint works without date parameters.
+     *
+     * The API returns recent/upcoming earnings when no date parameters are provided.
      *
      * @return void
      */
-    public function testEarnings_noFromOrCountback_throwsException()
+    public function testEarnings_withoutDateParams_success()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->client->stocks->earnings('AAPL');
+        // Mock response: FROM real API output (captured on 2026-01-25)
+        $mocked_response = [
+            's'              => 'ok',
+            'symbol'         => ['AAPL', 'AAPL'],
+            'fiscalYear'     => [2026, 2026],
+            'fiscalQuarter'  => [1, 2],
+            'date'           => [1767157200, 1774929600],
+            'reportDate'     => [1769662800, 1777435200],
+            'reportTime'     => ['after close', 'before open'],
+            'currency'       => ['USD', null],
+            'reportedEPS'    => [null, null],
+            'estimatedEPS'   => [2.67, null],
+            'surpriseEPS'    => [null, null],
+            'surpriseEPSpct' => [null, null],
+            'updated'        => [1769317200, 1769317200]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // Call without any date parameters - should work fine
+        $response = $this->client->stocks->earnings(symbol: 'AAPL');
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->earnings);
+        $this->assertEquals('AAPL', $response->earnings[0]->symbol);
+        $this->assertEquals(2026, $response->earnings[0]->fiscal_year);
     }
 
     /**
