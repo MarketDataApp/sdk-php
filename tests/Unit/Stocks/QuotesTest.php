@@ -109,8 +109,8 @@ class QuotesTest extends StocksTestCase
         ]);
         $quotes = $this->client->stocks->quotes(
             ['AAPL', 'MSFT'],
-            false,
-            new Parameters(use_human_readable: true)
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quotes::class, $quotes);
@@ -145,8 +145,8 @@ class QuotesTest extends StocksTestCase
         ]);
         $quotes = $this->client->stocks->quotes(
             ['AAPL'],
-            false,
-            new Parameters(mode: Mode::LIVE)
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::LIVE)
         );
 
         $this->assertInstanceOf(Quotes::class, $quotes);
@@ -203,5 +203,92 @@ class QuotesTest extends StocksTestCase
         $this->assertCount(1, $quotes->quotes);
         $this->assertEquals(260.10, $quotes->quotes[0]->fifty_two_week_high);
         $this->assertEquals(164.08, $quotes->quotes[0]->fifty_two_week_low);
+    }
+
+    /**
+     * Test the quotes endpoint with extended=true parameter (default).
+     *
+     * Bug 020: The extended parameter controls extended hours data inclusion.
+     * When true (default), returns most recent quote regardless of market hours.
+     *
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \MarketDataApp\Exceptions\ApiException
+     */
+    public function testQuotes_extendedTrue_success()
+    {
+        // Mock response: FROM real API output format (captured on 2026-01-25)
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quotes = $this->client->stocks->quotes(['AAPL'], extended: true);
+
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertCount(1, $quotes->quotes);
+        $this->assertEquals($mocked_response['symbol'][0], $quotes->quotes[0]->symbol);
+    }
+
+    /**
+     * Test the quotes endpoint with extended=false parameter.
+     *
+     * Bug 020: When extended=false, only returns quotes from primary trading session.
+     *
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \MarketDataApp\Exceptions\ApiException
+     */
+    public function testQuotes_extendedFalse_success()
+    {
+        // Mock response: FROM real API output format (captured on 2026-01-25)
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quotes = $this->client->stocks->quotes(['AAPL'], extended: false);
+
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertCount(1, $quotes->quotes);
+        $this->assertEquals($mocked_response['symbol'][0], $quotes->quotes[0]->symbol);
+    }
+
+    /**
+     * Test the quotes endpoint with both fifty_two_week and extended parameters.
+     *
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \MarketDataApp\Exceptions\ApiException
+     */
+    public function testQuotes_with52WeekAndExtended_success()
+    {
+        // Mock response: FROM real API output format (captured on 2026-01-25)
+        $response_with_52week = [
+            's'          => 'ok',
+            'symbol'     => ['AAPL', 'META'],
+            'ask'        => [248.8, 615.0],
+            'askSize'    => [200, 100],
+            'bid'        => [248.7, 614.9],
+            'bidSize'    => [600, 200],
+            'mid'        => [248.75, 614.95],
+            'last'       => [247.65, 614.0],
+            'change'     => [0.95, 5.0],
+            'changepct'  => [0.0039, 0.0082],
+            'volume'     => [54933217, 15000000],
+            'updated'    => [1769043595, 1769043596],
+            '52weekHigh' => [260.10, 650.0],
+            '52weekLow'  => [164.08, 400.0]
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response_with_52week)),
+        ]);
+
+        $quotes = $this->client->stocks->quotes(['AAPL', 'META'], fifty_two_week: true, extended: false);
+
+        $this->assertInstanceOf(Quotes::class, $quotes);
+        $this->assertCount(2, $quotes->quotes);
+        $this->assertEquals('AAPL', $quotes->quotes[0]->symbol);
+        $this->assertEquals(260.10, $quotes->quotes[0]->fifty_two_week_high);
+        $this->assertEquals('META', $quotes->quotes[1]->symbol);
+        $this->assertEquals(650.0, $quotes->quotes[1]->fifty_two_week_high);
     }
 }

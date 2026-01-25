@@ -125,8 +125,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(use_human_readable: true)
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -173,8 +173,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            true,
-            new Parameters(use_human_readable: true)
+            fifty_two_week: true,
+            parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -208,8 +208,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(use_human_readable: false)
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: false)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -231,8 +231,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(use_human_readable: null)
+            fifty_two_week: false,
+            parameters: new Parameters(use_human_readable: null)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -254,8 +254,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(mode: Mode::LIVE)
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::LIVE)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -277,8 +277,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(mode: Mode::CACHED)
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::CACHED)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -300,8 +300,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(mode: Mode::DELAYED)
+            fifty_two_week: false,
+            parameters: new Parameters(mode: Mode::DELAYED)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -323,8 +323,8 @@ class QuoteTest extends StocksTestCase
         ]);
         $quote = $this->client->stocks->quote(
             'AAPL',
-            false,
-            new Parameters(mode: null)
+            fifty_two_week: false,
+            parameters: new Parameters(mode: null)
         );
 
         $this->assertInstanceOf(Quote::class, $quote);
@@ -341,5 +341,71 @@ class QuoteTest extends StocksTestCase
         $this->expectExceptionMessage('must be a non-empty string');
 
         $this->client->stocks->quote('');
+    }
+
+    /**
+     * Test the quote endpoint with extended=true parameter (default).
+     *
+     * Bug 020: The extended parameter controls extended hours data inclusion.
+     * When true (default), returns most recent quote regardless of market hours.
+     *
+     * @return void
+     */
+    public function testQuote_extendedTrue_success()
+    {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote('AAPL', extended: true);
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with extended=false parameter.
+     *
+     * Bug 020: When extended=false, only returns quotes from primary trading session.
+     *
+     * @return void
+     */
+    public function testQuote_extendedFalse_success()
+    {
+        // Mock response: NOT from real API output (uses class property with synthetic/test data)
+        $mocked_response = $this->aapl_mocked_response;
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote('AAPL', extended: false);
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+    }
+
+    /**
+     * Test the quote endpoint with both fifty_two_week and extended parameters.
+     *
+     * @return void
+     */
+    public function testQuote_with52weekAndExtended_success()
+    {
+        // Mock response: FROM real API output format (captured on 2026-01-25)
+        $mocked_response = $this->aapl_mocked_response;
+        $mocked_response['52weekHigh'] = [288.62];
+        $mocked_response['52weekLow'] = [169.2101];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote('AAPL', fifty_two_week: true, extended: false);
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals($mocked_response['s'], $quote->status);
+        $this->assertEquals($mocked_response['symbol'][0], $quote->symbol);
+        $this->assertEquals($mocked_response['52weekHigh'][0], $quote->fifty_two_week_high);
+        $this->assertEquals($mocked_response['52weekLow'][0], $quote->fifty_two_week_low);
     }
 }

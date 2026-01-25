@@ -720,13 +720,27 @@ class Stocks
      * @param bool            $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote
      *                                        output. By default this parameter is false if omitted.
      *
+     * @param bool            $extended       Control the inclusion of extended hours data in the quote output.
+     *                                        Defaults to true if omitted.
+     *                                        - When set to true, the most recent quote is always returned, without
+     *                                          regard to whether the market is open for primary trading or extended
+     *                                          hours trading.
+     *                                        - When set to false, only quotes from the primary trading session are
+     *                                          returned. When the market is closed or in extended hours, a historical
+     *                                          quote from the last closing bell of the primary trading session is
+     *                                          returned instead of an extended hours quote.
+     *
      * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
      * @return Quote
      * @throws GuzzleException|ApiException
      */
-    public function quote(string $symbol, bool $fifty_two_week = false, ?Parameters $parameters = null): Quote
-    {
+    public function quote(
+        string $symbol,
+        bool $fifty_two_week = false,
+        bool $extended = true,
+        ?Parameters $parameters = null
+    ): Quote {
         // Validate symbol
         $this->validateNonEmptyString($symbol, 'symbol');
         $symbol = trim($symbol);
@@ -734,6 +748,10 @@ class Stocks
         $arguments = [];
         if ($fifty_two_week) {
             $arguments['52week'] = 'true';
+        }
+        // extended defaults to true on the API, so only send when false
+        if (!$extended) {
+            $arguments['extended'] = 'false';
         }
 
         return new Quote($this->execute("quotes/{$symbol}/", $arguments, $parameters));
@@ -745,13 +763,26 @@ class Stocks
      * @param array           $symbols        The ticker symbols to return in the response.
      * @param bool            $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote
      *                                        output.
+     * @param bool            $extended       Control the inclusion of extended hours data in the quote output.
+     *                                        Defaults to true if omitted.
+     *                                        - When set to true, the most recent quote is always returned, without
+     *                                          regard to whether the market is open for primary trading or extended
+     *                                          hours trading.
+     *                                        - When set to false, only quotes from the primary trading session are
+     *                                          returned. When the market is closed or in extended hours, a historical
+     *                                          quote from the last closing bell of the primary trading session is
+     *                                          returned instead of an extended hours quote.
      * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
      * @return Quotes
      * @throws GuzzleException|ApiException
      */
-    public function quotes(array $symbols, bool $fifty_two_week = false, ?Parameters $parameters = null): Quotes
-    {
+    public function quotes(
+        array $symbols,
+        bool $fifty_two_week = false,
+        bool $extended = true,
+        ?Parameters $parameters = null
+    ): Quotes {
         // Validate symbols array
         $this->validateSymbols($symbols);
 
@@ -761,6 +792,10 @@ class Stocks
         $arguments = ['symbols' => $symbolsString];
         if ($fifty_two_week) {
             $arguments['52week'] = 'true';
+        }
+        // extended defaults to true on the API, so only send when false
+        if (!$extended) {
+            $arguments['extended'] = 'false';
         }
 
         return new Quotes($this->execute("quotes/", $arguments, $parameters));

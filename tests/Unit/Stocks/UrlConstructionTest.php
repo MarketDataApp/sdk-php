@@ -306,6 +306,67 @@ class UrlConstructionTest extends TestCase
         $this->assertEquals('true', $query['52week']);
     }
 
+    /**
+     * Test quote URL with extended=true does not add query parameter (API default).
+     *
+     * Bug 020: API default is extended=true, so SDK should not send it when true.
+     */
+    public function testQuote_extendedTrue_doesNotAddParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'ask' => [150.1],
+                'askSize' => [100],
+                'bid' => [150.0],
+                'bidSize' => [200],
+                'mid' => [150.05],
+                'last' => [150.0],
+                'change' => [1.0],
+                'changepct' => [0.01],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->quote('AAPL', extended: true);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('extended', $query);
+    }
+
+    /**
+     * Test quote URL with extended=false adds query parameter.
+     *
+     * Bug 020: API expects ?extended=false to disable extended hours data.
+     */
+    public function testQuote_extendedFalse_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'ask' => [150.1],
+                'askSize' => [100],
+                'bid' => [150.0],
+                'bidSize' => [200],
+                'mid' => [150.05],
+                'last' => [150.0],
+                'change' => [1.0],
+                'changepct' => [0.01],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->quote('AAPL', extended: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('extended', $query);
+        $this->assertEquals('false', $query['extended']);
+    }
+
     // ========================================================================
     // QUOTES ENDPOINT (multiple symbols)
     // API: GET /v1/stocks/quotes/?symbols={symbol1},{symbol2},...
@@ -373,6 +434,100 @@ class UrlConstructionTest extends TestCase
         $this->assertArrayHasKey('symbols', $query);
         $this->assertArrayHasKey('52week', $query);
         $this->assertEquals('true', $query['52week']);
+    }
+
+    /**
+     * Test quotes URL with extended=true does not add query parameter (API default).
+     *
+     * Bug 020: API default is extended=true, so SDK should not send it when true.
+     */
+    public function testQuotes_extendedTrue_doesNotAddParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'META'],
+                'ask' => [150.1, 300.1],
+                'askSize' => [100, 100],
+                'bid' => [150.0, 300.0],
+                'bidSize' => [200, 200],
+                'mid' => [150.05, 300.05],
+                'last' => [150.0, 300.0],
+                'change' => [1.0, 2.0],
+                'changepct' => [0.01, 0.01],
+                'volume' => [1000000, 2000000],
+                'updated' => [1234567890, 1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->quotes(['AAPL', 'META'], extended: true);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('extended', $query);
+    }
+
+    /**
+     * Test quotes URL with extended=false adds query parameter.
+     *
+     * Bug 020: API expects ?extended=false to disable extended hours data.
+     */
+    public function testQuotes_extendedFalse_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL', 'META'],
+                'ask' => [150.1, 300.1],
+                'askSize' => [100, 100],
+                'bid' => [150.0, 300.0],
+                'bidSize' => [200, 200],
+                'mid' => [150.05, 300.05],
+                'last' => [150.0, 300.0],
+                'change' => [1.0, 2.0],
+                'changepct' => [0.01, 0.01],
+                'volume' => [1000000, 2000000],
+                'updated' => [1234567890, 1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->quotes(['AAPL', 'META'], extended: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('extended', $query);
+        $this->assertEquals('false', $query['extended']);
+    }
+
+    /**
+     * Test quotes URL with both 52week and extended parameters.
+     */
+    public function testQuotes_with52weekAndExtended_addsBothParameters(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'ask' => [150.1],
+                'askSize' => [100],
+                'bid' => [150.0],
+                'bidSize' => [200],
+                'mid' => [150.05],
+                'last' => [150.0],
+                'change' => [1.0],
+                'changepct' => [0.01],
+                'volume' => [1000000],
+                'updated' => [1234567890],
+                '52weekHigh' => [180.0],
+                '52weekLow' => [120.0]
+            ]))
+        ]);
+
+        $this->client->stocks->quotes(['AAPL'], fifty_two_week: true, extended: false);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('52week', $query);
+        $this->assertEquals('true', $query['52week']);
+        $this->assertArrayHasKey('extended', $query);
+        $this->assertEquals('false', $query['extended']);
     }
 
     // ========================================================================
