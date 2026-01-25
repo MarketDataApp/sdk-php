@@ -2,6 +2,7 @@
 
 namespace MarketDataApp\Endpoints\Requests;
 
+use Carbon\CarbonInterval;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Mode;
@@ -11,6 +12,11 @@ use MarketDataApp\Enums\Mode;
  */
 class Parameters implements \Stringable
 {
+    /**
+     * Maximum acceptable age for cached data in seconds.
+     * Converted from int, DateInterval, or CarbonInterval input.
+     */
+    public ?int $maxage = null;
 
     /**
      * Parameters constructor.
@@ -18,6 +24,16 @@ class Parameters implements \Stringable
      * @param Format $format The format of the response. Defaults to JSON.
      * @param bool|null $use_human_readable Whether to use human-readable format for values. Defaults to null.
      * @param Mode|null $mode The data feed mode to use. Defaults to null.
+     * @param int|DateInterval|CarbonInterval|null $maxage Maximum acceptable age for cached data when using
+     *                        mode=CACHED. Accepts seconds as int, DateInterval, or CarbonInterval.
+     *                        Sets a threshold for data freshness - if no cached data exists within the
+     *                        specified age window, the API returns a 204 empty response with no credit charge.
+     *                        Examples: maxage: 300 (5 min), maxage: new DateInterval('PT5M'),
+     *                        maxage: CarbonInterval::minutes(5). If most recent cache is 180 seconds old
+     *                        and maxage=300, returns 203 with data (1 credit). If maxage=60, returns 204
+     *                        empty response (0 credits). Useful for implementing fallback logic: first try
+     *                        cached with maxage threshold, then request live data on 204.
+     *                        Can only be used when mode=CACHED. Defaults to null.
      * @param DateFormat|null $date_format The date format for CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
      * @param array|null $columns The columns to include in CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
      * @param bool|null $add_headers Whether to add headers to CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.
@@ -28,17 +44,38 @@ class Parameters implements \Stringable
      * @throws \InvalidArgumentException If filename is set but format is not CSV or HTML.
      * @throws \InvalidArgumentException If columns contains non-string elements.
      * @throws \InvalidArgumentException If filename has invalid extension, directory doesn't exist, or file already exists.
+     * @throws \InvalidArgumentException If maxage is set but mode is not CACHED.
      */
     public function __construct(
-        // Open price.
         public Format $format = Format::JSON,
         public ?bool $use_human_readable = null,
         public ?Mode $mode = null,
+        int|\DateInterval|CarbonInterval|null $maxage = null,
         public ?DateFormat $date_format = null,
         public ?array $columns = null,
         public ?bool $add_headers = null,
         public ?string $filename = null,
     ) {
+        // Convert maxage to seconds if it's an interval
+        if ($maxage !== null) {
+            if ($maxage instanceof CarbonInterval) {
+                $this->maxage = (int) $maxage->totalSeconds;
+            } elseif ($maxage instanceof \DateInterval) {
+                // Convert DateInterval to seconds
+                $this->maxage = ($maxage->days * 86400) + ($maxage->h * 3600) + ($maxage->i * 60) + $maxage->s;
+            } else {
+                $this->maxage = $maxage;
+            }
+        }
+
+        // Validate that maxage can only be used with CACHED mode
+        if ($this->maxage !== null && $mode !== Mode::CACHED) {
+            throw new \InvalidArgumentException(
+                'maxage parameter can only be used with CACHED mode. ' .
+                ($mode === null ? 'No mode specified.' : 'Current mode: ' . $mode->value)
+            );
+        }
+
         // Validate that date_format can only be used with CSV or HTML format
         if ($date_format !== null && $format !== Format::CSV && $format !== Format::HTML) {
             throw new \InvalidArgumentException(
@@ -123,6 +160,10 @@ class Parameters implements \Stringable
 
         if ($this->mode !== null) {
             $parts[] = 'mode=' . $this->mode->value;
+        }
+
+        if ($this->maxage !== null) {
+            $parts[] = 'maxage=' . $this->maxage;
         }
 
         if ($this->date_format !== null) {

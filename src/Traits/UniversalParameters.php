@@ -3,6 +3,7 @@
 namespace MarketDataApp\Traits;
 
 use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Mode;
 use MarketDataApp\Endpoints\Requests\Parameters;
 
 /**
@@ -48,6 +49,10 @@ trait UniversalParameters
 
             if ($methodParams->mode !== null) {
                 $merged->mode = $methodParams->mode;
+            }
+
+            if ($methodParams->maxage !== null) {
+                $merged->maxage = $methodParams->maxage;
             }
 
             // CSV/HTML-only parameters: override if method param is not null
@@ -100,6 +105,14 @@ trait UniversalParameters
             }
         }
 
+        // Validate maxage can only be used with CACHED mode after merging
+        if ($merged->maxage !== null && $merged->mode !== Mode::CACHED) {
+            throw new \InvalidArgumentException(
+                'maxage parameter can only be used with CACHED mode. ' .
+                ($merged->mode === null ? 'No mode specified.' : 'Current mode: ' . $merged->mode->value)
+            );
+        }
+
         return $merged;
     }
 
@@ -127,6 +140,10 @@ trait UniversalParameters
 
         if ($parameters->mode !== null) {
             $universalParams['mode'] = $parameters->mode->value;
+        }
+
+        if ($parameters->maxage !== null) {
+            $universalParams['maxage'] = $parameters->maxage;
         }
 
         // dateformat can only be used with CSV or HTML format
@@ -193,6 +210,10 @@ trait UniversalParameters
 
             if ($parameters->mode !== null) {
                 $calls[$i][1]['mode'] = $parameters->mode->value;
+            }
+
+            if ($parameters->maxage !== null) {
+                $calls[$i][1]['maxage'] = $parameters->maxage;
             }
 
             // dateformat can only be used with CSV or HTML format
