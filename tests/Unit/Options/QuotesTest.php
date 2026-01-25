@@ -1342,4 +1342,30 @@ class QuotesTest extends OptionsTestCase
         $this->assertTrue($response->isCsv());
         $this->assertEquals($mocked_response, $response->getCsv());
     }
+
+    /**
+     * Test that CSV format throws exception when ALL symbol requests fail.
+     *
+     * This test covers line 591 in Options.php where an exception is thrown
+     * when all requests fail in quotesMultipleCsv().
+     */
+    public function testQuotes_multipleSymbols_csvFormat_allFailures_throwsException(): void
+    {
+        $request1 = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/options/quotes/AAPL250117C00150000/');
+        $request2 = new \GuzzleHttp\Psr7\Request('GET', 'https://api.marketdata.app/v1/options/quotes/AAPL250117P00150000/');
+        $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
+
+        $this->setMockResponses([
+            new \GuzzleHttp\Exception\RequestException('Not Found', $request1, $response404),
+            new \GuzzleHttp\Exception\RequestException('Not Found', $request2, $response404),
+        ]);
+
+        $this->expectException(\Throwable::class);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
 }

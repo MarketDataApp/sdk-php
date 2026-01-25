@@ -1813,4 +1813,146 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertStringNotContainsString(',l,', $csv);
         $this->assertStringNotContainsString(',v', $csv);
     }
+
+    /**
+     * Test CSV format with extended=true parameter.
+     *
+     * This test covers line 621 in Stocks.php where extended=true is set
+     * in the arguments for CSV split requests.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithExtended(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            extended: true,
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        $this->assertStringContainsString('1641220200', $csv);
+        $this->assertStringContainsString('1672756200', $csv);
+    }
+
+    /**
+     * Test CSV format with adjust_splits=false parameter.
+     *
+     * This test covers line 624 in Stocks.php where adjustsplits is set
+     * in the arguments for CSV split requests.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithAdjustSplits(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            adjust_splits: false,
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        $this->assertStringContainsString('1641220200', $csv);
+        $this->assertStringContainsString('1672756200', $csv);
+    }
+
+    /**
+     * Test CSV format with adjust_dividends=false parameter.
+     *
+     * This test covers line 627 in Stocks.php where adjustdividends is set
+     * in the arguments for CSV split requests.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithAdjustDividends(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            adjust_dividends: false,
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+        $this->assertStringContainsString('1641220200', $csv);
+        $this->assertStringContainsString('1672756200', $csv);
+    }
+
+    /**
+     * Test CSV format when all responses are empty (no data).
+     *
+     * This test covers lines 703-705 in Stocks.php where an ApiException is thrown
+     * when there are no valid responses and no error messages.
+     */
+    public function testCandles_automaticConcurrent_csvFormatNoData(): void
+    {
+        // Mock responses that are empty (not JSON errors, just empty)
+        $this->setMockResponses([
+            new Response(200, [], ''),
+            new Response(200, [], ''),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available for the requested date range');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
+    /**
+     * Test that filename parameter throws exception with parallel CSV requests.
+     *
+     * This test covers lines 176-180 in UniversalParameters.php where an exception
+     * is thrown when filename is used with parallel requests.
+     */
+    public function testCandles_automaticConcurrent_csvFormatWithFilename_throwsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV, filename: '/tmp/test.csv')
+        );
+    }
 }
