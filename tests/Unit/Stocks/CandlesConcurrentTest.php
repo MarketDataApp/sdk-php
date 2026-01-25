@@ -261,6 +261,62 @@ class CandlesConcurrentTest extends StocksTestCase
     }
 
     /**
+     * Test splitDateRangeIntoYearChunks() preserves time-of-day in first and last chunks.
+     *
+     * Bug #011: When splitting date ranges, the original time-of-day was stripped
+     * from the from/to values. The first chunk's from and last chunk's to should
+     * preserve the original timestamp including time-of-day.
+     */
+    public function testSplitDateRangeIntoYearChunks_preservesTimeOfDay(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('splitDateRangeIntoYearChunks');
+
+        // Test with ISO 8601 timestamps including time-of-day
+        $from = '2020-01-01T12:34:56Z';
+        $to = '2022-06-15T09:15:30Z';
+
+        $chunks = $method->invoke($stocks, $from, $to);
+
+        $this->assertCount(3, $chunks);
+
+        // First chunk's from should preserve original time-of-day
+        $this->assertEquals($from, $chunks[0][0], 'First chunk from should preserve original timestamp');
+
+        // Last chunk's to should preserve original time-of-day
+        $this->assertEquals($to, $chunks[2][1], 'Last chunk to should preserve original timestamp');
+
+        // Intermediate boundaries should use date strings
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $chunks[0][1], 'First chunk to should be date-only');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $chunks[1][0], 'Second chunk from should be date-only');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $chunks[1][1], 'Second chunk to should be date-only');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $chunks[2][0], 'Third chunk from should be date-only');
+    }
+
+    /**
+     * Test splitDateRangeIntoYearChunks() with single chunk preserves both timestamps.
+     *
+     * When the date range is less than a year, only one chunk is created and
+     * both from and to should preserve the original timestamps.
+     */
+    public function testSplitDateRangeIntoYearChunks_singleChunkPreservesTimestamps(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('splitDateRangeIntoYearChunks');
+
+        $from = '2023-03-15T08:30:00Z';
+        $to = '2023-09-20T16:45:00Z';
+
+        $chunks = $method->invoke($stocks, $from, $to);
+
+        $this->assertCount(1, $chunks);
+        $this->assertEquals($from, $chunks[0][0], 'Single chunk from should preserve original timestamp');
+        $this->assertEquals($to, $chunks[0][1], 'Single chunk to should preserve original timestamp');
+    }
+
+    /**
      * Test needsAutomaticSplitting() returns true for large intraday range.
      */
     public function testNeedsAutomaticSplitting_largeIntradayRange(): void

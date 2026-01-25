@@ -134,26 +134,31 @@ class Stocks
      */
     protected function splitDateRangeIntoYearChunks(string $from, string $to): array
     {
-        $fromDate = Carbon::parse($from)->startOfDay();
-        $toDate = Carbon::parse($to)->endOfDay();
+        $fromDate = Carbon::parse($from);
+        $toDate = Carbon::parse($to);
 
         $chunks = [];
-        $currentStart = $fromDate->copy();
+        $currentStart = $fromDate->copy()->startOfDay();
+        $isFirstChunk = true;
 
         while ($currentStart->lt($toDate)) {
-            $currentEnd = $currentStart->copy()->addYear()->subDay();
+            $currentEnd = $currentStart->copy()->addYear()->subDay()->endOfDay();
+
+            // For the first chunk, use original 'from' timestamp to preserve time-of-day
+            $chunkFrom = $isFirstChunk ? $from : $currentStart->toDateString();
+            $isFirstChunk = false;
 
             // Don't go past the original end date
-            if ($currentEnd->gt($toDate)) {
-                $currentEnd = $toDate->copy();
+            $isLastChunk = $currentEnd->gte($toDate);
+            if ($isLastChunk) {
+                // For the last chunk, use original 'to' timestamp to preserve time-of-day
+                $chunks[] = [$chunkFrom, $to];
+                break;
             }
 
-            $chunks[] = [
-                $currentStart->toDateString(),
-                $currentEnd->toDateString(),
-            ];
+            $chunks[] = [$chunkFrom, $currentEnd->toDateString()];
 
-            $currentStart = $currentEnd->copy()->addDay();
+            $currentStart = $currentEnd->copy()->addDay()->startOfDay();
         }
 
         return $chunks;
