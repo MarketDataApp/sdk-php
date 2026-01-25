@@ -24,6 +24,11 @@ class DefaultLogger extends AbstractLogger
     private string $minLevel;
 
     /**
+     * @var resource|null Output stream (defaults to STDERR).
+     */
+    private $output;
+
+    /**
      * @var array<string, int> Log level priority mapping (lower = less severe).
      */
     private array $levels = [
@@ -40,11 +45,13 @@ class DefaultLogger extends AbstractLogger
     /**
      * Create a new DefaultLogger instance.
      *
-     * @param string $minLevel The minimum log level to output (default: INFO).
+     * @param string        $minLevel The minimum log level to output (default: INFO).
+     * @param resource|null $output   Output stream (default: STDERR). Pass a stream for testing.
      */
-    public function __construct(string $minLevel = LogLevel::INFO)
+    public function __construct(string $minLevel = LogLevel::INFO, $output = null)
     {
         $this->minLevel = strtolower($minLevel);
+        $this->output = $output;
     }
 
     /**
@@ -75,7 +82,8 @@ class DefaultLogger extends AbstractLogger
 
         // Format: [timestamp] marketdata.LEVEL: message
         // Suppress errors on broken pipe (e.g., when STDERR is closed or piped)
-        @fwrite(STDERR, "[{$timestamp}] " . self::LOGGER_NAME . ".{$levelUpper}: {$interpolated}\n");
+        $stream = $this->output ?? STDERR;
+        @fwrite($stream, "[{$timestamp}] " . self::LOGGER_NAME . ".{$levelUpper}: {$interpolated}\n");
     }
 
     /**

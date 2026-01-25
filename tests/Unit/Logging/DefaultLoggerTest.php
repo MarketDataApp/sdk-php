@@ -11,95 +11,98 @@ use Psr\Log\LogLevel;
  */
 class DefaultLoggerTest extends TestCase
 {
-    private $stderrCapture;
-    private $originalStderr;
+    /**
+     * @var resource Memory stream to capture logger output
+     */
+    private $outputStream;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Capture STDERR output by redirecting to a temp file
-        $this->stderrCapture = tmpfile();
-        $this->originalStderr = null;
+        // Create a memory stream to capture logger output
+        $this->outputStream = fopen('php://memory', 'r+');
     }
 
     protected function tearDown(): void
     {
-        if ($this->stderrCapture) {
-            fclose($this->stderrCapture);
+        if ($this->outputStream) {
+            fclose($this->outputStream);
         }
         parent::tearDown();
     }
 
     /**
-     * Helper to capture STDERR output from the logger.
+     * Create a logger that outputs to our capture stream.
      */
-    private function captureStderr(callable $callback): string
+    private function createLogger(string $level): DefaultLogger
     {
-        // Capture STDERR by temporarily redirecting it
-        ob_start();
-        $callback();
-        ob_end_clean();
+        return new DefaultLogger($level, $this->outputStream);
+    }
 
-        // Since we can't easily capture STDERR in PHPUnit, we'll test the logger differently
-        // by verifying it doesn't throw and testing internal behavior
-        return '';
+    /**
+     * Get captured output from the stream.
+     */
+    private function getCapturedOutput(): string
+    {
+        rewind($this->outputStream);
+        return stream_get_contents($this->outputStream);
     }
 
     public function testLogAtInfoLevel_withInfoMessage_logsMessage(): void
     {
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
-        // Should not throw - the logger writes to STDERR
         $logger->info('Test message');
 
-        $this->assertTrue(true); // If we get here, no exception was thrown
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Test message', $output);
     }
 
     public function testLogAtDebugLevel_withInfoMinLevel_skipsMessage(): void
     {
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
         // Debug message should be silently skipped when min level is INFO
         $logger->debug('Debug message');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertEmpty($output);
     }
 
     public function testLogAtErrorLevel_withInfoMinLevel_logsMessage(): void
     {
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
-        // Error is above INFO, so should log
         $logger->error('Error message');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Error message', $output);
     }
 
     public function testLogWithContext_interpolatesPlaceholders(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
-        // Test context interpolation
         $logger->info('User {name} logged in', ['name' => 'John']);
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('User John logged in', $output);
     }
 
     public function testLogWithNumericContext_interpolatesCorrectly(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
-        // Test numeric context
         $logger->info('Count: {count}', ['count' => 42]);
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Count: 42', $output);
     }
 
     public function testLogWithObjectContext_usesToString(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
-        // Create an object with __toString
         $obj = new class {
             public function __toString(): string
             {
@@ -109,24 +112,25 @@ class DefaultLoggerTest extends TestCase
 
         $logger->info('Object: {obj}', ['obj' => $obj]);
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Object: StringableObject', $output);
     }
 
     public function testLogWithNonStringableContext_skipsInterpolation(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
-        // Non-stringable objects should be skipped
+        // Non-stringable objects should be skipped (placeholder remains)
         $logger->info('Array: {arr}', ['arr' => ['a', 'b', 'c']]);
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Array: {arr}', $output);
     }
 
     public function testAllLogLevels_areSupported(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
-        // Test all PSR-3 log levels
         $logger->debug('Debug');
         $logger->info('Info');
         $logger->notice('Notice');
@@ -136,46 +140,53 @@ class DefaultLoggerTest extends TestCase
         $logger->alert('Alert');
         $logger->emergency('Emergency');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('DEBUG: Debug', $output);
+        $this->assertStringContainsString('INFO: Info', $output);
+        $this->assertStringContainsString('NOTICE: Notice', $output);
+        $this->assertStringContainsString('WARNING: Warning', $output);
+        $this->assertStringContainsString('ERROR: Error', $output);
+        $this->assertStringContainsString('CRITICAL: Critical', $output);
+        $this->assertStringContainsString('ALERT: Alert', $output);
+        $this->assertStringContainsString('EMERGENCY: Emergency', $output);
     }
 
     public function testConstructor_withUppercaseLevel_normalizesToLowercase(): void
     {
-        $logger = new DefaultLogger('INFO');
+        $logger = new DefaultLogger('INFO', $this->outputStream);
 
-        // Should work with uppercase level
         $logger->info('Test');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertStringContainsString('Test', $output);
     }
 
     public function testLog_withInvalidLevel_skipsMessage(): void
     {
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
         // Invalid level should be silently ignored
         $logger->log('invalid_level', 'Test message');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertEmpty($output);
     }
 
     public function testLog_withInvalidMinLevel_skipsAllMessages(): void
     {
-        $logger = new DefaultLogger('invalid');
+        $logger = new DefaultLogger('invalid', $this->outputStream);
 
         // With invalid min level, all messages should be skipped
         $logger->info('Test');
 
-        $this->assertTrue(true);
+        $output = $this->getCapturedOutput();
+        $this->assertEmpty($output);
     }
 
     public function testLevelFiltering_debugBelowInfo(): void
     {
-        // Create logger with INFO level - debug should be filtered
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
-        // This test verifies the level comparison logic
-        // DEBUG (0) < INFO (1), so debug messages should be skipped
         $reflection = new \ReflectionClass($logger);
         $levelsProperty = $reflection->getProperty('levels');
         $levels = $levelsProperty->getValue($logger);
@@ -185,7 +196,7 @@ class DefaultLoggerTest extends TestCase
 
     public function testLevelFiltering_warningAboveInfo(): void
     {
-        $logger = new DefaultLogger(LogLevel::INFO);
+        $logger = $this->createLogger(LogLevel::INFO);
 
         $reflection = new \ReflectionClass($logger);
         $levelsProperty = $reflection->getProperty('levels');
@@ -196,7 +207,7 @@ class DefaultLoggerTest extends TestCase
 
     public function testLevelFiltering_emergencyHighestPriority(): void
     {
-        $logger = new DefaultLogger(LogLevel::DEBUG);
+        $logger = $this->createLogger(LogLevel::DEBUG);
 
         $reflection = new \ReflectionClass($logger);
         $levelsProperty = $reflection->getProperty('levels');
