@@ -46,3 +46,21 @@ Demonstrates how to monitor rate limits during API requests. This example shows:
 - Rate limits are automatically updated after every successful API request
 - No manual header extraction or response parsing needed
 - Simple property access: `$client->rate_limits->remaining`
+
+### error_handling.php
+
+Demonstrates how to handle exceptions from the SDK and extract information needed for support tickets. This example shows:
+
+- Using `getSupportInfo()` for formatted support ticket text
+- Using `getSupportContext()` for structured logging (JSON/log aggregation)
+- Handling specific exception types (UnauthorizedException, BadStatusCodeError, RequestError, ApiException)
+- Converting timestamps to different timezones
+- Accessing individual properties (request ID, URL, response body)
+
+**Key Features:**
+- All SDK exceptions extend `MarketDataException` with built-in support helpers
+- `getSupportInfo()` returns a formatted string ready to paste into support tickets
+- `getSupportContext()` returns an array perfect for JSON logging
+- `getRequestId()` returns the Cloudflare cf-ray header for support identification
+
+See [error_handling.md](error_handling.md) for detailed documentation.

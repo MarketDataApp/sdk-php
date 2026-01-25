@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+---
+
 ## v1.0.0 (2026-01-24)
 
 **🎉 First Stable Release** - Production-ready PHP SDK for Market Data API with full feature parity with the Python SDK.
@@ -15,15 +19,6 @@
 
 #### PHP Version Requirement
 - **Minimum PHP version is now 8.2** (was 8.1 in v0.6.x)
-
-#### Removed: Indices Endpoint
-The indices endpoint has been completely removed from the SDK.
-
-```php
-// REMOVED - no longer available
-$client->indices->quotes(['SPX', 'INDU']);
-$client->indices->candles('SPX', 'D', '2023-01-01');
-```
 
 #### Removed: bulkQuotes Method
 The `bulkQuotes()` method has been removed. Use `quotes()` instead, which now supports multiple symbols.
@@ -120,6 +115,39 @@ try {
 }
 ```
 
+#### Enhanced Exception Context for Support Tickets
+All SDK exceptions now provide first-class access to request context, making it easier to gather information for support tickets:
+
+```php
+try {
+    $quote = $client->stocks->quote('AAPL');
+} catch (MarketDataException $e) {
+    // One-liner for support tickets - ready to copy/paste!
+    echo $e->getSupportInfo();
+
+    // Or get structured data for logging systems
+    $logger->error('API Error', $e->getSupportContext());
+}
+```
+
+New convenience methods:
+- `getSupportInfo()` - Returns a pre-formatted string ready to paste into support tickets
+- `getSupportContext()` - Returns an array with all context (perfect for JSON logging)
+
+Individual property accessors:
+- `getRequestId()` - Cloudflare request ID (cf-ray header)
+- `getRequestUrl()` - Full URL that was requested
+- `getTimestamp()` - `DateTimeImmutable` in UTC (convert to your timezone as needed)
+- `getResponse()` - Raw PSR-7 response object
+- Enhanced `__toString()` now includes timestamp, request ID, and URL
+
+Note: `getSupportInfo()` and `getSupportContext()` automatically convert timestamps to America/New_York to match API logs for support tickets.
+
+New base exception class:
+- `MarketDataException` - All SDK exceptions now extend this base class, allowing you to catch all SDK exceptions with a single catch block
+
+See `examples/error_handling.php` for complete usage examples.
+
 #### New Endpoints & Methods
 
 **Stocks - prices()**: Get SmartMid model prices for single or multiple symbols
@@ -181,11 +209,10 @@ $chain->count();                       // Total quote count
 ### Migration from v0.6.x
 
 1. **Update PHP version** to 8.2 or higher
-2. **Remove indices endpoint usage** - no longer available
-3. **Replace `bulkQuotes()` with `quotes()`** for multi-symbol stock quotes
-4. **Update Options imports** - use `OptionQuote` instead of `Quote` or `OptionChainStrike`
-5. **Update exception handling** - catch `UnauthorizedException` during client construction
-6. **Update dependencies**: `composer update`
+2. **Replace `bulkQuotes()` with `quotes()`** for multi-symbol stock quotes
+3. **Update Options imports** - use `OptionQuote` instead of `Quote` or `OptionChainStrike`
+4. **Update exception handling** - catch `UnauthorizedException` during client construction
+5. **Update dependencies**: `composer update`
 
 ### Dependencies
 
