@@ -12,6 +12,7 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
 use MarketDataApp\Endpoints\Utilities;
 use MarketDataApp\Enums\ApiStatusResult;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
@@ -182,6 +183,10 @@ abstract class ClientBase
             'fulfilled' => function ($response, $index) use (&$results, &$exceptions, $calls, $tolerateFailed) {
                 // Extract format from the call arguments, default to 'json'
                 $format = $calls[$index][1]['format'] ?? 'json';
+                // Convert Format enum to string value if needed
+                if ($format instanceof Format) {
+                    $format = $format->value;
+                }
                 $arguments = $calls[$index][1];
 
                 // Build URL for exception context
@@ -248,6 +253,10 @@ abstract class ClientBase
     protected function async($method, array $arguments = []): PromiseInterface
     {
         $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
+        // Convert Format enum to string value if needed
+        if ($format instanceof Format) {
+            $format = $format->value;
+        }
         $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
         $attempt = 0;
 
@@ -437,6 +446,10 @@ abstract class ClientBase
     public function execute($method, array $arguments = []): object
     {
         $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
+        // Convert Format enum to string value if needed
+        if ($format instanceof Format) {
+            $format = $format->value;
+        }
 
         // Build full URL for logging (base URL + method + query params)
         $fullUrl = self::API_URL . $method;
@@ -610,7 +623,7 @@ abstract class ClientBase
             case 'html':
                 $content = (string)$response->getBody();
                 $responseObject = (object)array(
-                    $arguments['format'] => $content
+                    $format => $content
                 );
 
                 // If filename is provided, write to file

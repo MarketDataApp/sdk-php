@@ -11,6 +11,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Utilities;
+use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\BadStatusCodeError;
 use MarketDataApp\Exceptions\RequestError;
 use MarketDataApp\Exceptions\UnauthorizedException;
@@ -935,7 +936,7 @@ class ClientBaseErrorHandlingTest extends TestCase
 
     /**
      * Test async BadStatusCodeError catch block - 403 Forbidden error.
-     * 
+     *
      * This test covers lines 216-218 in ClientBase.php - additional coverage for the BadStatusCodeError catch block
      * with a 403 Forbidden status code to ensure the path is covered.
      *
@@ -961,5 +962,54 @@ class ClientBaseErrorHandlingTest extends TestCase
         // This will call async(), which will get a 403 response, validateResponseStatusCode will throw BadStatusCodeError,
         // and the BadStatusCodeError catch block will re-throw it immediately (no retry for 4xx)
         $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+    }
+
+    /**
+     * Test execute() accepts Format enum and converts it to string.
+     *
+     * This test covers the fix for bug 014 - Client::execute() should accept
+     * Format enum values and convert them to strings before passing to headers().
+     *
+     * @return void
+     */
+    public function testExecute_withFormatEnum_convertsToString(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data for CSV format)
+        // Mock a CSV response for the status endpoint
+        $this->setMockResponses([
+            new Response(200, [], "status\nonline"),
+        ]);
+
+        // This should NOT throw a TypeError - the Format enum should be converted to string
+        $result = $this->client->execute('status/', ['format' => Format::CSV]);
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('csv', $result);
+        $this->assertEquals("status\nonline", $result->csv);
+    }
+
+    /**
+     * Test execute_in_parallel() accepts Format enum and converts it to string.
+     *
+     * This test covers the fix for bug 014 in async() method - parallel execution
+     * should also accept Format enum values.
+     *
+     * @return void
+     */
+    public function testExecuteInParallel_withFormatEnum_convertsToString(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data for CSV format)
+        // Mock a CSV response for the status endpoint
+        $this->setMockResponses([
+            new Response(200, [], "status\nonline"),
+        ]);
+
+        // This should NOT throw a TypeError - the Format enum should be converted to string
+        $results = $this->client->execute_in_parallel([['status/', ['format' => Format::CSV]]]);
+
+        $this->assertCount(1, $results);
+        $this->assertIsObject($results[0]);
+        $this->assertObjectHasProperty('csv', $results[0]);
+        $this->assertEquals("status\nonline", $results[0]->csv);
     }
 }
