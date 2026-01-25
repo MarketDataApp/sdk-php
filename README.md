@@ -72,6 +72,14 @@ $client = new MarketDataApp\Client('your_token_here');
 
 **Note:** If you provide a token explicitly, it will take precedence over environment variables.
 
+## Unsupported API features
+
+The SDK intentionally does not support certain REST API options. These are design decisions, not oversights.
+
+- **`token` query parameter** — The REST API may accept `token` as a query parameter. The SDK does not and will not support this. Authentication is sent only via the `Authorization: Bearer` header. This keeps tokens out of URLs (and thus out of logs, caches, and referrers) and centralizes auth in one place.
+
+- **`limit` and `offset`** — The REST API supports `limit` and `offset` for pagination. The SDK does not and will not support these. The SDK uses concurrent parallel requests instead to fetch data in bulk, so limit/offset-style pagination is not part of the design.
+
 ## Usage
 
 ```php
