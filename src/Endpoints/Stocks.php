@@ -407,6 +407,7 @@ class Stocks
     ): Candles {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
         $this->validateResolution($resolution);
         $this->validateDateRange($from, $to, $countback);
 
@@ -485,6 +486,35 @@ class Stocks
         ?bool $adjust_dividends,
         ?Parameters $parameters
     ): Candles {
+        // Check format to handle CSV/HTML specially
+        $mergedParams = $this->mergeParameters($parameters);
+        $format = $mergedParams->format;
+
+        // HTML format is not supported for split requests (API limitation)
+        if ($format === \MarketDataApp\Enums\Format::HTML) {
+            throw new \InvalidArgumentException(
+                'HTML format is not supported for intraday candle requests spanning more than 1 year. ' .
+                'Use JSON or CSV format instead, or reduce the date range.'
+            );
+        }
+
+        // CSV format requires special handling to combine responses
+        if ($format === \MarketDataApp\Enums\Format::CSV) {
+            return $this->candlesConcurrentCsv(
+                $symbol,
+                $from,
+                $to,
+                $resolution,
+                $exchange,
+                $extended,
+                $country,
+                $adjust_splits,
+                $adjust_dividends,
+                $parameters,
+                $mergedParams
+            );
+        }
+
         // Split the date range into year-long chunks
         $chunks = $this->splitDateRangeIntoYearChunks($from, $to);
 
@@ -529,6 +559,160 @@ class Stocks
     }
 
     /**
+     * Handle CSV format for concurrent candle requests.
+     *
+     * Makes separate requests for each date chunk, with headers=true on the first request
+     * (unless user explicitly set add_headers=false) and headers=false on subsequent
+     * requests. Combines all responses into a single CSV output.
+     *
+     * @param string          $symbol           The stock symbol.
+     * @param string          $from             The start date.
+     * @param string          $to               The end date.
+     * @param string          $resolution       The candle resolution.
+     * @param string|null     $exchange         The exchange code.
+     * @param bool            $extended         Include extended hours.
+     * @param string|null     $country          The country code.
+     * @param bool|null       $adjust_splits    Adjust for splits.
+     * @param bool|null       $adjust_dividends Adjust for dividends.
+     * @param Parameters|null $parameters       Original parameters from caller.
+     * @param Parameters      $mergedParams     Merged parameters with defaults applied.
+     *
+     * @return Candles Candles object containing combined CSV.
+     * @throws \Throwable
+     */
+    protected function candlesConcurrentCsv(
+        string $symbol,
+        string $from,
+        string $to,
+        string $resolution,
+        ?string $exchange,
+        bool $extended,
+        ?string $country,
+        ?bool $adjust_splits,
+        ?bool $adjust_dividends,
+        ?Parameters $parameters,
+        Parameters $mergedParams
+    ): Candles {
+        // Validate that filename is not provided with parallel requests
+        if ($mergedParams->filename !== null) {
+            throw new \InvalidArgumentException(
+                'filename parameter cannot be used with parallel requests. ' .
+                'Each parallel response would conflict writing to the same file. ' .
+                'Use filename only with single requests, or use saveToFile() method on individual response objects.'
+            );
+        }
+
+        // Split the date range into year-long chunks
+        $chunks = $this->splitDateRangeIntoYearChunks($from, $to);
+
+        // Determine if user explicitly requested no headers
+        $userRequestedNoHeaders = $mergedParams->add_headers === false;
+
+        // Build calls with appropriate header settings
+        $calls = [];
+        foreach ($chunks as $index => $chunk) {
+            $arguments = [
+                'from'     => $chunk[0],
+                'to'       => $chunk[1],
+                'exchange' => $exchange,
+                'country'  => $country,
+            ];
+            if ($extended) {
+                $arguments['extended'] = 'true';
+            }
+            if ($adjust_splits !== null) {
+                $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
+            }
+            if ($adjust_dividends !== null) {
+                $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
+            }
+
+            // First request: headers=true unless user explicitly requested no headers
+            // Subsequent requests: always headers=false
+            if ($index === 0) {
+                $arguments['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
+            } else {
+                $arguments['headers'] = 'false';
+            }
+
+            $calls[] = [
+                "candles/{$resolution}/{$symbol}/",
+                $arguments,
+            ];
+        }
+
+        // Create modified parameters without add_headers (we're handling it manually per-call)
+        $csvParams = new Parameters(
+            format: $mergedParams->format,
+            use_human_readable: $mergedParams->use_human_readable,
+            mode: $mergedParams->mode,
+            date_format: $mergedParams->date_format,
+            columns: $mergedParams->columns,
+            add_headers: null, // We handle headers per-call
+            filename: null     // Cannot use filename with split requests
+        );
+
+        // Execute all requests concurrently
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $csvParams, $failedRequests);
+
+        // If ALL requests failed via exceptions, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Combine CSV responses, filtering out JSON error responses
+        // (API returns JSON even when CSV is requested if there's an error)
+        $combinedCsv = '';
+        $validResponseCount = 0;
+        $lastErrorMessage = null;
+        ksort($responses); // Ensure responses are in original order
+        foreach ($responses as $response) {
+            if (isset($response->csv)) {
+                $csv = $response->csv;
+                // Trim trailing newlines to avoid extra blank lines when combining
+                $csv = rtrim($csv, "\r\n");
+
+                // Check if this is a JSON error response instead of valid CSV
+                // API returns JSON for errors even when CSV format is requested
+                if ($csv !== '' && str_starts_with($csv, '{')) {
+                    $decoded = json_decode($csv);
+                    if (isset($decoded->s) && $decoded->s === 'error') {
+                        // This is a JSON error response, skip it but record the error
+                        $lastErrorMessage = $decoded->errmsg ?? 'Unknown error';
+                        continue;
+                    }
+                }
+
+                if ($csv !== '') {
+                    $combinedCsv .= $csv . "\n";
+                    $validResponseCount++;
+                }
+            }
+        }
+
+        // If ALL responses were errors (no valid CSV data), throw an exception
+        if ($validResponseCount === 0) {
+            if ($lastErrorMessage !== null) {
+                throw new \MarketDataApp\Exceptions\ApiException(
+                    message: $lastErrorMessage
+                );
+            } elseif (!empty($failedRequests)) {
+                throw reset($failedRequests);
+            } else {
+                throw new \MarketDataApp\Exceptions\ApiException(
+                    message: 'No data available for the requested date range'
+                );
+            }
+        }
+
+        // Create a response object with the combined CSV
+        $combinedResponse = (object) ['csv' => $combinedCsv];
+
+        return new Candles($combinedResponse);
+    }
+
+    /**
      * Get a real-time price quote for a stock.
      *
      * @param string          $symbol         The company's ticker symbol.
@@ -545,6 +729,7 @@ class Stocks
     {
         // Validate symbol
         $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
 
         $arguments = [];
         if ($fifty_two_week) {
@@ -606,6 +791,7 @@ class Stocks
         // Validate symbols
         if (is_string($symbols)) {
             $this->validateNonEmptyString($symbols, 'symbols');
+            $symbols = trim($symbols);
         } else {
             $this->validateSymbols($symbols);
         }
@@ -665,7 +851,8 @@ class Stocks
     ): Earnings {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
-        
+        $symbol = trim($symbol);
+
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }
@@ -709,7 +896,8 @@ class Stocks
     ): News {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
-        
+        $symbol = trim($symbol);
+
         if (is_null($from) && (is_null($countback) || is_null($to))) {
             throw new \InvalidArgumentException('Either `from` or `countback` and `to` must be set');
         }

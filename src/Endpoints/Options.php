@@ -80,6 +80,7 @@ class Options
     ): Expirations {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
         $this->validatePositiveNumber($strike, 'strike');
 
         return new Expirations($this->execute("expirations/$symbol/",
@@ -140,6 +141,7 @@ class Options
     ): Strikes {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
 
         return new Strikes($this->execute("strikes/$symbol/",
             compact('expiration', 'date'), $parameters));
@@ -319,7 +321,8 @@ class Options
     ): OptionChains {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
-        
+        $symbol = trim($symbol);
+
         // Validate date range
         $this->validateDateRange($from, $to);
         
@@ -425,6 +428,7 @@ class Options
         // Handle single symbol (string) - existing behavior
         if (is_string($option_symbols)) {
             $this->validateNonEmptyString($option_symbols, 'option_symbols');
+            $option_symbols = trim($option_symbols);
 
             return new Quotes($this->execute("quotes/$option_symbols/",
                 compact('date', 'from', 'to'), $parameters));
@@ -478,6 +482,24 @@ class Options
                 compact('date', 'from', 'to'), $parameters));
         }
 
+        // Check format to handle CSV/HTML specially
+        $mergedParams = $this->mergeParameters($parameters);
+        $format = $mergedParams->format;
+
+        // HTML format is not supported for multi-symbol requests
+        if ($format === \MarketDataApp\Enums\Format::HTML) {
+            throw new \InvalidArgumentException(
+                'HTML format is not supported for multi-symbol options quotes. ' .
+                'Use JSON or CSV format instead.'
+            );
+        }
+
+        // CSV format requires special handling to combine responses
+        if ($format === \MarketDataApp\Enums\Format::CSV) {
+            return $this->quotesMultipleCsv($symbols, $date, $from, $to, $parameters, $mergedParams);
+        }
+
+        // JSON format: existing behavior
         // Build API calls for all symbols
         $calls = [];
         foreach ($symbols as $symbol) {
@@ -500,6 +522,93 @@ class Options
         // Merge all successful responses into a single Quotes object
         // (partial failures are tolerated - we return whatever data we got)
         return $this->mergeQuotesResponses($responses, $failedRequests, $symbols);
+    }
+
+    /**
+     * Handle CSV format for multiple option symbols.
+     *
+     * Makes separate requests for each symbol, with headers=true on the first request
+     * (unless user explicitly set add_headers=false) and headers=false on subsequent
+     * requests. Combines all responses into a single CSV output.
+     *
+     * @param array           $symbols      Deduplicated and trimmed option symbols.
+     * @param string|null     $date         Historical date for EOD quotes.
+     * @param string|null     $from         Start date for series of EOD quotes.
+     * @param string|null     $to           End date for series of EOD quotes.
+     * @param Parameters|null $parameters   Original parameters from caller.
+     * @param Parameters      $mergedParams Merged parameters with defaults applied.
+     *
+     * @return Quotes Quotes object containing combined CSV.
+     * @throws \Throwable
+     */
+    protected function quotesMultipleCsv(
+        array $symbols,
+        ?string $date,
+        ?string $from,
+        ?string $to,
+        ?Parameters $parameters,
+        Parameters $mergedParams
+    ): Quotes {
+        // Determine if user explicitly requested no headers
+        $userRequestedNoHeaders = $mergedParams->add_headers === false;
+
+        // Build calls with appropriate header settings
+        $calls = [];
+        foreach ($symbols as $index => $symbol) {
+            $callArgs = compact('date', 'from', 'to');
+
+            // First request: headers=true unless user explicitly requested no headers
+            // Subsequent requests: always headers=false
+            if ($index === 0) {
+                $callArgs['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
+            } else {
+                $callArgs['headers'] = 'false';
+            }
+
+            $calls[] = [
+                "quotes/{$symbol}/",
+                $callArgs,
+            ];
+        }
+
+        // Create modified parameters without add_headers (we're handling it manually per-call)
+        $csvParams = new Parameters(
+            format: $mergedParams->format,
+            use_human_readable: $mergedParams->use_human_readable,
+            mode: $mergedParams->mode,
+            date_format: $mergedParams->date_format,
+            columns: $mergedParams->columns,
+            add_headers: null, // We handle headers per-call
+            filename: null     // Cannot use filename with multi-symbol
+        );
+
+        // Execute all requests concurrently
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $csvParams, $failedRequests);
+
+        // If ALL requests failed, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Combine CSV responses
+        $combinedCsv = '';
+        ksort($responses); // Ensure responses are in original order
+        foreach ($responses as $response) {
+            if (isset($response->csv)) {
+                $csv = $response->csv;
+                // Trim trailing newlines to avoid extra blank lines when combining
+                $csv = rtrim($csv, "\r\n");
+                if ($csv !== '') {
+                    $combinedCsv .= $csv . "\n";
+                }
+            }
+        }
+
+        // Create a response object with the combined CSV
+        $combinedResponse = (object) ['csv' => $combinedCsv];
+
+        return new Quotes($combinedResponse);
     }
 
     /**

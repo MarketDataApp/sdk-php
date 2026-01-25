@@ -1495,4 +1495,144 @@ class UrlConstructionTest extends TestCase
         $this->assertContains('v1/options/quotes/AAPL240119C00150000/', $paths);
         $this->assertContains('v1/options/quotes/AAPL240119P00150000/', $paths);
     }
+
+    // ========================================================================
+    // SYMBOL TRIMMING
+    // Bug 017: Single-symbol endpoints should trim whitespace from symbols
+    // ========================================================================
+
+    /**
+     * Test expirations() trims whitespace from symbol.
+     *
+     * Bug 017: Symbols with leading/trailing whitespace should be trimmed
+     * before being used in the URL path to avoid encoded spaces (%20).
+     */
+    public function testExpirations_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'expirations' => ['2024-01-19', '2024-02-16'],
+                'updated' => 1234567890
+            ]))
+        ]);
+
+        $this->client->options->expirations('AAPL ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/options/expirations/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test strikes() trims whitespace from symbol.
+     */
+    public function testStrikes_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'updated' => 1234567890,
+                '2024-01-19' => [150.0, 155.0, 160.0]
+            ]))
+        ]);
+
+        $this->client->options->strikes(' AAPL ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/options/strikes/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test option_chain() trims whitespace from symbol.
+     */
+    public function testOptionChain_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('  AAPL  ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/options/chain/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test quotes() with single symbol trims whitespace.
+     */
+    public function testQuotes_singleSymbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000 ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/options/quotes/AAPL240119C00150000/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
 }

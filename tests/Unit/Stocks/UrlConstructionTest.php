@@ -1218,4 +1218,146 @@ class UrlConstructionTest extends TestCase
         $this->assertArrayHasKey('human', $query);
         $this->assertEquals('true', $query['human']);
     }
+
+    // ========================================================================
+    // SYMBOL TRIMMING
+    // Bug 017: Single-symbol endpoints should trim whitespace from symbols
+    // ========================================================================
+
+    /**
+     * Test quote() trims whitespace from symbol.
+     *
+     * Bug 017: Symbols with leading/trailing whitespace should be trimmed
+     * before being used in the URL path to avoid encoded spaces (%20).
+     */
+    public function testQuote_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'ask' => [150.1],
+                'askSize' => [100],
+                'bid' => [150.0],
+                'bidSize' => [200],
+                'mid' => [150.05],
+                'last' => [150.0],
+                'change' => [1.0],
+                'changepct' => [0.01],
+                'volume' => [1000000],
+                'updated' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->quote('AAPL ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/stocks/quotes/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test candles() trims whitespace from symbol.
+     */
+    public function testCandles_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'o' => [150.0],
+                'h' => [155.0],
+                'l' => [149.0],
+                'c' => [154.0],
+                'v' => [1000000],
+                't' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->candles(' AAPL ', '2024-01-01', '2024-01-31', 'D');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/stocks/candles/D/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test prices() with single symbol trims whitespace.
+     */
+    public function testPrices_singleSymbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'mid' => [150.0],
+                'change' => [1.0],
+                'changepct' => [0.01],
+                'updated' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->prices('  AAPL  ');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/stocks/prices/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test earnings() trims whitespace from symbol.
+     */
+    public function testEarnings_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'fiscalYear' => [2024],
+                'fiscalQuarter' => [1],
+                'date' => ['2024-01-25'],
+                'reportDate' => ['2024-02-01'],
+                'reportTime' => ['after close'],
+                'currency' => ['USD'],
+                'reportedEPS' => [1.50],
+                'estimatedEPS' => [1.45],
+                'surpriseEPS' => [0.05],
+                'surpriseEPSpct' => [0.03],
+                'updated' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->earnings('AAPL ', from: '2024-01-01');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/stocks/earnings/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
+
+    /**
+     * Test news() trims whitespace from symbol.
+     */
+    public function testNews_symbolWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'symbol' => ['AAPL'],
+                'headline' => ['Apple announces new product'],
+                'content' => ['Full article content here...'],
+                'source' => ['Reuters'],
+                'publicationDate' => [1234567890]
+            ]))
+        ]);
+
+        $this->client->stocks->news(' AAPL', from: '2024-01-01');
+
+        $path = $this->getLastRequestPath();
+        $this->assertEquals('v1/stocks/news/AAPL/', $path);
+        $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
+    }
 }
