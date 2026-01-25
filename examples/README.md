@@ -32,35 +32,37 @@ php examples/rate_limit_tracking.php
 
 ## Available Examples
 
-### rate_limit_tracking.php
+### Getting Started
 
-Demonstrates how to monitor rate limits during API requests. This example shows:
+| Example | Description | Documentation |
+|---------|-------------|---------------|
+| [quick_start.php](quick_start.php) | Basic SDK usage - quotes, candles, market status | [quick_start.md](quick_start.md) |
 
-- How rate limits are automatically tracked by the SDK
-- How to access rate limit information using `$client->rate_limits`
-- How rate limits update after each API request
-- How to check remaining credits before making additional requests
+### Stock Data
 
-**Key Features:**
-- Rate limits are automatically initialized during client construction
-- Rate limits are automatically updated after every successful API request
-- No manual header extraction or response parsing needed
-- Simple property access: `$client->rate_limits->remaining`
+| Example | Description | Documentation |
+|---------|-------------|---------------|
+| [bulk_quotes.php](bulk_quotes.php) | Single/multiple quotes, 52-week range, SmartMid prices, portfolio tracking | [bulk_quotes.md](bulk_quotes.md) |
+| [stock_candles.php](stock_candles.php) | Historical OHLCV data - daily, intraday, weekly, monthly, bulk, extended hours | [stock_candles.md](stock_candles.md) |
 
-### error_handling.php
+### Options Data
 
-Demonstrates how to handle exceptions from the SDK and extract information needed for support tickets. This example shows:
+| Example | Description | Documentation |
+|---------|-------------|---------------|
+| [options_chain.php](options_chain.php) | Expirations, strikes, chains, ITM/OTM filtering, Greeks, symbol lookup | [options_chain.md](options_chain.md) |
 
-- Using `getSupportInfo()` for formatted support ticket text
-- Using `getSupportContext()` for structured logging (JSON/log aggregation)
-- Handling specific exception types (UnauthorizedException, BadStatusCodeError, RequestError, ApiException)
-- Converting timestamps to different timezones
-- Accessing individual properties (request ID, URL, response body)
+### Market Information
 
-**Key Features:**
-- All SDK exceptions extend `MarketDataException` with built-in support helpers
-- `getSupportInfo()` returns a formatted string ready to paste into support tickets
-- `getSupportContext()` returns an array perfect for JSON logging
-- `getRequestId()` returns the Cloudflare cf-ray header for support identification
+| Example | Description | Documentation |
+|---------|-------------|---------------|
+| [market_status.php](market_status.php) | Market status, calendars, trading days, holiday detection | [market_status.md](market_status.md) |
 
-See [error_handling.md](error_handling.md) for detailed documentation.
+### SDK Features
+
+| Example | Description | Documentation |
+|---------|-------------|---------------|
+| [utilities.php](utilities.php) | API status, service monitoring, headers debugging, rate limits | [utilities.md](utilities.md) |
+| [output_formats.php](output_formats.php) | JSON vs CSV output, custom columns, date formats | [output_formats.md](output_formats.md) |
+| [rate_limit_tracking.php](rate_limit_tracking.php) | Automatic rate limit tracking and monitoring | [rate_limit_tracking.md](rate_limit_tracking.md) |
+| [error_handling.php](error_handling.php) | Exception handling, support ticket helpers, logging | [error_handling.md](error_handling.md) |
+| [logging.php](logging.php) | PSR-3 logging integration | [logging.md](logging.md) |
