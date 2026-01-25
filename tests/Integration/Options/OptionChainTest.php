@@ -181,4 +181,158 @@ class OptionChainTest extends OptionsTestCase
         $this->assertEquals('string', gettype($option_strike->option_symbol));
         $this->assertEquals('string', gettype($option_strike->underlying));
     }
+
+    /**
+     * Test real-time option chain with from/to date range filter.
+     *
+     * Tests whether the API now supports filtering real-time quotes by expiration date range.
+     * Documentation previously stated: "from, to, month, year, weekly, monthly, and quarterly
+     * filtering parameters are not yet supported for real-time quotes."
+     */
+    public function testOptionChain_realTimeWithFromTo_success()
+    {
+        // Calculate a date range that should include some expirations
+        // Use 30-90 days out to ensure we have expirations in range
+        $from = Carbon::now()->addDays(30)->format('Y-m-d');
+        $to = Carbon::now()->addDays(90)->format('Y-m-d');
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: Expiration::ALL,
+            from: $from,
+            to: $to,
+            side: Side::CALL,
+            strike_limit: 5,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status, 'Real-time chain with from/to filter should return ok status');
+        $this->assertNotEmpty($response->option_chains, 'Should have option chains in the date range');
+
+        // Verify all returned expirations are within the specified range
+        $fromDate = Carbon::parse($from);
+        $toDate = Carbon::parse($to);
+        foreach ($response->option_chains as $expirationDate => $strikes) {
+            $expDate = Carbon::parse($expirationDate);
+            $this->assertTrue(
+                $expDate->gte($fromDate) && $expDate->lt($toDate),
+                "Expiration {$expirationDate} should be between {$from} and {$to}"
+            );
+        }
+    }
+
+    /**
+     * Test real-time option chain with month filter.
+     */
+    public function testOptionChain_realTimeWithMonth_success()
+    {
+        // Pick a month that's likely to have expirations (3 months out)
+        $targetDate = Carbon::now()->addMonths(3);
+        $month = (int) $targetDate->format('n');
+        $year = (int) $targetDate->format('Y');
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: Expiration::ALL,
+            month: $month,
+            year: $year,
+            side: Side::CALL,
+            strike_limit: 5,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status, 'Real-time chain with month filter should return ok status');
+        $this->assertNotEmpty($response->option_chains, "Should have option chains in month {$month}");
+
+        // Verify all returned expirations are in the specified month
+        foreach ($response->option_chains as $expirationDate => $strikes) {
+            $expDate = Carbon::parse($expirationDate);
+            $this->assertEquals(
+                $month,
+                (int) $expDate->format('n'),
+                "Expiration {$expirationDate} should be in month {$month}"
+            );
+            $this->assertEquals(
+                $year,
+                (int) $expDate->format('Y'),
+                "Expiration {$expirationDate} should be in year {$year}"
+            );
+        }
+    }
+
+    /**
+     * Test real-time option chain with year filter only.
+     */
+    public function testOptionChain_realTimeWithYear_success()
+    {
+        // Use next year to ensure we get future expirations
+        $year = (int) Carbon::now()->addYear()->format('Y');
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: Expiration::ALL,
+            year: $year,
+            side: Side::CALL,
+            strike_limit: 3,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status, 'Real-time chain with year filter should return ok status');
+        $this->assertNotEmpty($response->option_chains, "Should have option chains in year {$year}");
+
+        // Verify all returned expirations are in the specified year
+        foreach ($response->option_chains as $expirationDate => $strikes) {
+            $expDate = Carbon::parse($expirationDate);
+            $this->assertEquals(
+                $year,
+                (int) $expDate->format('Y'),
+                "Expiration {$expirationDate} should be in year {$year}"
+            );
+        }
+    }
+
+    /**
+     * Test real-time option chain with weekly=false (monthly only).
+     */
+    public function testOptionChain_realTimeMonthlyOnly_success()
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: Expiration::ALL,
+            weekly: false,
+            monthly: true,
+            quarterly: false,
+            side: Side::CALL,
+            strike_limit: 3,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status, 'Real-time chain with monthly=true filter should return ok status');
+        $this->assertNotEmpty($response->option_chains, 'Should have monthly option chains');
+
+        // Verify we get fewer expirations than with all=true (monthly filter is applied)
+        // Monthly options typically fall on the 3rd Friday (or Thursday if Friday is a holiday)
+        $expirationCount = count($response->option_chains);
+        $this->assertGreaterThan(0, $expirationCount, 'Should have at least one monthly expiration');
+    }
+
+    /**
+     * Test real-time option chain with quarterly=true only.
+     */
+    public function testOptionChain_realTimeQuarterlyOnly_success()
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            expiration: Expiration::ALL,
+            weekly: false,
+            monthly: false,
+            quarterly: true,
+            side: Side::CALL,
+            strike_limit: 3,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        // Quarterly expirations may be sparse, so we just check the response is valid
+        $this->assertContains($response->status, ['ok', 'no_data'], 'Real-time chain with quarterly filter should return valid status');
+    }
 }

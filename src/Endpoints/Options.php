@@ -149,11 +149,6 @@ class Options
      * for extensive filtering of the chain. Use the optionSymbol returned from this endpoint to get quotes, greeks, or
      * other information using the other endpoints.
      *
-     * CAUTION: The from, to, month, year, weekly, monthly, and quarterly filtering parameters are not yet supported
-     * for
-     * real-time quotes. If you are requesting a real-time quote you must request a single expiration date or request
-     * all expirations.
-     *
      * @param string            $symbol                 The ticker symbol of the underlying asset.
      *
      * @param string|null       $date                   Use to lookup a historical end of day options chain from a
