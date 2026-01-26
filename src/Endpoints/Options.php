@@ -582,9 +582,9 @@ class Options
         // Determine if user explicitly requested no headers
         $userRequestedNoHeaders = $mergedParams->add_headers === false;
 
-        // Build calls - request headers on ALL calls (unless user explicitly requested no headers).
-        // We'll strip duplicate header rows when combining responses.
-        // This ensures headers are present even if the first request fails.
+        // Build calls with appropriate headers setting:
+        // - If user wants no headers: request headers=false, no SDK processing needed
+        // - If user wants headers: request headers=true on ALL calls, SDK strips duplicates
         $calls = [];
         foreach ($symbols as $symbol) {
             $callArgs = compact('date', 'from', 'to');
@@ -643,27 +643,34 @@ class Options
                 }
 
                 if ($csv !== '') {
-                    // Strip duplicate header rows - headers are requested on all calls
-                    // to handle partial failures, but we only want headers once in output
-                    if ($headerRow === null) {
-                        // First valid response - capture header and include entire response
-                        $firstNewline = strpos($csv, "\n");
-                        if ($firstNewline !== false) {
-                            $headerRow = substr($csv, 0, $firstNewline);
-                        }
+                    // Header handling depends on user preference:
+                    // - If user wants no headers: API returns no headers, combine all data as-is
+                    // - If user wants headers: API returns headers on all calls, SDK strips duplicates
+                    if ($userRequestedNoHeaders) {
+                        // User wants no headers - API returned data without headers
+                        // Just combine all data rows without any header processing
                         $combinedCsv .= $csv . "\n";
                     } else {
-                        // Subsequent responses - strip header row if present
+                        // User wants headers - strip duplicate headers from subsequent responses
                         $firstNewline = strpos($csv, "\n");
-                        if ($firstNewline !== false) {
-                            $firstLine = substr($csv, 0, $firstNewline);
-                            if ($firstLine === $headerRow) {
-                                // Skip the header row
-                                $csv = substr($csv, $firstNewline + 1);
+                        if ($headerRow === null) {
+                            // First valid response - capture header and include entire response
+                            if ($firstNewline !== false) {
+                                $headerRow = substr($csv, 0, $firstNewline);
                             }
-                        }
-                        if ($csv !== '') {
                             $combinedCsv .= $csv . "\n";
+                        } else {
+                            // Subsequent responses - strip header row if present
+                            if ($firstNewline !== false) {
+                                $firstLine = substr($csv, 0, $firstNewline);
+                                if ($firstLine === $headerRow) {
+                                    // Skip the header row
+                                    $csv = substr($csv, $firstNewline + 1);
+                                }
+                            }
+                            if ($csv !== '') {
+                                $combinedCsv .= $csv . "\n";
+                            }
                         }
                     }
                     $validResponseCount++;

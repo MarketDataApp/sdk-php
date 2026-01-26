@@ -1615,4 +1615,39 @@ class QuotesTest extends OptionsTestCase
         $this->assertNull($response->next_time);
         $this->assertNull($response->prev_time);
     }
+
+    /**
+     * Test CSV multi-symbol with add_headers=false preserves duplicate first rows (BUG-024 fix).
+     *
+     * When add_headers=false, the first line is data, not a header. The SDK should NOT
+     * strip matching first lines from subsequent responses, as that would drop valid data.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_noHeaders_preservesDuplicateFirstRows(): void
+    {
+        // Both responses have identical first rows (data, not headers)
+        // This simulates a scenario where columns excludes unique identifiers
+        $csv1 = "row1\nrow2";
+        $csv2 = "row1\nrow3";
+
+        $this->setMockResponses([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['OPT1', 'OPT2'],
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $combinedCsv = $response->getCsv();
+        $lines = array_values(array_filter(explode("\n", trim($combinedCsv)), fn($line) => $line !== ''));
+
+        // All data rows should be preserved, including duplicate "row1"
+        $this->assertEquals(['row1', 'row2', 'row1', 'row3'], $lines);
+    }
 }
