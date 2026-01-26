@@ -8,7 +8,20 @@ use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Mode;
 
 /**
- * Represents parameters for API requests.
+ * Represents universal parameters for API requests.
+ *
+ * Supported REST API universal parameters:
+ * - format: Response format (json, csv, html)
+ * - human: Human-readable values
+ * - mode: Data feed mode (live, cached, delayed)
+ * - maxage: Cache freshness threshold (with mode=cached)
+ * - dateformat: Date format for CSV/HTML
+ * - columns: Column selection for CSV/HTML
+ * - headers: Include headers in CSV/HTML
+ *
+ * Intentionally unsupported (by design):
+ * - token: SDK uses Authorization header only
+ * - limit/offset: SDK uses concurrent parallel requests instead
  */
 class Parameters implements \Stringable
 {

@@ -246,6 +246,53 @@ class ValidatesInputsTest extends TestCase
     }
 
     /**
+     * Test validateDateRange with to only (should fail - requires from or countback).
+     */
+    public function testValidateDateRange_toOnly_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`to` requires either `from` or `countback` to be specified');
+        $this->invokeMethod('validateDateRange', [null, '2024-01-31', null]);
+    }
+
+    /**
+     * Test validateDateRange with to + from (should work).
+     */
+    public function testValidateDateRange_toWithFrom_noException(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->invokeMethod('validateDateRange', ['2024-01-01', '2024-01-31', null]);
+    }
+
+    /**
+     * Test validateDateRange with to + countback (should work).
+     */
+    public function testValidateDateRange_toWithCountback_noException(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->invokeMethod('validateDateRange', [null, '2024-01-31', 10]);
+    }
+
+    /**
+     * Test validateDateRange with to + from + countback (should fail - cannot use both).
+     */
+    public function testValidateDateRange_toWithFromAndCountback_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot use both `from` and `countback` with `to`');
+        $this->invokeMethod('validateDateRange', ['2024-01-01', '2024-01-31', 10]);
+    }
+
+    /**
+     * Test validateDateRange with from only (should work - open-ended range).
+     */
+    public function testValidateDateRange_fromOnly_noException(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->invokeMethod('validateDateRange', ['2024-01-01', null, null]);
+    }
+
+    /**
      * Test validatePositiveInteger with valid value.
      */
     public function testValidatePositiveInteger_valid_noException(): void

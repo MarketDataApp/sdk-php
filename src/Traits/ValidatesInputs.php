@@ -82,9 +82,15 @@ trait ValidatesInputs
     
     /**
      * Validate date range logic.
-     * Only validates when both dates can be parsed as dates (following Python SDK approach).
-     * This allows relative dates and option expiration dates to pass through.
-     * 
+     *
+     * Rules:
+     * - If `to` is provided, it requires either `from` OR `countback` (but not both)
+     * - If both `from` and `to` are parseable dates, validates that `from` < `to`
+     * - If `countback` is provided, it must be a positive integer
+     *
+     * This allows relative dates and option expiration dates to pass through without
+     * strict format validation.
+     *
      * @param string|null $from The start date
      * @param string|null $to The end date
      * @param int|null $countback The countback value
@@ -98,27 +104,46 @@ trait ValidatesInputs
         ?int $countback = null,
         string $context = ''
     ): void {
-        // Only validate range if both dates are parseable
+        // Validate countback first (simple check)
+        if ($countback !== null && $countback <= 0) {
+            throw new \InvalidArgumentException(
+                "`countback` must be a positive integer. Got: {$countback}"
+            );
+        }
+
+        // If 'to' is provided, it must have either 'from' or 'countback' (but not both)
+        if ($to !== null) {
+            $hasFrom = $from !== null;
+            $hasCountback = $countback !== null;
+
+            if (!$hasFrom && !$hasCountback) {
+                throw new \InvalidArgumentException(
+                    "`to` requires either `from` or `countback` to be specified."
+                );
+            }
+
+            if ($hasFrom && $hasCountback) {
+                throw new \InvalidArgumentException(
+                    "Cannot use both `from` and `countback` with `to`. " .
+                    "Use either `from`+`to` or `to`+`countback`."
+                );
+            }
+        }
+
+        // Only validate date order if both dates are parseable
         $fromIsDate = $this->canParseAsDate($from);
         $toIsDate = $this->canParseAsDate($to);
-        
+
         if ($fromIsDate && $toIsDate) {
             // Both are parseable - validate range
             $fromTime = $this->parseDateToTimestamp($from);
             $toTime = $this->parseDateToTimestamp($to);
-            
+
             if ($fromTime !== null && $toTime !== null && $fromTime > $toTime) {
                 throw new \InvalidArgumentException(
                     "`from` date must be before `to` date. Got: from={$from}, to={$to}"
                 );
             }
-        }
-        
-        // Validate countback
-        if ($countback !== null && $countback <= 0) {
-            throw new \InvalidArgumentException(
-                "`countback` must be a positive integer. Got: {$countback}"
-            );
         }
     }
     
