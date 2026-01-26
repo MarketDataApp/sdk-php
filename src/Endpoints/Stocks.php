@@ -222,19 +222,20 @@ class Stocks
      * concurrent requests for different date chunks. The candles are sorted by
      * timestamp to maintain chronological order.
      *
-     * @param array $responses Array of raw response objects from the API.
+     * @param array  $responses Array of raw response objects from the API.
+     * @param string $symbol    The symbol to associate with all candles.
      *
      * @return Candles A single Candles object containing all candles.
      */
-    protected function mergeCandleResponses(array $responses): Candles
+    protected function mergeCandleResponses(array $responses, string $symbol): Candles
     {
         $allCandles = [];
         $overallStatus = 'no_data';
         $nextTime = null;
 
         foreach ($responses as $response) {
-            // Parse each response
-            $candlesResponse = new Candles($response);
+            // Parse each response, passing the symbol so candles have it set
+            $candlesResponse = new Candles($response, $symbol);
 
             if ($candlesResponse->status === 'ok') {
                 $overallStatus = 'ok';
@@ -417,7 +418,7 @@ class Stocks
             $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
         }
 
-        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", $arguments, $parameters));
+        return new Candles($this->execute("candles/{$resolution}/{$symbol}/", $arguments, $parameters), $symbol);
     }
 
     /**
@@ -513,7 +514,7 @@ class Stocks
 
         // Merge all successful responses into a single Candles object
         // (partial failures are tolerated - we return whatever data we got)
-        return $this->mergeCandleResponses($responses);
+        return $this->mergeCandleResponses($responses, $symbol);
     }
 
     /**
@@ -676,7 +677,7 @@ class Stocks
         // Create a response object with the combined CSV
         $combinedResponse = (object) ['csv' => $combinedCsv];
 
-        return new Candles($combinedResponse);
+        return new Candles($combinedResponse, $symbol);
     }
 
     /**

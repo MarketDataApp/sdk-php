@@ -59,6 +59,8 @@ class CandlesTest extends StocksTestCase
             $this->assertEquals($mocked_response['o'][$i], $response->candles[$i]->open);
             $this->assertEquals($mocked_response['v'][$i], $response->candles[$i]->volume);
             $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
+            // BUG-015: Verify symbol is populated from request parameter
+            $this->assertEquals('AAPL', $response->candles[$i]->symbol);
         }
     }
 

@@ -852,7 +852,7 @@ class CandlesConcurrentTest extends StocksTestCase
         $reflection = new \ReflectionClass($stocks);
         $method = $reflection->getMethod('mergeCandleResponses');
 
-        $result = $method->invoke($stocks, []);
+        $result = $method->invoke($stocks, [], 'AAPL');
 
         $this->assertInstanceOf(Candles::class, $result);
         $this->assertEquals('no_data', $result->status);

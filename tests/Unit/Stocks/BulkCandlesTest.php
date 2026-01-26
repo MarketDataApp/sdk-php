@@ -57,6 +57,8 @@ class BulkCandlesTest extends StocksTestCase
             $this->assertEquals($mocked_response['o'][$i], $response->candles[$i]->open);
             $this->assertEquals($mocked_response['v'][$i], $response->candles[$i]->volume);
             $this->assertEquals(Carbon::parse($mocked_response['t'][$i]), $response->candles[$i]->timestamp);
+            // BUG-015: Verify symbol is preserved from API response
+            $this->assertEquals($mocked_response['symbol'][$i], $response->candles[$i]->symbol);
         }
     }
 
@@ -251,5 +253,44 @@ class BulkCandlesTest extends StocksTestCase
 
         $this->assertInstanceOf(BulkCandles::class, $response);
         $this->assertCount(1, $response->candles);
+    }
+
+    /**
+     * BUG-015: Test that bulkCandles preserves symbol information in Candle objects.
+     *
+     * Previously, the symbol array from the API response was ignored, making it
+     * impossible for users to identify which candle belongs to which symbol.
+     */
+    public function testBulkCandles_preservesSymbolInCandles(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-01-22)
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'MSFT', 'GOOGL'],
+            'o' => [248.7, 452.595, 195.50],
+            'h' => [251.56, 452.69, 197.80],
+            'l' => [245.18, 438.68, 193.20],
+            'c' => [247.65, 444.11, 196.75],
+            'v' => [54933217, 37939952, 25000000],
+            't' => [1768971600, 1768971600, 1768971600]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ['AAPL', 'MSFT', 'GOOGL'],
+            resolution: 'D'
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertCount(3, $response->candles);
+
+        // Verify each candle has its symbol set correctly
+        $this->assertEquals('AAPL', $response->candles[0]->symbol);
+        $this->assertEquals('MSFT', $response->candles[1]->symbol);
+        $this->assertEquals('GOOGL', $response->candles[2]->symbol);
+
+        // Verify symbol appears in string representation
+        $this->assertStringContainsString('AAPL', (string) $response->candles[0]);
+        $this->assertStringContainsString('MSFT', (string) $response->candles[1]);
     }
 }

@@ -45,8 +45,10 @@ class BulkCandles extends ResponseBase
 
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
+            // Note: Human-readable format does not include symbol data from the API
             $this->status = 'ok';
-            
+            $symbols = $responseArray['Symbol'] ?? null;
+
             $count = count($responseArray['Open']);
             for ($i = 0; $i < $count; $i++) {
                 $this->candles[] = new Candle(
@@ -56,6 +58,7 @@ class BulkCandles extends ResponseBase
                     $responseArray['Close'][$i],
                     $responseArray['Volume'][$i],
                     Carbon::parse($responseArray['Date'][$i]),
+                    $symbols[$i] ?? null,
                 );
             }
         } else {
@@ -63,6 +66,7 @@ class BulkCandles extends ResponseBase
             $this->status = $response->s;
 
             if ($this->status === 'ok') {
+                $symbols = $response->symbol ?? null;
                 for ($i = 0; $i < count($response->o); $i++) {
                     $this->candles[] = new Candle(
                         $response->o[$i],
@@ -71,6 +75,7 @@ class BulkCandles extends ResponseBase
                         $response->c[$i],
                         $response->v[$i],
                         Carbon::parse($response->t[$i]),
+                        $symbols[$i] ?? null,
                     );
                 }
             }

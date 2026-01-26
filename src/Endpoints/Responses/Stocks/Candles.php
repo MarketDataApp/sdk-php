@@ -38,9 +38,11 @@ class Candles extends ResponseBase
     /**
      * Constructs a new Candles object and parses the response data.
      *
-     * @param object $response The raw response object to be parsed.
+     * @param object      $response The raw response object to be parsed.
+     * @param string|null $symbol   Optional symbol to associate with each candle. Used when the caller
+     *                              knows the symbol (e.g., single-symbol candles() requests).
      */
-    public function __construct(object $response)
+    public function __construct(object $response, ?string $symbol = null)
     {
         parent::__construct($response);
         if (!$this->isJson()) {
@@ -73,6 +75,7 @@ class Candles extends ResponseBase
                     $responseArray['Close'][$i],
                     $responseArray['Volume'][$i],
                     Carbon::parse($responseArray['Date'][$i]),
+                    $symbol,
                 );
             }
         } else {
@@ -89,6 +92,7 @@ class Candles extends ResponseBase
                             $response->c[$i],
                             $response->v[$i],
                             Carbon::parse($response->t[$i]),
+                            $symbol,
                         );
                     }
                     break;
