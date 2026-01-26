@@ -606,22 +606,53 @@ class Options
         $failedRequests = [];
         $responses = $this->execute_in_parallel($calls, $csvParams, $failedRequests);
 
-        // If ALL requests failed, throw the first exception
+        // If ALL requests failed via exceptions, throw the first exception
         if (empty($responses) && !empty($failedRequests)) {
             throw reset($failedRequests);
         }
 
-        // Combine CSV responses
+        // Combine CSV responses, filtering out JSON error responses
+        // (API returns JSON even when CSV is requested if there's an error)
         $combinedCsv = '';
+        $validResponseCount = 0;
+        $lastErrorMessage = null;
         ksort($responses); // Ensure responses are in original order
         foreach ($responses as $response) {
             if (isset($response->csv)) {
                 $csv = $response->csv;
                 // Trim trailing newlines to avoid extra blank lines when combining
                 $csv = rtrim($csv, "\r\n");
+
+                // Check if this is a JSON error response instead of valid CSV
+                // API returns JSON for errors even when CSV format is requested
+                if ($csv !== '' && str_starts_with($csv, '{')) {
+                    $decoded = json_decode($csv);
+                    if (isset($decoded->s) && $decoded->s === 'error') {
+                        // This is a JSON error response, skip it but record the error
+                        $lastErrorMessage = $decoded->errmsg ?? 'Unknown error';
+                        continue;
+                    }
+                }
+
                 if ($csv !== '') {
                     $combinedCsv .= $csv . "\n";
+                    $validResponseCount++;
                 }
+            }
+        }
+
+        // If ALL responses were errors (no valid CSV data), throw an exception
+        if ($validResponseCount === 0) {
+            if ($lastErrorMessage !== null) {
+                throw new ApiException(
+                    message: $lastErrorMessage
+                );
+            } elseif (!empty($failedRequests)) {
+                throw reset($failedRequests);
+            } else {
+                throw new ApiException(
+                    message: 'No data available for the requested symbols'
+                );
             }
         }
 

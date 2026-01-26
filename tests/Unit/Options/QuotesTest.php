@@ -1368,4 +1368,60 @@ class QuotesTest extends OptionsTestCase
         );
     }
 
+    /**
+     * Test CSV multi-symbol filters out JSON error responses from combined output.
+     *
+     * This is a regression test for BUG-003 where JSON error payloads were
+     * being concatenated into the CSV output instead of being filtered out.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_filtersJsonErrors(): void
+    {
+        // First response is valid CSV, second is a JSON error
+        $this->setMockResponses([
+            new Response(200, [], "symbol,price\nGOOD,1\n"),
+            new Response(404, [], '{"s":"error","errmsg":"not found"}'),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['GOOD', 'BAD'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+        $csv = $response->getCsv();
+
+        // CSV should NOT contain the JSON error
+        $this->assertStringNotContainsString('{"s":"error"', $csv);
+        $this->assertStringNotContainsString('not found', $csv);
+
+        // CSV should contain the valid data
+        $this->assertStringContainsString('symbol,price', $csv);
+        $this->assertStringContainsString('GOOD,1', $csv);
+    }
+
+    /**
+     * Test CSV multi-symbol throws exception when ALL responses are JSON errors.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_allJsonErrors_throwsException(): void
+    {
+        // Both responses are JSON errors with same message (to avoid order-dependent test)
+        $this->setMockResponses([
+            new Response(200, [], '{"s":"error","errmsg":"symbol not found"}'),
+            new Response(200, [], '{"s":"error","errmsg":"symbol not found"}'),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('symbol not found');
+
+        $this->client->options->quotes(
+            option_symbols: ['BAD1', 'BAD2'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
 }
