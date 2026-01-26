@@ -47,6 +47,25 @@ class LookupTest extends OptionsTestCase
     }
 
     /**
+     * Test that CSV response initializes typed properties to safe defaults.
+     *
+     * Regression test for BUG-018: Options lookup CSV responses leave typed
+     * properties uninitialized, causing fatal errors when accessed.
+     */
+    public function testLookup_csv_typedPropertiesInitialized()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "s, optionSymbol\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->lookup('AAPL 7/28/23 $200 Call', new Parameters(format: Format::CSV));
+
+        // Should not throw "must not be accessed before initialization"
+        $this->assertEquals('no_data', $response->status);
+        $this->assertNull($response->option_symbol);
+    }
+
+    /**
      * Test the lookup endpoint with human-readable format.
      */
     public function testLookup_humanReadable_success()

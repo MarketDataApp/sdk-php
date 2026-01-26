@@ -15,14 +15,14 @@ class Lookup extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The generated OCC option symbol based on the user's input.
      *
-     * @var string
+     * @var string|null
      */
-    public string $option_symbol;
+    public ?string $option_symbol = null;
 
     /**
      * Constructs a new Lookup instance from the given response object.
@@ -64,6 +64,6 @@ class Lookup extends ResponseBase
             return "Lookup - Non-JSON format, use getCsv() or getHtml()";
         }
 
-        return sprintf("Lookup: %s", $this->option_symbol);
+        return sprintf("Lookup: %s", $this->option_symbol ?? '');
     }
 }
