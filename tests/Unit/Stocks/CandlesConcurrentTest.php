@@ -1988,4 +1988,81 @@ class CandlesConcurrentTest extends StocksTestCase
             $this->assertEquals('60', $query['maxage'], "Request $index maxage should equal 60");
         }
     }
+
+    /**
+     * Test that CSV format includes headers even when first chunk fails with JSON error.
+     *
+     * This is a regression test for BUG-016 where CSV candles combined output dropped
+     * headers when the first chunk failed with a JSON error response. The first chunk
+     * was the only one requesting headers, so when it failed, no headers were present.
+     *
+     * Mock response: NOT from real API output (synthetic data for edge case testing)
+     */
+    public function testCandles_automaticConcurrent_csvFormat_headersWhenFirstChunkFails(): void
+    {
+        // First chunk returns JSON error (e.g., symbol wasn't trading yet)
+        $jsonErrorResponse = json_encode(['s' => 'error', 'errmsg' => 'No data for first chunk']);
+
+        // Second chunk returns valid CSV with headers
+        $csvResponse2 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+
+        $this->setMockResponses([
+            new Response(200, [], $jsonErrorResponse),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2020-01-01',
+            to: '2021-02-01',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+
+        // BUG-016: Headers should be present even though first chunk failed
+        $this->assertStringContainsString('t,o,h,l,c,v', $csv, 'CSV should include header row');
+        $this->assertStringContainsString('1641220200', $csv, 'CSV should include data from successful chunk');
+    }
+
+    /**
+     * Test that CSV format properly strips duplicate headers from subsequent chunks.
+     *
+     * Since headers are now requested on all chunks (to handle first chunk failure),
+     * duplicate headers should be stripped when combining responses.
+     *
+     * Mock response: NOT from real API output (synthetic data for edge case testing)
+     */
+    public function testCandles_automaticConcurrent_csvFormat_stripsDuplicateHeaders(): void
+    {
+        // Both chunks return valid CSV with headers
+        $csvResponse1 = "t,o,h,l,c,v\n1609770600,133.52,133.6116,132.39,132.81,4815264";
+        $csvResponse2 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2021-01-01',
+            to: '2022-02-01',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $csv = $result->getCsv();
+
+        // Should only have one header row (duplicates stripped)
+        $headerCount = substr_count($csv, 't,o,h,l,c,v');
+        $this->assertEquals(1, $headerCount, 'CSV should have exactly one header row');
+
+        // Should contain both data rows
+        $this->assertStringContainsString('1609770600', $csv);
+        $this->assertStringContainsString('1641220200', $csv);
+    }
 }

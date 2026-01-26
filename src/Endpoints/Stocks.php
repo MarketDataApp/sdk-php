@@ -519,9 +519,9 @@ class Stocks
     /**
      * Handle CSV format for concurrent candle requests.
      *
-     * Makes separate requests for each date chunk, with headers=true on the first request
-     * (unless user explicitly set add_headers=false) and headers=false on subsequent
-     * requests. Combines all responses into a single CSV output.
+     * Makes separate requests for each date chunk, with headers=true on ALL requests
+     * (unless user explicitly set add_headers=false). This ensures headers are present
+     * even if the first chunk fails. Duplicate headers are stripped when combining.
      *
      * @param string          $symbol        The stock symbol.
      * @param string          $from          The start date.
@@ -560,9 +560,11 @@ class Stocks
         // Determine if user explicitly requested no headers
         $userRequestedNoHeaders = $mergedParams->add_headers === false;
 
-        // Build calls with appropriate header settings
+        // Build calls - request headers on ALL calls (unless user explicitly requested no headers).
+        // We'll strip duplicate header rows when combining responses.
+        // This ensures headers are present even if the first request fails.
         $calls = [];
-        foreach ($chunks as $index => $chunk) {
+        foreach ($chunks as $chunk) {
             $arguments = [
                 'from' => $chunk[0],
                 'to'   => $chunk[1],
@@ -573,14 +575,7 @@ class Stocks
             if ($adjust_splits !== null) {
                 $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
             }
-
-            // First request: headers=true unless user explicitly requested no headers
-            // Subsequent requests: always headers=false
-            if ($index === 0) {
-                $arguments['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
-            } else {
-                $arguments['headers'] = 'false';
-            }
+            $arguments['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
 
             $calls[] = [
                 "candles/{$resolution}/{$symbol}/",
@@ -614,6 +609,7 @@ class Stocks
         $combinedCsv = '';
         $validResponseCount = 0;
         $lastErrorMessage = null;
+        $headerRow = null;
         ksort($responses); // Ensure responses are in original order
         foreach ($responses as $response) {
             if (isset($response->csv)) {
@@ -634,7 +630,29 @@ class Stocks
                 }
 
                 if ($csv !== '') {
-                    $combinedCsv .= $csv . "\n";
+                    // Strip duplicate header rows - headers are requested on all calls
+                    // to handle partial failures, but we only want headers once in output
+                    if ($headerRow === null) {
+                        // First valid response - capture header and include entire response
+                        $firstNewline = strpos($csv, "\n");
+                        if ($firstNewline !== false) {
+                            $headerRow = substr($csv, 0, $firstNewline);
+                        }
+                        $combinedCsv .= $csv . "\n";
+                    } else {
+                        // Subsequent responses - strip header row if present
+                        $firstNewline = strpos($csv, "\n");
+                        if ($firstNewline !== false) {
+                            $firstLine = substr($csv, 0, $firstNewline);
+                            if ($firstLine === $headerRow) {
+                                // Skip the header row
+                                $csv = substr($csv, $firstNewline + 1);
+                            }
+                        }
+                        if ($csv !== '') {
+                            $combinedCsv .= $csv . "\n";
+                        }
+                    }
                     $validResponseCount++;
                 }
             }
