@@ -45,25 +45,49 @@ class Candles extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        switch ($this->status) {
-            case 'ok':
-                for ($i = 0; $i < count($response->o); $i++) {
-                    $this->candles[] = new Candle(
-                        $response->o[$i],
-                        $response->h[$i],
-                        $response->l[$i],
-                        $response->c[$i],
-                        Carbon::parse($response->t[$i]),
-                    );
-                }
-                break;
+        // Determine if this is human-readable format (has "Open" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Open']);
 
-            case 'no_data' && isset($response->nextTime):
-                $this->next_time = $response->nextTime;
-                break;
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+
+            $count = count($responseArray['Open']);
+            for ($i = 0; $i < $count; $i++) {
+                $this->candles[] = new Candle(
+                    $responseArray['Open'][$i],
+                    $responseArray['High'][$i],
+                    $responseArray['Low'][$i],
+                    $responseArray['Close'][$i],
+                    Carbon::parse($responseArray['Date'][$i]),
+                );
+            }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            switch ($this->status) {
+                case 'ok':
+                    for ($i = 0; $i < count($response->o); $i++) {
+                        $this->candles[] = new Candle(
+                            $response->o[$i],
+                            $response->h[$i],
+                            $response->l[$i],
+                            $response->c[$i],
+                            Carbon::parse($response->t[$i]),
+                        );
+                    }
+                    break;
+
+                case 'no_data':
+                    if (isset($response->nextTime)) {
+                        $this->next_time = $response->nextTime;
+                    }
+                    break;
+            }
         }
     }
 

@@ -304,4 +304,58 @@ class MutualFundsTest extends TestCase
         $this->assertEquals('v1/funds/candles/D/VFIAX/', $path);
         $this->assertStringNotContainsString('%20', $path, 'Path should not contain encoded space');
     }
+
+    // ========================================================================
+    // HUMAN-READABLE FORMAT PARSING
+    // Bug 025: MutualFunds candles should parse human-readable JSON responses
+    // ========================================================================
+
+    /**
+     * Test candles() parses human-readable JSON format correctly.
+     *
+     * Bug 025: When human=true is used, the API returns human-readable keys
+     * (Open, High, Low, Close, Date) instead of abbreviated keys (o, h, l, c, t).
+     * The response class should detect and parse this format.
+     */
+    public function testCandles_humanReadableFormat_success(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data for human-readable format)
+        $mocked_response = [
+            'Open'  => [101.0, 102.5],
+            'High'  => [105.0, 106.0],
+            'Low'   => [99.5, 100.0],
+            'Close' => [103.0, 104.5],
+            'Date'  => ['2024-01-02', '2024-01-03'],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VTSAX',
+            from: '2024-01-01',
+            to: '2024-01-03',
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        // Verify the response is parsed correctly
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->candles);
+
+        // Verify first candle
+        $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $this->assertEquals(101.0, $response->candles[0]->open);
+        $this->assertEquals(105.0, $response->candles[0]->high);
+        $this->assertEquals(99.5, $response->candles[0]->low);
+        $this->assertEquals(103.0, $response->candles[0]->close);
+        $this->assertEquals('2024-01-02', $response->candles[0]->timestamp->format('Y-m-d'));
+
+        // Verify second candle
+        $this->assertInstanceOf(Candle::class, $response->candles[1]);
+        $this->assertEquals(102.5, $response->candles[1]->open);
+        $this->assertEquals(106.0, $response->candles[1]->high);
+        $this->assertEquals(100.0, $response->candles[1]->low);
+        $this->assertEquals(104.5, $response->candles[1]->close);
+        $this->assertEquals('2024-01-03', $response->candles[1]->timestamp->format('Y-m-d'));
+    }
 }
