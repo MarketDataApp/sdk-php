@@ -593,6 +593,7 @@ class Stocks
             format: $mergedParams->format,
             use_human_readable: $mergedParams->use_human_readable,
             mode: $mergedParams->mode,
+            maxage: $mergedParams->maxage,
             date_format: $mergedParams->date_format,
             columns: $mergedParams->columns,
             add_headers: null, // We handle headers per-call

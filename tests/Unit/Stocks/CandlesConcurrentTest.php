@@ -1940,4 +1940,46 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertEquals('ok', $result->status);
         $this->assertCount(2, $result->candles);
     }
+
+    /**
+     * Test that maxage parameter is included in parallel CSV requests.
+     *
+     * This is a regression test for BUG-010 where maxage was dropped when
+     * rebuilding Parameters for CSV parallel requests in candlesConcurrentCsv().
+     *
+     * Mock response: NOT from real API output (synthetic CSV response for testing)
+     */
+    public function testCandles_automaticConcurrent_csvFormat_includesMaxage(): void
+    {
+        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
+        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ], $history);
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::CSV,
+                mode: Mode::CACHED,
+                maxage: 60
+            )
+        );
+
+        // Verify both requests include maxage in query string
+        $this->assertCount(2, $history);
+
+        foreach ($history as $index => $entry) {
+            $query = [];
+            parse_str($entry['request']->getUri()->getQuery(), $query);
+            $this->assertArrayHasKey('maxage', $query, "Request $index should include maxage parameter");
+            $this->assertEquals('60', $query['maxage'], "Request $index maxage should equal 60");
+        }
+    }
 }

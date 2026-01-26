@@ -1450,4 +1450,43 @@ class QuotesTest extends OptionsTestCase
         );
     }
 
+    /**
+     * Test that maxage parameter is included in multi-symbol CSV requests.
+     *
+     * This is a regression test for BUG-010 where maxage was dropped when
+     * rebuilding Parameters for CSV parallel requests in quotesMultipleCsv().
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_includesMaxage(): void
+    {
+        $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $csv2 = "AAPL250117P00150000,4.20,4.10";
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ], $history);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(
+                format: Format::CSV,
+                mode: \MarketDataApp\Enums\Mode::CACHED,
+                maxage: 60
+            )
+        );
+
+        // Verify both requests include maxage in query string
+        $this->assertCount(2, $history);
+
+        foreach ($history as $index => $entry) {
+            $query = [];
+            parse_str($entry['request']->getUri()->getQuery(), $query);
+            $this->assertArrayHasKey('maxage', $query, "Request $index should include maxage parameter");
+            $this->assertEquals('60', $query['maxage'], "Request $index maxage should equal 60");
+        }
+    }
+
 }
