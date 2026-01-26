@@ -864,10 +864,6 @@ class Stocks
      *
      * @param string|null     $date       Retrieve a specific earnings report by date. Optional.
      *
-     * @param string|null     $datekey    Retrieve a specific earnings report by date and quarter. Example: 2023-Q4.
-     *                                    This allows you to retrieve a 4th quarter value without knowing the company's
-     *                                    specific fiscal year. Optional.
-     *
      * @param Parameters|null $parameters Universal parameters for all methods (such as format).
      *
      * @return Earnings
@@ -880,7 +876,6 @@ class Stocks
         ?string $to = null,
         ?int $countback = null,
         ?string $date = null,
-        ?string $datekey = null,
         ?Parameters $parameters = null
     ): Earnings {
         // Validate inputs
@@ -891,7 +886,7 @@ class Stocks
         $this->validateDateRange($from, $to, $countback);
 
         return new Earnings($this->execute("earnings/{$symbol}/",
-            compact('from', 'to', 'countback', 'date', 'datekey'), $parameters));
+            compact('from', 'to', 'countback', 'date'), $parameters));
     }
 
     /**

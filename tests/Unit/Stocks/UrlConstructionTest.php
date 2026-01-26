@@ -1155,36 +1155,6 @@ class UrlConstructionTest extends TestCase
         $this->assertEquals('4', $query['countback']);
     }
 
-    /**
-     * Test earnings URL with datekey parameter.
-     */
-    public function testEarnings_withDatekey_addsParameter(): void
-    {
-        $this->setMockResponsesWithHistory([
-            new Response(200, [], json_encode([
-                's' => 'ok',
-                'symbol' => ['AAPL'],
-                'fiscalYear' => [2024],
-                'fiscalQuarter' => [1],
-                'date' => ['2024-01-25'],
-                'reportDate' => ['2024-02-01'],
-                'reportTime' => ['after close'],
-                'currency' => ['USD'],
-                'reportedEPS' => [1.50],
-                'estimatedEPS' => [1.45],
-                'surpriseEPS' => [0.05],
-                'surpriseEPSpct' => [0.03],
-                'updated' => [1234567890]
-            ]))
-        ]);
-
-        $this->client->stocks->earnings('AAPL', from: '2024-01-01', datekey: '2024-Q1');
-
-        $query = $this->parseQuery($this->getLastRequestQuery());
-        $this->assertArrayHasKey('datekey', $query);
-        $this->assertEquals('2024-Q1', $query['datekey']);
-    }
-
     // ========================================================================
     // NEWS ENDPOINT
     // API: GET /v1/stocks/news/{symbol}/
