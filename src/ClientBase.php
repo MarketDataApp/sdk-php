@@ -630,6 +630,19 @@ abstract class ClientBase
             case 'csv':
             case 'html':
                 $content = (string)$response->getBody();
+
+                // Check if content is a JSON error response (API returns JSON errors even for CSV/HTML requests)
+                if ($content !== '' && str_starts_with($content, '{')) {
+                    $decoded = json_decode($content);
+                    if (isset($decoded->s) && $decoded->s === 'error') {
+                        throw new ApiException(
+                            message: $decoded->errmsg ?? 'Unknown error',
+                            response: $response,
+                            requestUrl: $requestUrl
+                        );
+                    }
+                }
+
                 $responseObject = (object)array(
                     $format => $content
                 );

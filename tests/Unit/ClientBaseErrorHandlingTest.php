@@ -1081,4 +1081,115 @@ class ClientBaseErrorHandlingTest extends TestCase
 
         $method->invoke($this->client, $response, 'json', []);
     }
+
+    /**
+     * Test processResponse with CSV format throws ApiException when body is JSON error.
+     *
+     * @return void
+     */
+    public function testProcessResponse_withCsvFormat_jsonError_throwsApiException(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic error for testing)
+        $response = new Response(404, [], '{"s":"error","errmsg":"Symbol not found"}');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Symbol not found');
+
+        $method->invoke($this->client, $response, 'csv', ['format' => 'csv']);
+    }
+
+    /**
+     * Test processResponse with HTML format throws ApiException when body is JSON error.
+     *
+     * @return void
+     */
+    public function testProcessResponse_withHtmlFormat_jsonError_throwsApiException(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic error for testing)
+        $response = new Response(404, [], '{"s":"error","errmsg":"Invalid request"}');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Invalid request');
+
+        $method->invoke($this->client, $response, 'html', ['format' => 'html']);
+    }
+
+    /**
+     * Test processResponse with CSV format and filename throws ApiException when body is JSON error.
+     * File should NOT be written.
+     *
+     * @return void
+     */
+    public function testProcessResponse_withCsvFormatAndFilename_jsonError_throwsApiException_noFileWritten(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic error for testing)
+        $response = new Response(404, [], '{"s":"error","errmsg":"not found"}');
+
+        $filename = sys_get_temp_dir() . '/md-sdk-test-' . uniqid() . '.csv';
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        try {
+            $method->invoke($this->client, $response, 'csv', ['format' => 'csv', '_filename' => $filename]);
+            $this->fail('Expected ApiException was not thrown');
+        } catch (\MarketDataApp\Exceptions\ApiException $e) {
+            $this->assertEquals('not found', $e->getMessage());
+            // Verify file was NOT written
+            $this->assertFileDoesNotExist($filename);
+        }
+    }
+
+    /**
+     * Test processResponse with HTML format and filename throws ApiException when body is JSON error.
+     * File should NOT be written.
+     *
+     * @return void
+     */
+    public function testProcessResponse_withHtmlFormatAndFilename_jsonError_throwsApiException_noFileWritten(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic error for testing)
+        $response = new Response(404, [], '{"s":"error","errmsg":"not found"}');
+
+        $filename = sys_get_temp_dir() . '/md-sdk-test-' . uniqid() . '.html';
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        try {
+            $method->invoke($this->client, $response, 'html', ['format' => 'html', '_filename' => $filename]);
+            $this->fail('Expected ApiException was not thrown');
+        } catch (\MarketDataApp\Exceptions\ApiException $e) {
+            $this->assertEquals('not found', $e->getMessage());
+            // Verify file was NOT written
+            $this->assertFileDoesNotExist($filename);
+        }
+    }
+
+    /**
+     * Test processResponse with CSV format handles valid CSV starting with curly brace.
+     * Edge case: Valid CSV content that happens to start with '{' should not be treated as JSON error.
+     *
+     * @return void
+     */
+    public function testProcessResponse_withCsvFormat_validCsvStartingWithBrace_returnsContent(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic data for edge case testing)
+        // This is a valid CSV that happens to start with '{'
+        $csvContent = '{"header"},value\n{"row1"},data1';
+        $response = new Response(200, [], $csvContent);
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $result = $method->invoke($this->client, $response, 'csv', ['format' => 'csv']);
+
+        $this->assertEquals($csvContent, $result->csv);
+    }
 }
