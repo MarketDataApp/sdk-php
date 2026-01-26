@@ -201,6 +201,74 @@ class MarketsTest extends TestCase
     }
 
     /**
+     * Test multi-date human-readable response returns all dates (BUG-017 fix).
+     *
+     * When querying multiple dates with human-readable format, all dates should
+     * be returned, not just the first one.
+     *
+     * @return void
+     */
+    public function testStatus_humanReadable_multiDate_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            'Date' => ['2023-04-05', '2023-04-06', '2023-04-07'],
+            'Status' => ['open', 'closed', 'open']
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            from: '2023-04-05',
+            to: '2023-04-07',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(3, $response->statuses);
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->assertInstanceOf(Status::class, $response->statuses[$i]);
+            $this->assertEquals(Carbon::parse($mocked_response['Date'][$i]), $response->statuses[$i]->date);
+            $this->assertEquals($mocked_response['Status'][$i], $response->statuses[$i]->status);
+        }
+    }
+
+    /**
+     * Test multi-date human-readable response with Unix timestamps (BUG-017 fix).
+     *
+     * @return void
+     */
+    public function testStatus_humanReadable_multiDate_timestamps_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            'Date' => [1680652800, 1680739200],
+            'Status' => ['open', 'closed']
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->markets->status(
+            from: '2023-04-05',
+            to: '2023-04-06',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Statuses::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->statuses);
+
+        for ($i = 0; $i < 2; $i++) {
+            $this->assertInstanceOf(Status::class, $response->statuses[$i]);
+            $this->assertEquals(
+                Carbon::createFromTimestamp($mocked_response['Date'][$i]),
+                $response->statuses[$i]->date
+            );
+            $this->assertEquals($mocked_response['Status'][$i], $response->statuses[$i]->status);
+        }
+    }
+
+    /**
      * Test that date_format parameter can be used with CSV format for markets.
      *
      * @return void

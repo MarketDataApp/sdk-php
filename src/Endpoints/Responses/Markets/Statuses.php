@@ -43,21 +43,36 @@ class Statuses extends ResponseBase
         $isHumanReadable = isset($responseArray['Status']);
 
         if ($isHumanReadable) {
-            // Human-readable format - no "s" status field, single status object
+            // Human-readable format - no "s" status field
             $this->status = 'ok';
-            // Handle Date field - ensure it's a string (may be array when object is cast to array)
-            $dateValue = $responseArray['Date'];
-            if (is_array($dateValue)) {
-                $dateValue = !empty($dateValue) ? $dateValue[0] : '';
+
+            $dates = $responseArray['Date'];
+            $statusValues = $responseArray['Status'];
+
+            // Handle both single values and arrays (multi-date queries)
+            if (is_array($dates)) {
+                for ($i = 0; $i < count($dates); $i++) {
+                    $dateValue = $dates[$i];
+                    $date = is_numeric($dateValue)
+                        ? Carbon::createFromTimestamp((int) $dateValue)
+                        : Carbon::parse($dateValue);
+                    // Status may be array or single value
+                    $statusValue = is_array($statusValues) ? ($statusValues[$i] ?? null) : $statusValues;
+                    $this->statuses[] = new Status(
+                        $date,
+                        $statusValue,
+                    );
+                }
+            } else {
+                // Single date response
+                $date = is_numeric($dates)
+                    ? Carbon::createFromTimestamp((int) $dates)
+                    : Carbon::parse($dates);
+                $this->statuses[] = new Status(
+                    $date,
+                    $statusValues ?? null,
+                );
             }
-            // Parse date - handle both Unix timestamps and date strings
-            $date = is_numeric($dateValue) 
-                ? Carbon::createFromTimestamp((int) $dateValue)
-                : Carbon::parse($dateValue);
-            $this->statuses[] = new Status(
-                $date,
-                is_array($responseArray['Status']) ? ($responseArray['Status'][0] ?? null) : ($responseArray['Status'] ?? null),
-            );
         } else {
             // Regular format
             $this->status = $response->s;
