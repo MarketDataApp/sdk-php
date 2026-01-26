@@ -151,7 +151,7 @@ class Quote extends ResponseBase
             $this->change_percent = $responseArray['Change %'][0];
             $this->volume = $responseArray['Volume'][0];
             $this->updated = Carbon::parse($responseArray['Date'][0]);
-            
+
             // 52-week high/low may not be present in human-readable format
             // Check if they exist (API returns "52 Week High" with space)
             if (isset($responseArray['52 Week High'][0])) {
@@ -163,6 +163,12 @@ class Quote extends ResponseBase
         } else {
             // Regular format
             $this->status = $response->s;
+
+            // Handle no_data status (e.g., 204 No Content or no data available)
+            if ($this->status === 'no_data') {
+                return;
+            }
+
             $this->symbol = $response->symbol[0];
             $this->ask = $response->ask[0];
             $this->ask_size = $response->askSize[0];

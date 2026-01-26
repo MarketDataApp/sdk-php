@@ -1012,4 +1012,73 @@ class ClientBaseErrorHandlingTest extends TestCase
         $this->assertObjectHasProperty('csv', $results[0]);
         $this->assertEquals("status\nonline", $results[0]->csv);
     }
+
+    /**
+     * Test processResponse with 204 No Content returns structured no_data response.
+     *
+     * This is a regression test for BUG-004 where 204 No Content caused TypeError
+     * because json_decode('') returns null, violating the object return type.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testProcessResponse_with204NoContent_returnsNoDataResponse(): void
+    {
+        $response = new Response(204, [], '');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $result = $method->invoke($this->client, $response, 'json', []);
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('s', $result);
+        $this->assertEquals('no_data', $result->s);
+    }
+
+    /**
+     * Test processResponse with empty JSON body returns structured no_data response.
+     *
+     * This is a regression test for BUG-004 - empty response body handling.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testProcessResponse_withEmptyBody_returnsNoDataResponse(): void
+    {
+        $response = new Response(200, [], '');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $result = $method->invoke($this->client, $response, 'json', []);
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('s', $result);
+        $this->assertEquals('no_data', $result->s);
+    }
+
+    /**
+     * Test processResponse with invalid JSON throws ApiException.
+     *
+     * This is a regression test for BUG-004 - proper error handling for invalid JSON.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testProcessResponse_withInvalidJson_throwsApiException(): void
+    {
+        $response = new Response(200, [], '{invalid json}');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Invalid JSON response');
+
+        $method->invoke($this->client, $response, 'json', []);
+    }
 }

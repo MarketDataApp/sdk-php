@@ -661,7 +661,27 @@ abstract class ClientBase
             case 'json':
             default:
                 $json_response = (string)$response->getBody();
+
+                // Handle 204 No Content or empty body - return a structured "no data" response
+                if ($json_response === '' || $response->getStatusCode() === 204) {
+                    return (object) ['s' => 'no_data'];
+                }
+
                 $object_response = json_decode($json_response);
+
+                // Handle json_decode failure (returns null for invalid JSON)
+                if ($object_response === null && json_last_error() !== JSON_ERROR_NONE) {
+                    throw new ApiException(
+                        message: 'Invalid JSON response: ' . json_last_error_msg(),
+                        response: $response,
+                        requestUrl: $requestUrl
+                    );
+                }
+
+                // Handle null from valid "null" JSON literal
+                if ($object_response === null) {
+                    return (object) ['s' => 'no_data'];
+                }
 
                 if (isset($object_response->s) && $object_response->s === 'error') {
                     throw new ApiException(message: $object_response->errmsg, response: $response, requestUrl: $requestUrl);
