@@ -16,15 +16,15 @@ class Candles extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Unix time of the next quote if there is no data in the requested period, but there is data in a subsequent
      * period.
      *
-     * @var int
+     * @var int|null
      */
-    public int $next_time;
+    public ?int $next_time = null;
 
     /**
      * Array of Candle objects representing financial data for mutual funds.

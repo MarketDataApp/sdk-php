@@ -135,6 +135,35 @@ class MutualFundsTest extends TestCase
     }
 
     /**
+     * Test CSV format initializes typed properties with defaults.
+     *
+     * BUG-019: CSV responses left typed properties (status, next_time) uninitialized,
+     * causing PHP Error when accessed.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_csv_typedPropertiesInitialized(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $this->setMockResponses([new Response(200, [], "s, t, o, h, l, c\r\n")]);
+
+        $response = $this->client->mutual_funds->candles(
+            symbol: 'VFINX',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(Format::CSV)
+        );
+
+        // Access typed properties - should not throw PHP Error
+        $this->assertEquals('no_data', $response->status);
+        $this->assertNull($response->next_time);
+        $this->assertEmpty($response->candles);
+    }
+
+    /**
      * Test the candles endpoint for a successful response with no data.
      *
      * @return void
