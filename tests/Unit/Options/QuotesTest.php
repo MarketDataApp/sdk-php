@@ -1424,4 +1424,30 @@ class QuotesTest extends OptionsTestCase
         );
     }
 
+    /**
+     * Test that filename parameter throws exception for multi-symbol CSV requests.
+     *
+     * This is a regression test for BUG-006 where filename was silently ignored
+     * for multi-symbol options quotes instead of throwing an exception.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_withFilename_throwsException(): void
+    {
+        // We don't need mock responses because the exception is thrown before the request
+        $this->setMockResponses([
+            new Response(200, [], "symbol,price\nSYM1,1\n"),
+            new Response(200, [], "symbol,price\nSYM2,2\n"),
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('filename parameter cannot be used with multi-symbol options quotes');
+
+        $tempFile = sys_get_temp_dir() . '/test-' . uniqid() . '.csv';
+        $this->client->options->quotes(
+            option_symbols: ['SYM1', 'SYM2'],
+            parameters: new Parameters(format: Format::CSV, filename: $tempFile)
+        );
+    }
+
 }

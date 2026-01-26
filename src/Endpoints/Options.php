@@ -569,6 +569,15 @@ class Options
         ?Parameters $parameters,
         Parameters $mergedParams
     ): Quotes {
+        // Validate that filename is not provided with multi-symbol requests
+        if ($mergedParams->filename !== null) {
+            throw new \InvalidArgumentException(
+                'filename parameter cannot be used with multi-symbol options quotes. ' .
+                'Each parallel response would conflict writing to the same file. ' .
+                'Use filename only with single-symbol requests, or use saveToFile() method on the response object.'
+            );
+        }
+
         // Determine if user explicitly requested no headers
         $userRequestedNoHeaders = $mergedParams->add_headers === false;
 
