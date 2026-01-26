@@ -573,6 +573,54 @@ class ResponseBaseTest extends TestCase
     }
 
     /**
+     * Test empty CSV response is correctly classified as CSV (not JSON).
+     *
+     * This is a regression test for BUG-001 where empty CSV responses
+     * were misclassified as JSON because empty() returns true for empty strings.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testIsJson_withEmptyCsv_returnsFalse(): void
+    {
+        // Create a response with an empty CSV string
+        $response = new Quote((object)[
+            's' => 'ok',
+            'csv' => ''
+        ]);
+
+        // Empty CSV should still be recognized as CSV, not JSON
+        $this->assertTrue($response->isCsv(), 'Empty CSV should be recognized as CSV');
+        $this->assertFalse($response->isJson(), 'Empty CSV should not be classified as JSON');
+        $this->assertFalse($response->isHtml(), 'Empty CSV should not be classified as HTML');
+    }
+
+    /**
+     * Test empty HTML response is correctly classified as HTML (not JSON).
+     *
+     * This is a regression test for BUG-001 where empty HTML responses
+     * were misclassified as JSON because empty() returns true for empty strings.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testIsJson_withEmptyHtml_returnsFalse(): void
+    {
+        // Create a response with an empty HTML string
+        $response = new Quote((object)[
+            's' => 'ok',
+            'html' => ''
+        ]);
+
+        // Empty HTML should still be recognized as HTML, not JSON
+        $this->assertTrue($response->isHtml(), 'Empty HTML should be recognized as HTML');
+        $this->assertFalse($response->isJson(), 'Empty HTML should not be classified as JSON');
+        $this->assertFalse($response->isCsv(), 'Empty HTML should not be classified as CSV');
+    }
+
+    /**
      * Test saveToFile when realpath returns false returns filename.
      *
      * @return void

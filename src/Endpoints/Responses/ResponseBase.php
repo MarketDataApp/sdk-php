@@ -67,7 +67,9 @@ class ResponseBase
      */
     public function isJson(): bool
     {
-        return empty($this->csv) && empty($this->html);
+        // Use isset() instead of empty() because empty('') returns true,
+        // which would misclassify empty CSV/HTML responses as JSON.
+        return !isset($this->csv) && !isset($this->html);
     }
 
     /**
@@ -77,7 +79,7 @@ class ResponseBase
      */
     public function isHtml(): bool
     {
-        return !empty($this->html);
+        return isset($this->html);
     }
 
     /**
@@ -87,7 +89,7 @@ class ResponseBase
      */
     public function isCsv(): bool
     {
-        return !empty($this->csv);
+        return isset($this->csv);
     }
 
     /**
