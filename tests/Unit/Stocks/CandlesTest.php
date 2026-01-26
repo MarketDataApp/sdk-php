@@ -91,6 +91,33 @@ class CandlesTest extends StocksTestCase
     }
 
     /**
+     * Test that CSV responses have safe default values for status and next_time properties.
+     * BUG-020: Accessing typed properties on CSV responses should not throw uninitialized errors.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testCandles_csv_hasDefaultPropertyValues()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "t,o,h,l,c,v\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->candles(
+            symbol: "AAPL",
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // BUG-020: These property accesses should not throw "must not be accessed before initialization"
+        $this->assertEquals('no_data', $response->status);
+        $this->assertNull($response->next_time);
+    }
+
+    /**
      * Test the candles endpoint with human-readable format.
      *
      * @return void
