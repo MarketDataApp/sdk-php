@@ -20,21 +20,21 @@ class News extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The symbol of the stock.
      *
      * @var string
      */
-    public string $symbol;
+    public string $symbol = '';
 
     /**
      * The headline of the news article.
      *
      * @var string
      */
-    public string $headline;
+    public string $headline = '';
 
     /**
      * The content of the article, if available.
@@ -45,21 +45,21 @@ class News extends ResponseBase
      *
      * @var string
      */
-    public string $content;
+    public string $content = '';
 
     /**
      * The source URL where the news appeared.
      *
      * @var string
      */
-    public string $source;
+    public string $source = '';
 
     /**
      * The date the news was published on the source website.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $publication_date;
+    public ?Carbon $publication_date = null;
 
     /**
      * Constructs a new News object and parses the response data.

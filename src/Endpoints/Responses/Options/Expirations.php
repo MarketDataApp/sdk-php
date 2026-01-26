@@ -19,7 +19,7 @@ class Expirations extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The expiration dates requested for the underlying with the option strikes for each expiration.
@@ -32,23 +32,23 @@ class Expirations extends ResponseBase
      * The date and time this list of options strikes was updated in Unix time.
      * For historical strikes, this number should match the date parameter.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $updated;
+    public ?Carbon $updated = null;
 
     /**
      * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $next_time;
+    public ?Carbon $next_time = null;
 
     /**
      * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $prev_time;
+    public ?Carbon $prev_time = null;
 
     /**
      * Constructs a new Expirations instance from the given response object.

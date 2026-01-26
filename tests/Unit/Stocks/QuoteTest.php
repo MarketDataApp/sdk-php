@@ -408,4 +408,69 @@ class QuoteTest extends StocksTestCase
         $this->assertEquals($mocked_response['52weekHigh'][0], $quote->fifty_two_week_high);
         $this->assertEquals($mocked_response['52weekLow'][0], $quote->fifty_two_week_low);
     }
+
+    /**
+     * Test that quote properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testQuote_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "symbol,ask,askSize,bid,bidSize,mid,last,change,changepct,volume,updated\nAAPL,248.8,200,248.7,600,248.75,247.65,0.95,0.0039,54933217,1769043595";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $quote->status);
+        $this->assertEquals('', $quote->symbol);
+        $this->assertNull($quote->ask);
+        $this->assertNull($quote->ask_size);
+        $this->assertNull($quote->bid);
+        $this->assertNull($quote->bid_size);
+        $this->assertNull($quote->mid);
+        $this->assertNull($quote->last);
+        $this->assertNull($quote->change);
+        $this->assertNull($quote->change_percent);
+        $this->assertNull($quote->volume);
+        $this->assertNull($quote->updated);
+    }
+
+    /**
+     * Test that quote properties are accessible for no_data responses (BUG-013 fix).
+     *
+     * no_data responses skip property initialization. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testQuote_noData_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic no_data response)
+        $noDataResponse = ['s' => 'no_data'];
+        $this->setMockResponses([new Response(200, [], json_encode($noDataResponse))]);
+
+        $quote = $this->client->stocks->quote('INVALID');
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $quote->status);
+        $this->assertEquals('', $quote->symbol);
+        $this->assertNull($quote->ask);
+        $this->assertNull($quote->ask_size);
+        $this->assertNull($quote->bid);
+        $this->assertNull($quote->bid_size);
+        $this->assertNull($quote->mid);
+        $this->assertNull($quote->last);
+        $this->assertNull($quote->change);
+        $this->assertNull($quote->change_percent);
+        $this->assertNull($quote->volume);
+        $this->assertNull($quote->updated);
+    }
 }

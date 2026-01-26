@@ -20,56 +20,56 @@ class Quote extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The symbol of the stock.
      *
      * @var string
      */
-    public string $symbol;
+    public string $symbol = '';
 
     /**
      * The ask price of the stock.
      *
-     * @var float
+     * @var float|null
      */
-    public float $ask;
+    public ?float $ask = null;
 
     /**
      * The number of shares offered at the ask price.
      *
-     * @var int
+     * @var int|null
      */
-    public int $ask_size;
+    public ?int $ask_size = null;
 
     /**
      * The bid price.
      *
-     * @var float
+     * @var float|null
      */
-    public float $bid;
+    public ?float $bid = null;
 
     /**
      * The number of shares that may be sold at the bid price.
      *
-     * @var int
+     * @var int|null
      */
-    public int $bid_size;
+    public ?int $bid_size = null;
 
     /**
      * The midpoint price between the ask and the bid.
      *
-     * @var float
+     * @var float|null
      */
-    public float $mid;
+    public ?float $mid = null;
 
     /**
      * The last price the stock traded at.
      *
-     * @var float
+     * @var float|null
      */
-    public float $last;
+    public ?float $last = null;
 
     /**
      * The difference in price in dollars (or the security's currency if different from dollars) compared to the closing
@@ -77,7 +77,7 @@ class Quote extends ResponseBase
      *
      * @var float|null
      */
-    public float|null $change;
+    public ?float $change = null;
 
     /**
      * The difference in price in percent, expressed as a decimal, compared to the closing price of the previous day.
@@ -85,7 +85,7 @@ class Quote extends ResponseBase
      *
      * @var float|null
      */
-    public float|null $change_percent;
+    public ?float $change_percent = null;
 
     /**
      * The 52-week high for the stock. This parameter is omitted unless the optional 52week request parameter is set to
@@ -93,7 +93,7 @@ class Quote extends ResponseBase
      *
      * @var float|null
      */
-    public float|null $fifty_two_week_high = null;
+    public ?float $fifty_two_week_high = null;
 
     /**
      * The 52-week low for the stock. This parameter is omitted unless the optional 52week request parameter is set to
@@ -101,21 +101,21 @@ class Quote extends ResponseBase
      *
      * @var float|null
      */
-    public float|null $fifty_two_week_low = null;
+    public ?float $fifty_two_week_low = null;
 
     /**
      * The number of shares traded during the current session.
      *
-     * @var int
+     * @var int|null
      */
-    public int $volume;
+    public ?int $volume = null;
 
     /**
      * The date/time of the current stock quote.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $updated;
+    public ?Carbon $updated = null;
 
     /**
      * Constructs a new Quote object and parses the response data.

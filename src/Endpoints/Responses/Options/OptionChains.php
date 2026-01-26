@@ -17,21 +17,21 @@ class OptionChains extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $next_time;
+    public ?Carbon $next_time = null;
 
     /**
      * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $prev_time;
+    public ?Carbon $prev_time = null;
 
     /**
      * Multidimensional array of OptionQuote objects organized by date.

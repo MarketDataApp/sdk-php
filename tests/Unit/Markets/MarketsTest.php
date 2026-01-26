@@ -299,4 +299,27 @@ class MarketsTest extends TestCase
 
         $this->client->markets->status(countback: -5);
     }
+
+    /**
+     * Test that market status properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     */
+    public function testStatus_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "date,status\n1680580800,open";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $response = $this->client->markets->status(
+            date: '1680580800',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->statuses);
+        $this->assertCount(0, $response->statuses);
+    }
 }

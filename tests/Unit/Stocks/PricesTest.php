@@ -275,4 +275,35 @@ class PricesTest extends StocksTestCase
 
         $this->client->stocks->prices([]);
     }
+
+    /**
+     * Test that prices properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     * @throws GuzzleException
+     * @throws ApiException
+     */
+    public function testPrices_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "symbol,mid,change,changepct,updated\nAAPL,248.44,1.74,0.0071,1769043587";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $response = $this->client->stocks->prices(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->symbols);
+        $this->assertIsArray($response->mid);
+        $this->assertIsArray($response->change);
+        $this->assertIsArray($response->changepct);
+        $this->assertIsArray($response->updated);
+        $this->assertCount(0, $response->symbols);
+    }
 }

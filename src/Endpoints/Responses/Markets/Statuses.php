@@ -16,7 +16,7 @@ class Statuses extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of Status objects representing market statuses for different dates.

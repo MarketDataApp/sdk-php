@@ -18,14 +18,14 @@ class Earnings extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of Earning objects representing individual stock earnings data.
      *
      * @var Earning[]
      */
-    public array $earnings;
+    public array $earnings = [];
 
     /**
      * Constructs a new Earnings object and parses the response data.

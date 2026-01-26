@@ -163,4 +163,52 @@ class ExpirationsTest extends OptionsTestCase
         $this->assertInstanceOf(Expirations::class, $response);
         $this->assertEquals('ok', $response->status);
     }
+
+    /**
+     * Test that expirations properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     */
+    public function testExpirations_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "expirations,updated\n2024-01-19,1234567890";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $response = $this->client->options->expirations(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->expirations);
+        $this->assertCount(0, $response->expirations);
+        $this->assertNull($response->updated);
+        $this->assertNull($response->next_time);
+        $this->assertNull($response->prev_time);
+    }
+
+    /**
+     * Test that expirations properties are accessible for no_data responses without next/prev times (BUG-013 fix).
+     *
+     * Some no_data responses may not include nextTime/prevTime fields.
+     */
+    public function testExpirations_noData_withoutTimes_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic no_data response)
+        $noDataResponse = ['s' => 'no_data'];
+        $this->setMockResponses([new Response(200, [], json_encode($noDataResponse))]);
+
+        $response = $this->client->options->expirations('INVALID');
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->expirations);
+        $this->assertCount(0, $response->expirations);
+        $this->assertNull($response->updated);
+        $this->assertNull($response->next_time);
+        $this->assertNull($response->prev_time);
+    }
 }

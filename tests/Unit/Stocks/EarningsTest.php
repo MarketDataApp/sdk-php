@@ -187,4 +187,56 @@ class EarningsTest extends StocksTestCase
             countback: -5
         );
     }
+
+    /**
+     * Test that earnings properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testEarnings_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "symbol,fiscalYear,fiscalQuarter,date,reportDate,reportTime,currency,reportedEPS,estimatedEPS,surpriseEPS,surpriseEPSpct,updated\nAAPL,2024,1,1704067200,1706745600,amc,USD,2.18,2.10,0.08,3.81,1706832000";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->earnings);
+        $this->assertCount(0, $response->earnings);
+    }
+
+    /**
+     * Test that earnings properties are accessible for no_data responses (BUG-013 fix).
+     *
+     * no_data responses skip property initialization. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testEarnings_noData_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic no_data response)
+        $noDataResponse = ['s' => 'no_data'];
+        $this->setMockResponses([new Response(200, [], json_encode($noDataResponse))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2099-01-01',
+            to: '2099-12-31'
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->earnings);
+        $this->assertCount(0, $response->earnings);
+    }
 }

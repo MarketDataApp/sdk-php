@@ -139,4 +139,62 @@ class NewsTest extends StocksTestCase
             to: '2024-01-01'
         );
     }
+
+    /**
+     * Test that news properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testNews_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "symbol,headline,content,source,publicationDate\nAAPL,Test Headline,Test Content,https://example.com,1703041200";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $news->status);
+        $this->assertEquals('', $news->symbol);
+        $this->assertEquals('', $news->headline);
+        $this->assertEquals('', $news->content);
+        $this->assertEquals('', $news->source);
+        $this->assertNull($news->publication_date);
+    }
+
+    /**
+     * Test that news properties are accessible for no_data responses (BUG-013 fix).
+     *
+     * no_data responses skip property initialization. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     *
+     * @return void
+     */
+    public function testNews_noData_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic no_data response)
+        $noDataResponse = ['s' => 'no_data'];
+        $this->setMockResponses([new Response(200, [], json_encode($noDataResponse))]);
+
+        $news = $this->client->stocks->news(
+            symbol: 'INVALID',
+            from: '2099-01-01',
+            to: '2099-12-31'
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $news->status);
+        $this->assertEquals('', $news->symbol);
+        $this->assertEquals('', $news->headline);
+        $this->assertEquals('', $news->content);
+        $this->assertEquals('', $news->source);
+        $this->assertNull($news->publication_date);
+    }
 }

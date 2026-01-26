@@ -22,28 +22,28 @@ class Prices extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of ticker symbols that were requested.
      *
      * @var array
      */
-    public array $symbols;
+    public array $symbols = [];
 
     /**
      * Array of midpoint prices, as calculated by the SmartMid model.
      *
      * @var array
      */
-    public array $mid;
+    public array $mid = [];
 
     /**
      * Array of price changes in currency units compared to the closing price of the previous primary trading session.
      *
      * @var array
      */
-    public array $change;
+    public array $change = [];
 
     /**
      * Array of price changes in percent, expressed as a decimal, compared to the closing price of the previous day.
@@ -51,14 +51,14 @@ class Prices extends ResponseBase
      *
      * @var array
      */
-    public array $changepct;
+    public array $changepct = [];
 
     /**
      * Array of date/times for each stock price.
      *
      * @var array
      */
-    public array $updated;
+    public array $updated = [];
 
     /**
      * Constructs a new Prices object and parses the response data.
