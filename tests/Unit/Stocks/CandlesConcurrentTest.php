@@ -1888,4 +1888,56 @@ class CandlesConcurrentTest extends StocksTestCase
             parameters: new Parameters(format: Format::CSV)
         );
     }
+
+    /**
+     * Test that maxage parameter is passed correctly in parallel requests.
+     *
+     * This tests UniversalParameters line 216 - the maxage parameter
+     * being applied to each parallel request when using CACHED mode.
+     */
+    public function testCandles_automaticConcurrent_withMaxage(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response1 = [
+            's' => 'ok',
+            't' => [1641220200],
+            'o' => [177.83],
+            'h' => [179.31],
+            'l' => [177.71],
+            'c' => [178.965],
+            'v' => [3342579],
+        ];
+
+        // Mock response: FROM real API output (captured on 2026-01-23)
+        $response2 = [
+            's' => 'ok',
+            't' => [1672756200],
+            'o' => [130.28],
+            'h' => [130.6999],
+            'l' => [129.44],
+            'c' => [129.84],
+            'v' => [3826842],
+        ];
+
+        $this->setMockResponses([
+            new Response(203, [], json_encode($response1)),
+            new Response(203, [], json_encode($response2)),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(
+                format: Format::JSON,
+                mode: Mode::CACHED,
+                maxage: 300  // 5 minutes
+            )
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertEquals('ok', $result->status);
+        $this->assertCount(2, $result->candles);
+    }
 }
