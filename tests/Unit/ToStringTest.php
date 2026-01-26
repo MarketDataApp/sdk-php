@@ -1332,14 +1332,17 @@ class ToStringTest extends TestCase
 
     public function testParameters_toString_withFilename(): void
     {
+        $tempDir = sys_get_temp_dir();
+        $filename = $tempDir . '/test-output.csv';
+
         $params = new Parameters(
             format: Format::CSV,
-            filename: '/tmp/test-output.csv'
+            filename: $filename
         );
 
         $output = (string) $params;
 
-        $this->assertStringContainsString('filename=/tmp/test-output.csv', $output);
+        $this->assertStringContainsString('filename=' . $filename, $output);
     }
 
     public function testOptionQuotes_toString_withErrors(): void

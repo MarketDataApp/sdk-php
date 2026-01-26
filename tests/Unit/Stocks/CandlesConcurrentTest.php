@@ -1178,6 +1178,9 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
 
+        // Use sys_get_temp_dir() for cross-platform compatibility (Windows doesn't have /tmp)
+        $filename = sys_get_temp_dir() . '/test_output.csv';
+
         // Attempt to use filename with a large date range that triggers parallel execution
         $this->client->stocks->candles(
             symbol: 'AAPL',
@@ -1186,7 +1189,7 @@ class CandlesConcurrentTest extends StocksTestCase
             resolution: '5',
             parameters: new Parameters(
                 format: Format::CSV,
-                filename: '/tmp/test_output.csv'
+                filename: $filename
             )
         );
     }
@@ -1815,12 +1818,15 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('filename parameter cannot be used with parallel requests');
 
+        // Use sys_get_temp_dir() for cross-platform compatibility (Windows doesn't have /tmp)
+        $filename = sys_get_temp_dir() . '/test.csv';
+
         $this->client->stocks->candles(
             symbol: 'AAPL',
             from: '2022-01-01',
             to: '2023-12-31',
             resolution: '5',
-            parameters: new Parameters(format: Format::CSV, filename: '/tmp/test.csv')
+            parameters: new Parameters(format: Format::CSV, filename: $filename)
         );
     }
 
