@@ -11,6 +11,7 @@ use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Mode;
 use MarketDataApp\Settings;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Test case for the automatic concurrent request handling for Candles endpoint.
@@ -32,9 +33,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isIntradayResolution() with minutely resolutions.
-     *
-     * @dataProvider minutelyResolutionsProvider
      */
+    #[DataProvider('minutelyResolutionsProvider')]
     public function testIsIntradayResolution_minutely(string $resolution): void
     {
         $stocks = $this->client->stocks;
@@ -63,9 +63,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isIntradayResolution() with hourly resolutions.
-     *
-     * @dataProvider hourlyResolutionsProvider
      */
+    #[DataProvider('hourlyResolutionsProvider')]
     public function testIsIntradayResolution_hourly(string $resolution): void
     {
         $stocks = $this->client->stocks;
@@ -92,9 +91,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isIntradayResolution() with non-intraday resolutions.
-     *
-     * @dataProvider nonIntradayResolutionsProvider
      */
+    #[DataProvider('nonIntradayResolutionsProvider')]
     public function testIsIntradayResolution_nonIntraday(string $resolution): void
     {
         $stocks = $this->client->stocks;
@@ -127,9 +125,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isParseableDate() with valid ISO dates.
-     *
-     * @dataProvider validDatesProvider
      */
+    #[DataProvider('validDatesProvider')]
     public function testIsParseableDate_valid(string $date): void
     {
         $stocks = $this->client->stocks;
@@ -154,9 +151,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isParseableDate() with relative dates.
-     *
-     * @dataProvider relativeDatesProvider
      */
+    #[DataProvider('relativeDatesProvider')]
     public function testIsParseableDate_relative(string $date): void
     {
         $stocks = $this->client->stocks;
@@ -184,9 +180,8 @@ class CandlesConcurrentTest extends StocksTestCase
 
     /**
      * Test isParseableDate() with truly invalid dates that cause Carbon to throw.
-     *
-     * @dataProvider invalidDatesProvider
      */
+    #[DataProvider('invalidDatesProvider')]
     public function testIsParseableDate_invalid(string $date): void
     {
         $stocks = $this->client->stocks;
