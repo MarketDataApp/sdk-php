@@ -16,7 +16,7 @@ class BulkCandles extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of Candle objects representing individual stock candles.

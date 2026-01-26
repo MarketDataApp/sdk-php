@@ -85,6 +85,32 @@ class BulkCandlesTest extends StocksTestCase
     }
 
     /**
+     * BUG-021: Test that CSV responses have initialized typed properties.
+     *
+     * Previously, requesting bulkCandles with CSV format left the `status` property
+     * uninitialized because the constructor returned early for non-JSON responses.
+     * Accessing the property would throw: "Typed property must not be accessed before initialization"
+     *
+     * @return void
+     */
+    public function testBulkCandles_csv_statusPropertyInitialized(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV data)
+        $mocked_response = "symbol,o,h,l,c,v,t\nAAPL,248.7,251.56,245.18,247.65,54933217,1768971600";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ['AAPL'],
+            resolution: 'D',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // BUG-021: This should not throw "Typed property must not be accessed before initialization"
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEmpty($response->candles);
+    }
+
+    /**
      * Test the bulkCandles endpoint with human-readable format.
      *
      * @return void
