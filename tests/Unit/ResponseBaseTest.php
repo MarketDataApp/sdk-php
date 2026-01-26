@@ -650,4 +650,108 @@ class ResponseBaseTest extends TestCase
         $this->assertNotEmpty($result);
         $this->assertStringContainsString('.csv', $result);
     }
+
+    /**
+     * Test getCsv() on JSON response throws InvalidArgumentException.
+     *
+     * This is a regression test for BUG-005 where calling getCsv() on JSON
+     * responses caused a PHP Error due to uninitialized typed properties.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testGetCsv_onJsonResponse_throwsInvalidArgumentException(): void
+    {
+        // Create a JSON response (no csv property)
+        $response = new Quote((object)[
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [1.0],
+            'askSize' => [1],
+            'bid' => [1.0],
+            'bidSize' => [1],
+            'mid' => [1.0],
+            'last' => [1.0],
+            'change' => [0.0],
+            'changepct' => [0.0],
+            'volume' => [1],
+            'updated' => ['2020-01-01'],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('getCsv() can only be called on CSV responses');
+
+        $response->getCsv();
+    }
+
+    /**
+     * Test getHtml() on JSON response throws InvalidArgumentException.
+     *
+     * This is a regression test for BUG-005 where calling getHtml() on JSON
+     * responses caused a PHP Error due to uninitialized typed properties.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testGetHtml_onJsonResponse_throwsInvalidArgumentException(): void
+    {
+        // Create a JSON response (no html property)
+        $response = new Quote((object)[
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'ask' => [1.0],
+            'askSize' => [1],
+            'bid' => [1.0],
+            'bidSize' => [1],
+            'mid' => [1.0],
+            'last' => [1.0],
+            'change' => [0.0],
+            'changepct' => [0.0],
+            'volume' => [1],
+            'updated' => ['2020-01-01'],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('getHtml() can only be called on HTML responses');
+
+        $response->getHtml();
+    }
+
+    /**
+     * Test getCsv() on CSV response returns content.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testGetCsv_onCsvResponse_returnsContent(): void
+    {
+        $csvContent = 'symbol,price\nAAPL,150.0';
+        $response = new Quote((object)[
+            's' => 'ok',
+            'csv' => $csvContent
+        ]);
+
+        $this->assertEquals($csvContent, $response->getCsv());
+    }
+
+    /**
+     * Test getHtml() on HTML response returns content.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testGetHtml_onHtmlResponse_returnsContent(): void
+    {
+        $htmlContent = '<table><tr><td>AAPL</td></tr></table>';
+        $response = new Quote((object)[
+            's' => 'ok',
+            'html' => $htmlContent
+        ]);
+
+        $this->assertEquals($htmlContent, $response->getHtml());
+    }
 }

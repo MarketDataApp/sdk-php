@@ -44,9 +44,16 @@ class ResponseBase
      * Get the CSV content of the response.
      *
      * @return string The CSV content.
+     * @throws \InvalidArgumentException If the response is not in CSV format.
      */
     public function getCsv(): string
     {
+        if (!$this->isCsv()) {
+            throw new \InvalidArgumentException(
+                'getCsv() can only be called on CSV responses. ' .
+                'Use isCsv() to check the format before calling.'
+            );
+        }
         return $this->csv;
     }
 
@@ -54,9 +61,16 @@ class ResponseBase
      * Get the HTML content of the response.
      *
      * @return string The HTML content.
+     * @throws \InvalidArgumentException If the response is not in HTML format.
      */
     public function getHtml(): string
     {
+        if (!$this->isHtml()) {
+            throw new \InvalidArgumentException(
+                'getHtml() can only be called on HTML responses. ' .
+                'Use isHtml() to check the format before calling.'
+            );
+        }
         return $this->html;
     }
 
