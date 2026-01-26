@@ -260,21 +260,25 @@ abstract class ClientBase
         $maxAttempts = RetryConfig::MAX_RETRY_ATTEMPTS;
         $attempt = 0;
 
-        // Build full URL for logging
+        // Extract _filename before building query - it's for internal use only, not sent to API
+        $queryParams = $arguments;
+        unset($queryParams['_filename']);
+
+        // Build full URL for logging (without internal _filename parameter)
         $fullUrl = self::API_URL . $method;
-        if (!empty($arguments)) {
-            $fullUrl .= '?' . http_build_query($arguments);
+        if (!empty($queryParams)) {
+            $fullUrl .= '?' . http_build_query($queryParams);
         }
         $logLevel = $this->isInternalRequest($method) ? 'debug' : 'info';
 
         // Track start time for each request attempt
         $startTime = microtime(true);
 
-        $makeRequest = function() use ($method, $format, $arguments, &$startTime) {
+        $makeRequest = function() use ($method, $format, $queryParams, &$startTime) {
             $startTime = microtime(true);
             return $this->guzzle->getAsync($method, [
                 'headers' => $this->headers($format),
-                'query'   => $arguments,
+                'query'   => $queryParams,
             ]);
         };
 
@@ -451,10 +455,14 @@ abstract class ClientBase
             $format = $format->value;
         }
 
-        // Build full URL for logging (base URL + method + query params)
+        // Extract _filename before building query - it's for internal use only, not sent to API
+        $queryParams = $arguments;
+        unset($queryParams['_filename']);
+
+        // Build full URL for logging (base URL + method + query params, without internal _filename)
         $fullUrl = self::API_URL . $method;
-        if (!empty($arguments)) {
-            $fullUrl .= '?' . http_build_query($arguments);
+        if (!empty($queryParams)) {
+            $fullUrl .= '?' . http_build_query($queryParams);
         }
         $logLevel = $this->isInternalRequest($method) ? 'debug' : 'info';
 
@@ -467,7 +475,7 @@ abstract class ClientBase
             try {
                 $response = $this->guzzle->get($method, [
                     'headers' => $this->headers($format),
-                    'query'   => $arguments,
+                    'query'   => $queryParams,
                 ]);
                 $durationMs = (microtime(true) - $startTime) * 1000;
 

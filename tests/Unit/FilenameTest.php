@@ -372,4 +372,48 @@ class FilenameTest extends TestCase
         $this->assertFileExists($filename);
         $this->assertStringContainsString('AAPL', file_get_contents($filename));
     }
+
+    // ============================================================================
+    // BUG-002 Regression Test: _filename must not leak into query parameters
+    // ============================================================================
+
+    /**
+     * Test that _filename is not sent as a query parameter to the API.
+     *
+     * This is a regression test for BUG-002 where _filename was being sent
+     * in the query string despite being intended for internal SDK use only.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testFilename_notSentAsQueryParameter(): void
+    {
+        $tempDir = $this->createTempDir();
+        $filename = $tempDir . '/test.csv';
+
+        $this->client = new Client('');
+
+        // Set up mock with history tracking to capture the request
+        $history = [];
+        $csvContent = "symbol,ask\nAAPL,150.0";
+        $this->setMockResponsesWithHistory([
+            new \GuzzleHttp\Psr7\Response(200, [], $csvContent)
+        ], $history);
+
+        // Make request with filename parameter
+        $params = new Parameters(format: Format::CSV, filename: $filename);
+        $this->client->stocks->quote('AAPL', parameters: $params);
+
+        // Verify _filename was NOT sent in query parameters
+        $this->assertCount(1, $history, 'Expected exactly one request');
+        $request = $history[0]['request'];
+        $queryString = $request->getUri()->getQuery();
+        parse_str($queryString, $queryParams);
+
+        $this->assertArrayNotHasKey('_filename', $queryParams, '_filename should not be sent to API');
+
+        // Verify the file was still created (feature works)
+        $this->assertFileExists($filename);
+    }
 }
