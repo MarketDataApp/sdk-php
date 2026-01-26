@@ -581,18 +581,13 @@ class Options
         // Determine if user explicitly requested no headers
         $userRequestedNoHeaders = $mergedParams->add_headers === false;
 
-        // Build calls with appropriate header settings
+        // Build calls - request headers on ALL calls (unless user explicitly requested no headers).
+        // We'll strip duplicate header rows when combining responses.
+        // This ensures headers are present even if the first request fails.
         $calls = [];
-        foreach ($symbols as $index => $symbol) {
+        foreach ($symbols as $symbol) {
             $callArgs = compact('date', 'from', 'to');
-
-            // First request: headers=true unless user explicitly requested no headers
-            // Subsequent requests: always headers=false
-            if ($index === 0) {
-                $callArgs['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
-            } else {
-                $callArgs['headers'] = 'false';
-            }
+            $callArgs['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
 
             $calls[] = [
                 "quotes/{$symbol}/",
@@ -626,6 +621,7 @@ class Options
         $combinedCsv = '';
         $validResponseCount = 0;
         $lastErrorMessage = null;
+        $headerRow = null; // Track the header row from first successful response
         ksort($responses); // Ensure responses are in original order
         foreach ($responses as $response) {
             if (isset($response->csv)) {
@@ -646,7 +642,29 @@ class Options
                 }
 
                 if ($csv !== '') {
-                    $combinedCsv .= $csv . "\n";
+                    // Strip duplicate header rows - headers are requested on all calls
+                    // to handle partial failures, but we only want headers once in output
+                    if ($headerRow === null) {
+                        // First valid response - capture header and include entire response
+                        $firstNewline = strpos($csv, "\n");
+                        if ($firstNewline !== false) {
+                            $headerRow = substr($csv, 0, $firstNewline);
+                        }
+                        $combinedCsv .= $csv . "\n";
+                    } else {
+                        // Subsequent responses - strip header row if present
+                        $firstNewline = strpos($csv, "\n");
+                        if ($firstNewline !== false) {
+                            $firstLine = substr($csv, 0, $firstNewline);
+                            if ($firstLine === $headerRow) {
+                                // Skip the header row
+                                $csv = substr($csv, $firstNewline + 1);
+                            }
+                        }
+                        if ($csv !== '') {
+                            $combinedCsv .= $csv . "\n";
+                        }
+                    }
                     $validResponseCount++;
                 }
             }

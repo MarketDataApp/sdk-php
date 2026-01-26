@@ -1228,13 +1228,18 @@ class QuotesTest extends OptionsTestCase
     }
 
     /**
-     * Test CSV multi-symbol sends correct headers parameter to API.
+     * Test CSV multi-symbol sends headers=true to all API requests.
+     *
+     * BUG-012 fix: Headers are now requested on ALL calls (not just the first)
+     * to ensure headers are present even if the first request fails.
+     * Duplicate headers are stripped when combining responses.
      */
     public function testQuotes_multipleSymbols_csvFormat_sendsCorrectHeadersParam(): void
     {
         // Mock response: NOT from real API output (synthetic/test data)
+        // Both responses include headers since we're requesting headers=true on all calls
         $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
-        $csv2 = "AAPL250117P00150000,4.20,4.10";
+        $csv2 = "symbol,ask,bid\r\nAAPL250117P00150000,4.20,4.10";
 
         $history = [];
         $this->setMockResponsesWithHistory([
@@ -1247,7 +1252,7 @@ class QuotesTest extends OptionsTestCase
             parameters: new Parameters(format: Format::CSV)
         );
 
-        // Verify first request has headers=true, second has headers=false
+        // Verify both requests have headers=true (BUG-012 fix)
         $this->assertCount(2, $history);
 
         // First request should have headers=true
@@ -1256,11 +1261,11 @@ class QuotesTest extends OptionsTestCase
         parse_str($firstRequest->getUri()->getQuery(), $firstQuery);
         $this->assertEquals('true', $firstQuery['headers']);
 
-        // Second request should have headers=false
+        // Second request should also have headers=true (BUG-012 fix)
         $secondRequest = $history[1]['request'];
         $secondQuery = [];
         parse_str($secondRequest->getUri()->getQuery(), $secondQuery);
-        $this->assertEquals('false', $secondQuery['headers']);
+        $this->assertEquals('true', $secondQuery['headers']);
     }
 
     /**
@@ -1448,6 +1453,82 @@ class QuotesTest extends OptionsTestCase
             option_symbols: ['SYM1', 'SYM2'],
             parameters: new Parameters(format: Format::CSV, filename: $tempFile)
         );
+    }
+
+    /**
+     * Test CSV multi-symbol strips duplicate header rows from combined output.
+     *
+     * BUG-012 fix: Since headers are now requested on ALL calls, we need
+     * to strip duplicate headers when combining responses.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_stripsDuplicateHeaders(): void
+    {
+        // Both responses have headers (since we request headers=true on all calls)
+        $csv1 = "symbol,ask,bid\r\nAAPL250117C00150000,5.50,5.40";
+        $csv2 = "symbol,ask,bid\r\nAAPL250117P00150000,4.20,4.10";
+
+        $this->setMockResponses([
+            new Response(200, [], $csv1),
+            new Response(200, [], $csv2),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00150000', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $combinedCsv = $response->getCsv();
+
+        // Should have header row only once
+        $this->assertEquals(1, substr_count($combinedCsv, 'symbol,ask,bid'));
+
+        // Should have both data rows
+        $this->assertStringContainsString('AAPL250117C00150000,5.50,5.40', $combinedCsv);
+        $this->assertStringContainsString('AAPL250117P00150000,4.20,4.10', $combinedCsv);
+    }
+
+    /**
+     * Test CSV multi-symbol includes headers even when first request fails.
+     *
+     * This is a regression test for BUG-012 where headers were missing if
+     * the first request failed, because headers were only requested on the
+     * first call.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_multipleSymbols_csvFormat_headersWhenFirstFails(): void
+    {
+        // First response is a JSON error (symbol not found)
+        // Second response has headers (since we now request headers=true on all calls)
+        $this->setMockResponses([
+            new Response(200, [], '{"s":"error","errmsg":"Symbol not found"}'),
+            new Response(200, [], "optionSymbol,mid\nAAPL250117P00150000,2.34"),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['INVALID_SYMBOL', 'AAPL250117P00150000'],
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertTrue($response->isCsv());
+
+        $combinedCsv = $response->getCsv();
+
+        // Should have header row from the second (successful) response
+        $this->assertStringContainsString('optionSymbol,mid', $combinedCsv);
+
+        // Should have the data row
+        $this->assertStringContainsString('AAPL250117P00150000,2.34', $combinedCsv);
+
+        // First line should be the header, not the data
+        $lines = explode("\n", trim($combinedCsv));
+        $this->assertEquals('optionSymbol,mid', $lines[0]);
     }
 
     /**
