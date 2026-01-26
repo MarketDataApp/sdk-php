@@ -66,6 +66,22 @@ class MaxageTest extends UniversalParametersTestCase
         $this->assertEquals(45, $params->maxage);
     }
 
+    public function testParameters_maxage_dateIntervalWithDays(): void
+    {
+        // BUG-009: Manually constructed DateIntervals have days=false,
+        // so we must convert using reference date arithmetic.
+        $interval = new \DateInterval('P1D'); // 1 day
+        $params = new Parameters(mode: Mode::CACHED, maxage: $interval);
+        $this->assertEquals(86400, $params->maxage);
+    }
+
+    public function testParameters_maxage_dateIntervalWithDaysAndTime(): void
+    {
+        $interval = new \DateInterval('P2DT3H'); // 2 days + 3 hours
+        $params = new Parameters(mode: Mode::CACHED, maxage: $interval);
+        $this->assertEquals((2 * 86400) + (3 * 3600), $params->maxage);
+    }
+
     // ============================================================================
     // Constructor Validation Tests - CarbonInterval Input
     // ============================================================================

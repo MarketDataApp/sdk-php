@@ -74,8 +74,11 @@ class Parameters implements \Stringable
             if ($maxage instanceof CarbonInterval) {
                 $this->maxage = (int) $maxage->totalSeconds;
             } elseif ($maxage instanceof \DateInterval) {
-                // Convert DateInterval to seconds
-                $this->maxage = ($maxage->days * 86400) + ($maxage->h * 3600) + ($maxage->i * 60) + $maxage->s;
+                // Convert DateInterval to seconds by adding it to a reference date.
+                // This handles all components (y, m, d, h, i, s) correctly, including
+                // manually constructed intervals where $interval->days is false.
+                $reference = new \DateTimeImmutable('@0');
+                $this->maxage = $reference->add($maxage)->getTimestamp();
             } else {
                 $this->maxage = $maxage;
             }
