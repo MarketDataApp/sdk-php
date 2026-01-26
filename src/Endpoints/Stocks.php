@@ -74,6 +74,28 @@ class Stocks
     }
 
     /**
+     * Parse a user-provided date string into a Carbon instance.
+     *
+     * Handles both standard date formats and unix timestamps (9-10 digit strings).
+     * This should be used whenever parsing user input that could be a unix timestamp.
+     *
+     * @param string $date The date string to parse (ISO 8601, unix timestamp, etc.).
+     *
+     * @return Carbon The parsed Carbon instance.
+     */
+    protected function parseUserDate(string $date): Carbon
+    {
+        $date = trim($date);
+
+        // Check for Unix timestamp (9-10 digit number representing seconds since epoch)
+        if (preg_match('/^\d{9,10}$/', $date)) {
+            return Carbon::createFromTimestamp((int) $date);
+        }
+
+        return Carbon::parse($date);
+    }
+
+    /**
      * Check if a date string can be parsed as an absolute date.
      *
      * This is used to determine if we can calculate date ranges for automatic splitting.
@@ -134,8 +156,8 @@ class Stocks
      */
     protected function splitDateRangeIntoYearChunks(string $from, string $to): array
     {
-        $fromDate = Carbon::parse($from);
-        $toDate = Carbon::parse($to);
+        $fromDate = $this->parseUserDate($from);
+        $toDate = $this->parseUserDate($to);
 
         $chunks = [];
         $currentStart = $fromDate->copy()->startOfDay();
@@ -207,8 +229,8 @@ class Stocks
         }
 
         // Check if range spans more than 1 year
-        $fromDate = Carbon::parse($from);
-        $toDate = Carbon::parse($to);
+        $fromDate = $this->parseUserDate($from);
+        $toDate = $this->parseUserDate($to);
         $diffInDays = $fromDate->diffInDays($toDate);
 
         // More than 365 days = more than 1 year

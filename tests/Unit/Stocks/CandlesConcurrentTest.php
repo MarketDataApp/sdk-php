@@ -2065,4 +2065,146 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertStringContainsString('1609770600', $csv);
         $this->assertStringContainsString('1641220200', $csv);
     }
+
+    /**
+     * Test parseUserDate() with unix timestamp strings.
+     *
+     * Bug #023: Unix timestamp strings should be parsed using createFromTimestamp()
+     * rather than parse() which throws an exception on numeric strings.
+     */
+    public function testParseUserDate_unixTimestamp(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('parseUserDate');
+
+        // Test 9-digit unix timestamp (2023-01-03 09:30:00 UTC)
+        $result = $method->invoke($stocks, '1672741800');
+        $this->assertInstanceOf(Carbon::class, $result);
+        $this->assertEquals(1672741800, $result->timestamp);
+
+        // Test 10-digit unix timestamp (2023-11-14 00:00:00 UTC)
+        $result = $method->invoke($stocks, '1700000000');
+        $this->assertInstanceOf(Carbon::class, $result);
+        $this->assertEquals(1700000000, $result->timestamp);
+    }
+
+    /**
+     * Test parseUserDate() with ISO 8601 date strings.
+     *
+     * Bug #023: ISO dates should still be handled by Carbon::parse().
+     */
+    public function testParseUserDate_isoDate(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('parseUserDate');
+
+        // Test ISO date
+        $result = $method->invoke($stocks, '2023-01-15');
+        $this->assertInstanceOf(Carbon::class, $result);
+        $this->assertEquals(2023, $result->year);
+        $this->assertEquals(1, $result->month);
+        $this->assertEquals(15, $result->day);
+
+        // Test ISO datetime with timezone
+        $result = $method->invoke($stocks, '2023-01-15T10:30:00Z');
+        $this->assertInstanceOf(Carbon::class, $result);
+        $this->assertEquals(10, $result->hour);
+        $this->assertEquals(30, $result->minute);
+    }
+
+    /**
+     * Test splitDateRangeIntoYearChunks() with unix timestamp strings.
+     *
+     * Bug #023: Unix timestamp strings should be accepted and handled correctly
+     * when splitting date ranges. Previously Carbon::parse() was called directly
+     * on these strings, causing an exception.
+     */
+    public function testSplitDateRangeIntoYearChunks_unixTimestamps(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('splitDateRangeIntoYearChunks');
+
+        // 1700000000 = 2023-11-14, 1760000000 = 2025-10-09 (roughly 2 years)
+        $chunks = $method->invoke($stocks, '1700000000', '1760000000');
+
+        $this->assertCount(2, $chunks);
+        // First chunk should preserve the original unix timestamp as from
+        $this->assertEquals('1700000000', $chunks[0][0]);
+        // Last chunk should preserve the original unix timestamp as to
+        $this->assertEquals('1760000000', $chunks[1][1]);
+    }
+
+    /**
+     * Test needsAutomaticSplitting() with unix timestamp strings.
+     *
+     * Bug #023: Unix timestamp strings should be accepted and handled correctly
+     * when determining if splitting is needed. Previously Carbon::parse() was
+     * called directly on these strings, causing an exception.
+     */
+    public function testNeedsAutomaticSplitting_unixTimestamps(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('needsAutomaticSplitting');
+
+        // 2-year range with unix timestamps (1700000000 = 2023-11-14, 1760000000 = 2025-10-09)
+        $result = $method->invoke($stocks, '5', '1700000000', '1760000000', null);
+        $this->assertTrue($result, 'Large date range with unix timestamps should need splitting');
+
+        // Small range with unix timestamps (less than 1 year)
+        // 1700000000 = 2023-11-14, 1710000000 = 2024-03-09 (~4 months)
+        $result = $method->invoke($stocks, '5', '1700000000', '1710000000', null);
+        $this->assertFalse($result, 'Small date range with unix timestamps should not need splitting');
+    }
+
+    /**
+     * Test candles with unix timestamp strings triggers automatic splitting without crashing.
+     *
+     * Bug #023: When requesting intraday candles with a large date range using unix
+     * timestamp strings, the SDK should handle them correctly without throwing a
+     * Carbon parse exception.
+     */
+    public function testCandles_automaticConcurrent_unixTimestamps(): void
+    {
+        // Mock response: NOT from real API output (synthetic data for testing)
+        $response1 = [
+            's' => 'ok',
+            't' => [1700049000, 1700049300],
+            'o' => [183.92, 184.10],
+            'h' => [184.20, 184.50],
+            'l' => [183.85, 184.05],
+            'c' => [184.10, 184.45],
+            'v' => [1000000, 1200000],
+        ];
+
+        $response2 = [
+            's' => 'ok',
+            't' => [1759968600, 1759968900],
+            'o' => [195.00, 195.50],
+            'h' => [196.00, 196.20],
+            'l' => [194.80, 195.40],
+            'c' => [195.50, 196.00],
+            'v' => [1500000, 1600000],
+        ];
+
+        $this->setMockResponses([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+        ]);
+
+        // Request using unix timestamp strings - this should not throw
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '1700000000',  // 2023-11-14
+            to: '1760000000',    // 2025-10-09
+            resolution: '5'
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertEquals('ok', $result->status);
+        $this->assertCount(4, $result->candles);
+    }
 }
