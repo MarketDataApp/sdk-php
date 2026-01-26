@@ -108,6 +108,7 @@ class Options
     {
         // Validate input
         $this->validateNonEmptyString($input, 'input');
+        $input = trim($input);
 
         return new Lookup($this->execute("lookup/" . rawurlencode($input) . "/", [], $parameters));
     }

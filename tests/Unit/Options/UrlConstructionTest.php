@@ -1592,6 +1592,31 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test lookup() trims whitespace from input.
+     *
+     * Bug BUG-022: Options lookup does not trim leading/trailing whitespace from
+     * input, causing encoded %20 at the edges of the URL path.
+     */
+    public function testLookup_inputWithWhitespace_isTrimmed(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => 'AAPL230728C00200000'
+            ]))
+        ]);
+
+        $this->client->options->lookup(' AAPL 7/28/23 $200 Call ');
+
+        $path = $this->getLastRequestPath();
+        $expectedPath = 'v1/options/lookup/' . rawurlencode('AAPL 7/28/23 $200 Call') . '/';
+        $this->assertEquals($expectedPath, $path);
+        $this->assertStringNotContainsString('/%20', $path, 'Path should not start with encoded space after lookup/');
+        $this->assertStringNotContainsString('%20/', $path, 'Path should not end with encoded space before trailing slash');
+    }
+
+    /**
      * Test quotes() with single symbol trims whitespace.
      */
     public function testQuotes_singleSymbolWithWhitespace_isTrimmed(): void
