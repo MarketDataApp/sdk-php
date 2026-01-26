@@ -769,8 +769,7 @@ class CandlesConcurrentTest extends StocksTestCase
             to: '2023-12-31',
             resolution: '5',
             extended: true,
-            adjust_splits: true,
-            adjust_dividends: true
+            adjust_splits: true
         );
 
         $this->assertInstanceOf(Candles::class, $result);
@@ -927,100 +926,6 @@ class CandlesConcurrentTest extends StocksTestCase
             $result->candles[4]->timestamp->timestamp,
             $result->candles[2]->timestamp->timestamp + 1
         );
-    }
-
-    /**
-     * Test concurrent candles with exchange parameter.
-     */
-    public function testCandles_automaticConcurrent_withExchange(): void
-    {
-        // Mock response: FROM real API output (captured on 2026-01-23)
-        // curl "https://api.marketdata.app/v1/stocks/candles/5/AAPL/?from=2022-01-03&to=2022-01-03" (first candle)
-        $response1 = [
-            's' => 'ok',
-            't' => [1641220200],
-            'o' => [177.83],
-            'h' => [179.31],
-            'l' => [177.71],
-            'c' => [178.965],
-            'v' => [3342579],
-        ];
-
-        // Mock response: FROM real API output (captured on 2026-01-23)
-        // curl "https://api.marketdata.app/v1/stocks/candles/5/AAPL/?from=2023-01-03&to=2023-01-03" (first candle)
-        $response2 = [
-            's' => 'ok',
-            't' => [1672756200],
-            'o' => [130.28],
-            'h' => [130.6999],
-            'l' => [129.44],
-            'c' => [129.84],
-            'v' => [3826842],
-        ];
-
-        $this->setMockResponses([
-            new Response(200, [], json_encode($response1)),
-            new Response(200, [], json_encode($response2)),
-        ]);
-
-        $result = $this->client->stocks->candles(
-            symbol: 'AAPL',
-            from: '2022-01-01',
-            to: '2023-12-31',
-            resolution: '5',
-            exchange: 'NASDAQ'
-        );
-
-        $this->assertInstanceOf(Candles::class, $result);
-        $this->assertEquals('ok', $result->status);
-        $this->assertCount(2, $result->candles);
-    }
-
-    /**
-     * Test concurrent candles with country parameter.
-     */
-    public function testCandles_automaticConcurrent_withCountry(): void
-    {
-        // Mock response: FROM real API output (captured on 2026-01-23)
-        // curl "https://api.marketdata.app/v1/stocks/candles/5/AAPL/?from=2022-01-03&to=2022-01-03" (first candle)
-        $response1 = [
-            's' => 'ok',
-            't' => [1641220200],
-            'o' => [177.83],
-            'h' => [179.31],
-            'l' => [177.71],
-            'c' => [178.965],
-            'v' => [3342579],
-        ];
-
-        // Mock response: FROM real API output (captured on 2026-01-23)
-        // curl "https://api.marketdata.app/v1/stocks/candles/5/AAPL/?from=2023-01-03&to=2023-01-03" (first candle)
-        $response2 = [
-            's' => 'ok',
-            't' => [1672756200],
-            'o' => [130.28],
-            'h' => [130.6999],
-            'l' => [129.44],
-            'c' => [129.84],
-            'v' => [3826842],
-        ];
-
-        $this->setMockResponses([
-            new Response(200, [], json_encode($response1)),
-            new Response(200, [], json_encode($response2)),
-        ]);
-
-        $result = $this->client->stocks->candles(
-            symbol: 'AAPL',
-            from: '2022-01-01',
-            to: '2023-12-31',
-            resolution: '5',
-            country: 'US'
-        );
-
-        $this->assertInstanceOf(Candles::class, $result);
-        $this->assertEquals('ok', $result->status);
-        $this->assertCount(2, $result->candles);
     }
 
     /**
@@ -1864,38 +1769,6 @@ class CandlesConcurrentTest extends StocksTestCase
             to: '2023-12-31',
             resolution: '5',
             adjust_splits: false,
-            parameters: new Parameters(format: Format::CSV)
-        );
-
-        $this->assertInstanceOf(Candles::class, $result);
-        $csv = $result->getCsv();
-        $this->assertStringContainsString('1641220200', $csv);
-        $this->assertStringContainsString('1672756200', $csv);
-    }
-
-    /**
-     * Test CSV format with adjust_dividends=false parameter.
-     *
-     * This test covers line 627 in Stocks.php where adjustdividends is set
-     * in the arguments for CSV split requests.
-     */
-    public function testCandles_automaticConcurrent_csvFormatWithAdjustDividends(): void
-    {
-        // Mock response: NOT from real API output (synthetic CSV response for testing)
-        $csvResponse1 = "t,o,h,l,c,v\n1641220200,177.83,179.31,177.71,178.965,3342579";
-        $csvResponse2 = "1672756200,130.28,130.6999,129.44,129.84,3826842";
-
-        $this->setMockResponses([
-            new Response(200, [], $csvResponse1),
-            new Response(200, [], $csvResponse2),
-        ]);
-
-        $result = $this->client->stocks->candles(
-            symbol: 'AAPL',
-            from: '2022-01-01',
-            to: '2023-12-31',
-            resolution: '5',
-            adjust_dividends: false,
             parameters: new Parameters(format: Format::CSV)
         );
 

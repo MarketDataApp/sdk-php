@@ -489,33 +489,4 @@ class CandlesTest extends StocksTestCase
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertCount(1, $response->candles);
     }
-
-    /**
-     * Test candles endpoint with adjust_dividends=true parameter.
-     */
-    public function testCandles_withAdjustDividends_success(): void
-    {
-        // Mock response: NOT from real API output (synthetic/test data)
-        $mocked_response = [
-            's' => 'ok',
-            't' => [1662004800],
-            'o' => [156.64],
-            'h' => [158.42],
-            'l' => [154.67],
-            'c' => [157.96],
-            'v' => [74229896]
-        ];
-        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
-
-        $response = $this->client->stocks->candles(
-            symbol: 'AAPL',
-            from: '2022-09-01',
-            to: '2022-09-02',
-            resolution: 'D',
-            adjust_dividends: true
-        );
-
-        $this->assertInstanceOf(Candles::class, $response);
-        $this->assertCount(1, $response->candles);
-    }
 }

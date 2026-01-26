@@ -739,54 +739,6 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
-     * Test candles URL with exchange parameter.
-     */
-    public function testCandles_withExchange_addsParameter(): void
-    {
-        $this->setMockResponsesWithHistory([
-            new Response(200, [], json_encode([
-                's' => 'ok',
-                'o' => [150.0],
-                'h' => [155.0],
-                'l' => [149.0],
-                'c' => [154.0],
-                'v' => [1000000],
-                't' => [1234567890]
-            ]))
-        ]);
-
-        $this->client->stocks->candles('AAPL', '2024-01-01', '2024-01-31', 'D', exchange: 'NASDAQ');
-
-        $query = $this->parseQuery($this->getLastRequestQuery());
-        $this->assertArrayHasKey('exchange', $query);
-        $this->assertEquals('NASDAQ', $query['exchange']);
-    }
-
-    /**
-     * Test candles URL with country parameter.
-     */
-    public function testCandles_withCountry_addsParameter(): void
-    {
-        $this->setMockResponsesWithHistory([
-            new Response(200, [], json_encode([
-                's' => 'ok',
-                'o' => [150.0],
-                'h' => [155.0],
-                'l' => [149.0],
-                'c' => [154.0],
-                'v' => [1000000],
-                't' => [1234567890]
-            ]))
-        ]);
-
-        $this->client->stocks->candles('AAPL', '2024-01-01', '2024-01-31', 'D', country: 'US');
-
-        $query = $this->parseQuery($this->getLastRequestQuery());
-        $this->assertArrayHasKey('country', $query);
-        $this->assertEquals('US', $query['country']);
-    }
-
-    /**
      * Test candles URL with various resolution formats.
      */
     public function testCandles_variousResolutions_correctPath(): void

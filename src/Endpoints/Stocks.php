@@ -341,53 +341,36 @@ class Stocks
     }
 
     /**
-     * Get historical price candles for an index.
+     * Get historical price candles for a stock.
      *
-     * @param string          $symbol           The company's ticker symbol.
+     * @param string          $symbol        The company's ticker symbol.
      *
-     * @param string          $from             The leftmost candle on a chart (inclusive). If you use countback, to is
-     *                                          not required. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     * @param string          $from          The leftmost candle on a chart (inclusive). If you use countback, to is
+     *                                       not required. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
      *
-     * @param string|null     $to               The rightmost candle on a chart (inclusive). Accepted timestamp inputs:
-     *                                          ISO 8601, unix, spreadsheet.
+     * @param string|null     $to            The rightmost candle on a chart (inclusive). Accepted timestamp inputs:
+     *                                       ISO 8601, unix, spreadsheet.
      *
-     * @param string          $resolution       The duration of each candle.
-     *                                          - Minutely Resolutions: (minutely, 1, 3, 5, 15, 30, 45, ...)
-     *                                          - Hourly Resolutions: (hourly, H, 1H, 2H, ...)
-     *                                          - Daily Resolutions: (daily, D, 1D, 2D, ...)
-     *                                          - Weekly Resolutions: (weekly, W, 1W, 2W, ...)
-     *                                          - Monthly Resolutions: (monthly, M, 1M, 2M, ...)
-     *                                          - Yearly Resolutions:(yearly, Y, 1Y, 2Y, ...)
+     * @param string          $resolution    The duration of each candle.
+     *                                       - Minutely Resolutions: (minutely, 1, 3, 5, 15, 30, 45, ...)
+     *                                       - Hourly Resolutions: (hourly, H, 1H, 2H, ...)
+     *                                       - Daily Resolutions: (daily, D, 1D, 2D, ...)
+     *                                       - Weekly Resolutions: (weekly, W, 1W, 2W, ...)
+     *                                       - Monthly Resolutions: (monthly, M, 1M, 2M, ...)
+     *                                       - Yearly Resolutions:(yearly, Y, 1Y, 2Y, ...)
      *
-     * @param int|null        $countback        Will fetch a number of candles before (to the left of) to. If you use
-     *                                          from, countback is not required.
+     * @param int|null        $countback     Will fetch a number of candles before (to the left of) to. If you use
+     *                                       from, countback is not required.
      *
-     * @param string|null     $exchange         Use to specify the exchange of the ticker. This is useful when you need
-     *                                          to specify a stock that quotes on several exchanges with the same
-     *                                          symbol. You may specify the exchange using the EXCHANGE ACRONYM, MIC
-     *                                          CODE, or two digit YAHOO FINANCE EXCHANGE CODE. If no exchange is
-     *                                          specified symbols will be matched to US exchanges first.
+     * @param bool            $extended      Include extended hours trading sessions when returning intraday
+     *                                       candles. Daily resolutions never return extended hours candles. The
+     *                                       default is false.
      *
-     * @param bool            $extended         Include extended hours trading sessions when returning intraday
-     *                                          candles. Daily resolutions never return extended hours candles. The
-     *                                          default is false.
+     * @param bool            $adjust_splits Adjust historical data for for historical splits and reverse splits.
+     *                                       Market Data uses the CRSP methodology for adjustment. Daily candles
+     *                                       default: true. Intraday candles default: false.
      *
-     * @param string|null     $country          Use to specify the country of the exchange (not the country of the
-     *                                          company) in conjunction with the symbol argument. This argument is
-     *                                          useful when you know the ticker symbol and the country of the exchange,
-     *                                          but not the exchange code. Use the two digit ISO 3166 country code. If
-     *                                          no country is specified, US exchanges will be assumed.
-     *
-     * @param bool            $adjust_splits    Adjust historical data for for historical splits and reverse splits.
-     *                                          Market Data uses the CRSP methodology for adjustment. Daily candles
-     *                                          default: true. Intraday candles default: false.
-     *
-     * @param bool            $adjust_dividends CAUTION: Adjusted dividend data is planned for the future, but not yet
-     *                                          implemented. All data is currently returned unadjusted for dividends.
-     *                                          Market Data uses the CRSP methodology for adjustment. Daily candles
-     *                                          default: true. Intraday candles default: false.
-     *
-     * @param Parameters|null $parameters       Universal parameters for all methods (such as format).
+     * @param Parameters|null $parameters    Universal parameters for all methods (such as format).
      *
      * @return Candles
      * @throws GuzzleException|ApiException
@@ -398,11 +381,8 @@ class Stocks
         ?string $to = null,
         string $resolution = 'D',
         ?int $countback = null,
-        ?string $exchange = null,
         bool $extended = false,
-        ?string $country = null,
         ?bool $adjust_splits = null,
-        ?bool $adjust_dividends = null,
         ?Parameters $parameters = null
     ): Candles {
         // Validate inputs
@@ -418,11 +398,8 @@ class Stocks
                 $from,
                 $to,
                 $resolution,
-                $exchange,
                 $extended,
-                $country,
                 $adjust_splits,
-                $adjust_dividends,
                 $parameters
             );
         }
@@ -432,17 +409,12 @@ class Stocks
             'from'      => $from,
             'to'        => $to,
             'countback' => $countback,
-            'exchange'  => $exchange,
-            'country'   => $country,
         ];
         if ($extended) {
             $arguments['extended'] = 'true';
         }
         if ($adjust_splits !== null) {
             $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
-        }
-        if ($adjust_dividends !== null) {
-            $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
         }
 
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/", $arguments, $parameters));
@@ -460,16 +432,13 @@ class Stocks
      * (up to MAX_CONCURRENT_REQUESTS at a time). The responses are then merged
      * into a single Candles object.
      *
-     * @param string          $symbol           The stock symbol.
-     * @param string          $from             The start date.
-     * @param string          $to               The end date.
-     * @param string          $resolution       The candle resolution.
-     * @param string|null     $exchange         The exchange code.
-     * @param bool            $extended         Include extended hours.
-     * @param string|null     $country          The country code.
-     * @param bool            $adjust_splits    Adjust for splits.
-     * @param bool            $adjust_dividends Adjust for dividends.
-     * @param Parameters|null $parameters       Universal parameters.
+     * @param string          $symbol        The stock symbol.
+     * @param string          $from          The start date.
+     * @param string          $to            The end date.
+     * @param string          $resolution    The candle resolution.
+     * @param bool            $extended      Include extended hours.
+     * @param bool|null       $adjust_splits Adjust for splits.
+     * @param Parameters|null $parameters    Universal parameters.
      *
      * @return Candles The merged candles response.
      * @throws \Throwable
@@ -479,11 +448,8 @@ class Stocks
         string $from,
         string $to,
         string $resolution,
-        ?string $exchange,
         bool $extended,
-        ?string $country,
         ?bool $adjust_splits,
-        ?bool $adjust_dividends,
         ?Parameters $parameters
     ): Candles {
         // Check format to handle CSV/HTML specially
@@ -505,11 +471,8 @@ class Stocks
                 $from,
                 $to,
                 $resolution,
-                $exchange,
                 $extended,
-                $country,
                 $adjust_splits,
-                $adjust_dividends,
                 $parameters,
                 $mergedParams
             );
@@ -522,19 +485,14 @@ class Stocks
         $calls = [];
         foreach ($chunks as $chunk) {
             $arguments = [
-                'from'     => $chunk[0],
-                'to'       => $chunk[1],
-                'exchange' => $exchange,
-                'country'  => $country,
+                'from' => $chunk[0],
+                'to'   => $chunk[1],
             ];
             if ($extended) {
                 $arguments['extended'] = 'true';
             }
             if ($adjust_splits !== null) {
                 $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
-            }
-            if ($adjust_dividends !== null) {
-                $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
             }
 
             $calls[] = [
@@ -565,17 +523,14 @@ class Stocks
      * (unless user explicitly set add_headers=false) and headers=false on subsequent
      * requests. Combines all responses into a single CSV output.
      *
-     * @param string          $symbol           The stock symbol.
-     * @param string          $from             The start date.
-     * @param string          $to               The end date.
-     * @param string          $resolution       The candle resolution.
-     * @param string|null     $exchange         The exchange code.
-     * @param bool            $extended         Include extended hours.
-     * @param string|null     $country          The country code.
-     * @param bool|null       $adjust_splits    Adjust for splits.
-     * @param bool|null       $adjust_dividends Adjust for dividends.
-     * @param Parameters|null $parameters       Original parameters from caller.
-     * @param Parameters      $mergedParams     Merged parameters with defaults applied.
+     * @param string          $symbol        The stock symbol.
+     * @param string          $from          The start date.
+     * @param string          $to            The end date.
+     * @param string          $resolution    The candle resolution.
+     * @param bool            $extended      Include extended hours.
+     * @param bool|null       $adjust_splits Adjust for splits.
+     * @param Parameters|null $parameters    Original parameters from caller.
+     * @param Parameters      $mergedParams  Merged parameters with defaults applied.
      *
      * @return Candles Candles object containing combined CSV.
      * @throws \Throwable
@@ -585,11 +540,8 @@ class Stocks
         string $from,
         string $to,
         string $resolution,
-        ?string $exchange,
         bool $extended,
-        ?string $country,
         ?bool $adjust_splits,
-        ?bool $adjust_dividends,
         ?Parameters $parameters,
         Parameters $mergedParams
     ): Candles {
@@ -612,19 +564,14 @@ class Stocks
         $calls = [];
         foreach ($chunks as $index => $chunk) {
             $arguments = [
-                'from'     => $chunk[0],
-                'to'       => $chunk[1],
-                'exchange' => $exchange,
-                'country'  => $country,
+                'from' => $chunk[0],
+                'to'   => $chunk[1],
             ];
             if ($extended) {
                 $arguments['extended'] = 'true';
             }
             if ($adjust_splits !== null) {
                 $arguments['adjustsplits'] = $adjust_splits ? 'true' : 'false';
-            }
-            if ($adjust_dividends !== null) {
-                $arguments['adjustdividends'] = $adjust_dividends ? 'true' : 'false';
             }
 
             // First request: headers=true unless user explicitly requested no headers
