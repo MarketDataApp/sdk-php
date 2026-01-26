@@ -1308,6 +1308,26 @@ class ToStringTest extends TestCase
         $this->assertStringContainsString('Change: N/A', $output);
     }
 
+    public function testFormatChange_withNegativeValue(): void
+    {
+        // Test via Prices with negative change value
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $response = (object) [
+            's' => 'ok',
+            'symbol' => ['AAPL'],
+            'mid' => [248.75],
+            'change' => [-1.25],
+            'changepct' => [-0.0050],
+            'updated' => [1706122800],
+        ];
+
+        $prices = new Prices($response);
+        $output = (string) $prices;
+
+        // formatChange should preserve negative sign as -$1.25
+        $this->assertStringContainsString('Change: -$1.25', $output);
+    }
+
     public function testPrices_toString_withNullUpdated(): void
     {
         // Prices handles null updated field before calling formatDateTime

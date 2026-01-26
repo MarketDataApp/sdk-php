@@ -170,7 +170,7 @@ trait FormatsForDisplay
             return 'N/A';
         }
 
-        $sign = $value >= 0 ? '+' : '';
+        $sign = $value >= 0 ? '+' : '-';
 
         return $sign . '$' . number_format(abs($value), 2);
     }
