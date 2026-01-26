@@ -1173,6 +1173,54 @@ class ClientBaseErrorHandlingTest extends TestCase
     }
 
     /**
+     * Test processResponse with CSV format throws ApiException when body is JSON error with leading whitespace.
+     *
+     * This is a regression test for BUG-011: CSV/HTML JSON error detection should handle
+     * leading whitespace (newlines, spaces) before the JSON payload.
+     *
+     * Mock response: NOT from real API output (uses synthetic error for testing)
+     *
+     * @return void
+     */
+    public function testProcessResponse_withCsvFormat_jsonErrorWithLeadingWhitespace_throwsApiException(): void
+    {
+        // JSON error response with leading newline - this should still be detected
+        $response = new Response(200, [], "\n{\"s\":\"error\",\"errmsg\":\"Bad request\"}");
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Bad request');
+
+        $method->invoke($this->client, $response, 'csv', ['format' => 'csv']);
+    }
+
+    /**
+     * Test processResponse with HTML format throws ApiException when body is JSON error with leading whitespace.
+     *
+     * This is a regression test for BUG-011: CSV/HTML JSON error detection should handle
+     * leading whitespace (newlines, spaces) before the JSON payload.
+     *
+     * Mock response: NOT from real API output (uses synthetic error for testing)
+     *
+     * @return void
+     */
+    public function testProcessResponse_withHtmlFormat_jsonErrorWithLeadingWhitespace_throwsApiException(): void
+    {
+        // JSON error response with leading spaces and newline
+        $response = new Response(200, [], "  \n{\"s\":\"error\",\"errmsg\":\"Invalid symbol\"}");
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Invalid symbol');
+
+        $method->invoke($this->client, $response, 'html', ['format' => 'html']);
+    }
+
+    /**
      * Test processResponse with CSV format handles valid CSV starting with curly brace.
      * Edge case: Valid CSV content that happens to start with '{' should not be treated as JSON error.
      *

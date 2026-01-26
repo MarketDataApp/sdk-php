@@ -632,7 +632,8 @@ abstract class ClientBase
                 $content = (string)$response->getBody();
 
                 // Check if content is a JSON error response (API returns JSON errors even for CSV/HTML requests)
-                if ($content !== '' && str_starts_with($content, '{')) {
+                // Use ltrim() to handle responses with leading whitespace
+                if ($content !== '' && str_starts_with(ltrim($content), '{')) {
                     $decoded = json_decode($content);
                     if (isset($decoded->s) && $decoded->s === 'error') {
                         throw new ApiException(

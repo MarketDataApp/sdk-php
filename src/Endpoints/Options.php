@@ -635,7 +635,8 @@ class Options
 
                 // Check if this is a JSON error response instead of valid CSV
                 // API returns JSON for errors even when CSV format is requested
-                if ($csv !== '' && str_starts_with($csv, '{')) {
+                // Use ltrim() to handle responses with leading whitespace
+                if ($csv !== '' && str_starts_with(ltrim($csv), '{')) {
                     $decoded = json_decode($csv);
                     if (isset($decoded->s) && $decoded->s === 'error') {
                         // This is a JSON error response, skip it but record the error
