@@ -1650,4 +1650,63 @@ class QuotesTest extends OptionsTestCase
         // All data rows should be preserved, including duplicate "row1"
         $this->assertEquals(['row1', 'row2', 'row1', 'row3'], $lines);
     }
+
+    /**
+     * Test that quotes with missing optional fields parses without warnings (BUG-030 fix).
+     *
+     * The API may omit optional fields like last, iv, delta, gamma, theta, vega.
+     * The SDK should handle missing fields gracefully instead of triggering
+     * "Undefined property" warnings that crash in strict error handling environments.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotes_missingOptionalFields_parsesWithoutWarning(): void
+    {
+        // Response intentionally omits optional fields: last, iv, delta, gamma, theta, vega
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
+            'ask'             => [5.50],
+            'askSize'         => [10],
+            'bid'             => [5.20],
+            'bidSize'         => [12],
+            'mid'             => [5.35],
+            'volume'          => [0],
+            'openInterest'    => [10],
+            'underlyingPrice' => [150.00],
+            'inTheMoney'      => [true],
+            'intrinsicValue'  => [1.00],
+            'extrinsicValue'  => [4.35],
+            'updated'         => [1617197400],
+            // Optional fields intentionally omitted: last, iv, delta, gamma, theta, vega
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // This should NOT trigger any warnings/errors for missing optional fields
+        $response = $this->client->options->quotes('AAPL250117C00150000');
+
+        $this->assertInstanceOf(Quotes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->quotes);
+
+        // Optional fields should be null when missing
+        $quote = $response->quotes[0];
+        $this->assertNull($quote->last);
+        $this->assertNull($quote->implied_volatility);
+        $this->assertNull($quote->delta);
+        $this->assertNull($quote->gamma);
+        $this->assertNull($quote->theta);
+        $this->assertNull($quote->vega);
+
+        // Required fields should still have their values
+        $this->assertEquals('AAPL250117C00150000', $quote->option_symbol);
+        $this->assertEquals(5.50, $quote->ask);
+        $this->assertEquals(5.20, $quote->bid);
+    }
 }
