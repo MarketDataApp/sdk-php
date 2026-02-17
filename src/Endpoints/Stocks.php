@@ -653,9 +653,12 @@ class Stocks
                 }
 
                 if ($csv !== '') {
-                    // Strip duplicate header rows - headers are requested on all calls
-                    // to handle partial failures, but we only want headers once in output
-                    if ($headerRow === null) {
+                    // Only strip duplicate header rows when headers are actually present.
+                    // When add_headers=false, all rows are data rows - don't strip anything.
+                    if ($userRequestedNoHeaders) {
+                        // No headers - just concatenate all data rows
+                        $combinedCsv .= $csv . "\n";
+                    } elseif ($headerRow === null) {
                         // First valid response - capture header and include entire response
                         $firstNewline = strpos($csv, "\n");
                         if ($firstNewline !== false) {

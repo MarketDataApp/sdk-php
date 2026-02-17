@@ -1550,6 +1550,55 @@ class CandlesConcurrentTest extends StocksTestCase
     }
 
     /**
+     * Test that CSV format with add_headers=false preserves all data rows.
+     *
+     * Bug #026: When requesting CSV with add_headers=false, the merge logic was
+     * incorrectly treating the first data row as a header and stripping matching
+     * first rows from subsequent chunks. This caused valid data rows to be dropped.
+     *
+     * With add_headers=false:
+     * - The first row is DATA, not a header
+     * - No header detection/stripping should occur
+     * - All rows from all chunks must be preserved, even if identical
+     */
+    public function testCandles_automaticConcurrent_csvFormatNoHeadersPreservesAllRows(): void
+    {
+        // Mock response: NOT from real API output (synthetic CSV response for testing)
+        // Both chunks have the same first row - this could happen when 'columns' excludes
+        // the timestamp, or when data happens to repeat across chunk boundaries.
+        $csvResponse1 = "100.00,101.00,99.00,100.50,1000\n100.25,101.25,99.25,100.75,1100";
+        $csvResponse2 = "100.00,101.00,99.00,100.50,1000\n100.50,101.50,99.50,101.00,1200";
+
+        $this->setMockResponses([
+            new Response(200, [], $csvResponse1),
+            new Response(200, [], $csvResponse2),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $csv = $result->getCsv();
+
+        // Parse into lines to count them
+        $lines = array_values(array_filter(explode("\n", trim($csv)), fn($line) => $line !== ''));
+
+        // Should have 4 rows total (2 from each chunk)
+        // The bug would only produce 3 rows (stripping the duplicate first row from chunk 2)
+        $this->assertCount(4, $lines, 'With add_headers=false, all 4 data rows should be preserved');
+
+        // Verify all expected rows are present
+        $this->assertEquals('100.00,101.00,99.00,100.50,1000', $lines[0]);
+        $this->assertEquals('100.25,101.25,99.25,100.75,1100', $lines[1]);
+        $this->assertEquals('100.00,101.00,99.00,100.50,1000', $lines[2]);  // Duplicate row preserved
+        $this->assertEquals('100.50,101.50,99.50,101.00,1200', $lines[3]);
+    }
+
+    /**
      * Test that CSV format handles partial failures gracefully.
      *
      * Bug #016: When some chunks fail with 404, the successful chunks should still
