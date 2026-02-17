@@ -87,6 +87,31 @@ class LookupTest extends OptionsTestCase
     }
 
     /**
+     * Test the lookup endpoint with human-readable format when Symbol is an array.
+     *
+     * Regression test for BUG-028: Options lookup crashes when human-readable
+     * Symbol is an array instead of a string.
+     */
+    public function testLookup_humanReadable_symbolAsArray()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        // API can return Symbol as an array even for single results
+        $mocked_response = [
+            'Symbol' => ['AAPL230728C00200000']
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->lookup(
+            'AAPL 7/28/23 $200 Call',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Lookup::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals('AAPL230728C00200000', $response->option_symbol);
+    }
+
+    /**
      * Test lookup endpoint with empty input.
      */
     public function testLookup_emptyInput_throwsException(): void

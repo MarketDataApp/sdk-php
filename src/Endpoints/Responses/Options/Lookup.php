@@ -45,7 +45,8 @@ class Lookup extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             $this->status = 'ok';
-            $this->option_symbol = $responseArray['Symbol'];
+            $symbol = $responseArray['Symbol'];
+            $this->option_symbol = is_array($symbol) ? ($symbol[0] ?? null) : $symbol;
         } else {
             // Regular format
             $this->status = $response->s;
