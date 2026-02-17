@@ -182,7 +182,7 @@ class Stocks
         $currentStart = $fromDate->copy()->startOfDay();
         $isFirstChunk = true;
 
-        while ($currentStart->lt($toDate)) {
+        while ($currentStart->lte($toDate)) {
             $currentEnd = $currentStart->copy()->addYear()->subDay()->endOfDay();
 
             // For the first chunk, use original 'from' timestamp to preserve time-of-day

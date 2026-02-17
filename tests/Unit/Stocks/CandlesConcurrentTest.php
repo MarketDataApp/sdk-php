@@ -2344,4 +2344,28 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertEquals('ok', $result->status);
         $this->assertCount(4, $result->candles);
     }
+
+    /**
+     * Test splitDateRangeIntoYearChunks() includes boundary day when to date is exactly on year boundary.
+     *
+     * Bug #029: When the 'to' date lands exactly on a year boundary (e.g., 2021-01-01),
+     * the loop terminates without including that final day because the condition
+     * uses lt() instead of lte().
+     */
+    public function testSplitDateRangeIntoYearChunks_includesBoundaryDay(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('splitDateRangeIntoYearChunks');
+
+        // From 2020-01-01 to 2021-01-01 spans exactly one year + one day
+        // The boundary day 2021-01-01 should be included
+        $chunks = $method->invoke($stocks, '2020-01-01', '2021-01-01');
+
+        // Should produce 2 chunks: 2020-01-01 to 2020-12-31, and 2021-01-01 to 2021-01-01
+        $this->assertCount(2, $chunks, 'Should have 2 chunks when to date is exactly on year boundary');
+        $this->assertEquals(['2020-01-01', '2020-12-31'], $chunks[0]);
+        $this->assertEquals(['2021-01-01', '2021-01-01'], $chunks[1]);
+    }
 }
