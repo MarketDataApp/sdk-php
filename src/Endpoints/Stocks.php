@@ -92,6 +92,16 @@ class Stocks
             return Carbon::createFromTimestamp((int) $date);
         }
 
+        // Check for spreadsheet serial number (Excel/Google Sheets dates are typically < 100000)
+        // Excel epoch is 1899-12-30, serial number represents days since then
+        if (is_numeric($date)) {
+            $num = (float) $date;
+            if ($num > 0 && $num < 100000) {
+                $excelEpoch = Carbon::parse('1899-12-30');
+                return $excelEpoch->addDays((int) $num);
+            }
+        }
+
         return Carbon::parse($date);
     }
 
@@ -132,6 +142,15 @@ class Stocks
             $timestamp = (int) $date;
             // Reasonable Unix timestamp range (1970-2100)
             return $timestamp >= 0 && $timestamp <= 4102444800;
+        }
+
+        // Check for spreadsheet serial number (Excel/Google Sheets dates are typically < 100000)
+        // These represent days since 1899-12-30 (Excel epoch)
+        if (is_numeric($date)) {
+            $num = (float) $date;
+            if ($num > 0 && $num < 100000) {
+                return true;
+            }
         }
 
         // Try to parse as ISO 8601 or similar format

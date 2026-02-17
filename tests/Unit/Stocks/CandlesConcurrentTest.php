@@ -146,6 +146,8 @@ class CandlesConcurrentTest extends StocksTestCase
             'ISO datetime' => ['2023-01-15T10:30:00'],
             'ISO with timezone' => ['2023-01-15T10:30:00Z'],
             'Unix timestamp' => ['1673784600'],
+            'Spreadsheet date (Excel serial)' => ['45000'],
+            'Spreadsheet date (small)' => ['44927'],
         ];
     }
 
@@ -2207,6 +2209,92 @@ class CandlesConcurrentTest extends StocksTestCase
         // 1700000000 = 2023-11-14, 1710000000 = 2024-03-09 (~4 months)
         $result = $method->invoke($stocks, '5', '1700000000', '1710000000', null);
         $this->assertFalse($result, 'Small date range with unix timestamps should not need splitting');
+    }
+
+    /**
+     * Test needsAutomaticSplitting() with spreadsheet date strings.
+     *
+     * Bug #027: Spreadsheet serial numbers (e.g., Excel dates like 45000) should be
+     * recognized as valid parseable dates for automatic splitting.
+     */
+    public function testNeedsAutomaticSplitting_spreadsheetDates(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('needsAutomaticSplitting');
+
+        // 2-year range with spreadsheet dates
+        // 45000 = 2023-03-15, 47000 = 2028-09-28 (~5.5 years)
+        $result = $method->invoke($stocks, '5', '45000', '47000', null);
+        $this->assertTrue($result, 'Large date range with spreadsheet dates should need splitting');
+
+        // Small range with spreadsheet dates (less than 1 year)
+        // 45000 = 2023-03-15, 45200 = 2023-10-01 (~6 months)
+        $result = $method->invoke($stocks, '5', '45000', '45200', null);
+        $this->assertFalse($result, 'Small date range with spreadsheet dates should not need splitting');
+    }
+
+    /**
+     * Test splitDateRangeIntoYearChunks() with spreadsheet date strings.
+     *
+     * Bug #027: Spreadsheet serial numbers should be correctly parsed and split
+     * into year-long chunks.
+     */
+    public function testSplitDateRangeIntoYearChunks_spreadsheetDates(): void
+    {
+        $stocks = $this->client->stocks;
+        $reflection = new \ReflectionClass($stocks);
+        $method = $reflection->getMethod('splitDateRangeIntoYearChunks');
+
+        // 45000 = 2023-03-15, 47000 = 2028-09-28 (~5.5 years, should be 6 chunks)
+        $chunks = $method->invoke($stocks, '45000', '47000');
+
+        $this->assertCount(6, $chunks);
+        // First chunk should preserve the original spreadsheet date as from
+        $this->assertEquals('45000', $chunks[0][0]);
+        // Last chunk should preserve the original spreadsheet date as to
+        $this->assertEquals('47000', $chunks[5][1]);
+    }
+
+    /**
+     * Test candles with spreadsheet dates triggers automatic splitting.
+     *
+     * Bug #027: When requesting intraday candles with a large date range using
+     * spreadsheet serial numbers, the SDK should recognize them as valid dates
+     * and trigger automatic splitting.
+     */
+    public function testCandles_automaticConcurrent_spreadsheetDates(): void
+    {
+        // Mock response: NOT from real API output (synthetic data for testing)
+        $response1 = ['s' => 'no_data'];
+        $response2 = ['s' => 'no_data'];
+        $response3 = ['s' => 'no_data'];
+        $response4 = ['s' => 'no_data'];
+        $response5 = ['s' => 'no_data'];
+        $response6 = ['s' => 'no_data'];
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode($response1)),
+            new Response(200, [], json_encode($response2)),
+            new Response(200, [], json_encode($response3)),
+            new Response(200, [], json_encode($response4)),
+            new Response(200, [], json_encode($response5)),
+            new Response(200, [], json_encode($response6)),
+        ], $history);
+
+        // Request using spreadsheet date strings - should trigger splitting
+        // 45000 = 2023-03-15, 47000 = 2028-09-28 (~5.5 years, should be 6 chunks)
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '45000',
+            to: '47000',
+            resolution: '5'
+        );
+
+        $this->assertInstanceOf(Candles::class, $result);
+        // Check that multiple requests were made (splitting occurred)
+        $this->assertCount(6, $history, 'Should have made 6 requests for 5.5-year range');
     }
 
     /**
