@@ -2368,4 +2368,135 @@ class CandlesConcurrentTest extends StocksTestCase
         $this->assertEquals(['2020-01-01', '2020-12-31'], $chunks[0]);
         $this->assertEquals(['2021-01-01', '2021-01-01'], $chunks[1]);
     }
+
+    // =========================================================================
+    // candlesConcurrentCsv Direct Tests (for defensive code coverage)
+    // =========================================================================
+
+    /**
+     * Test candlesConcurrentCsv JSON error detection in CSV response.
+     *
+     * This test covers lines 666-670 in Stocks.php - the defensive JSON error
+     * detection that handles cases where the API returns JSON error content
+     * wrapped as CSV (bypassing processResponse's error detection).
+     *
+     * Uses anonymous class to inject mock responses.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testCandlesConcurrentCsv_jsonErrorInResponse_recordsError(): void
+    {
+        // Create a test subclass that allows us to inject mock responses
+        $testStocks = new class($this->client) extends \MarketDataApp\Endpoints\Stocks {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            // Override execute_in_parallel to return mock responses
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock responses where one is valid CSV and one is JSON error wrapped as CSV
+        $testStocks->setMockParallelResponses([
+            0 => (object) ['csv' => "t,o,h,l,c,v\n1609770600,133.52,133.61,132.39,132.81,4815264"],
+            1 => (object) ['csv' => '{"s":"error","errmsg":"No data available"}'],
+        ]);
+
+        // Use reflection to call the protected method
+        // Signature: candlesConcurrentCsv($symbol, $from, $to, $resolution, $extended, $adjust_splits, $parameters, $mergedParams)
+        $reflection = new \ReflectionClass($testStocks);
+        $method = $reflection->getMethod('candlesConcurrentCsv');
+
+        $params = new Parameters(format: Format::CSV);
+        $result = $method->invoke(
+            $testStocks,
+            'AAPL',          // symbol
+            '2021-01-01',    // from
+            '2021-12-31',    // to
+            '5',             // resolution
+            false,           // extended
+            null,            // adjust_splits
+            $params,         // parameters
+            $params          // mergedParams
+        );
+
+        // Verify the valid CSV was included
+        $this->assertInstanceOf(Candles::class, $result);
+        $this->assertTrue($result->isCsv());
+        $this->assertStringContainsString('1609770600', $result->getCsv());
+        // JSON error should NOT be in the CSV output
+        $this->assertStringNotContainsString('{"s":"error"', $result->getCsv());
+    }
+
+    /**
+     * Test candlesConcurrentCsv throws ApiException when ALL responses are JSON errors.
+     *
+     * This test covers lines 709-711 in Stocks.php - throwing ApiException
+     * when validResponseCount is 0 and lastErrorMessage is set.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testCandlesConcurrentCsv_allJsonErrors_throwsApiException(): void
+    {
+        $testStocks = new class($this->client) extends \MarketDataApp\Endpoints\Stocks {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock responses where ALL are JSON errors wrapped as CSV
+        $testStocks->setMockParallelResponses([
+            0 => (object) ['csv' => '{"s":"error","errmsg":"No data available"}'],
+            1 => (object) ['csv' => '{"s":"error","errmsg":"No data available"}'],
+        ]);
+
+        $reflection = new \ReflectionClass($testStocks);
+        $method = $reflection->getMethod('candlesConcurrentCsv');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available');
+
+        $params = new Parameters(format: Format::CSV);
+        $method->invoke(
+            $testStocks,
+            'AAPL',          // symbol
+            '2021-01-01',    // from
+            '2021-12-31',    // to
+            '5',             // resolution
+            false,           // extended
+            null,            // adjust_splits
+            $params,         // parameters
+            $params          // mergedParams
+        );
+    }
 }

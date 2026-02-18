@@ -174,4 +174,42 @@ class AddHeadersTest extends UniversalParametersTestCase
         $this->assertEquals(['symbol', 'ask', 'bid'], $params->columns);
         $this->assertTrue($params->add_headers);
     }
+
+    // ============================================================================
+    // Execute Tests (cover line 161 in UniversalParameters.php)
+    // ============================================================================
+
+    /**
+     * Test that add_headers=true sends headers=true to the API.
+     *
+     * This test covers line 161 in UniversalParameters.php - the `true` branch of the ternary
+     * that sets headers parameter when add_headers=true.
+     *
+     * Mock response: NOT from real API output (synthetic data)
+     */
+    public function testExecute_addHeadersTrue_sendsHeadersTrue(): void
+    {
+        // Set up mock response for CSV format
+        $history = [];
+        $mock = new \GuzzleHttp\Handler\MockHandler([
+            new \GuzzleHttp\Psr7\Response(200, [], "symbol,last\nAAPL,150.0"),
+        ]);
+        $handlerStack = \GuzzleHttp\HandlerStack::create($mock);
+        $handlerStack->push(\GuzzleHttp\Middleware::history($history));
+        $this->client->setGuzzle(new \GuzzleHttp\Client(['handler' => $handlerStack]));
+
+        // Make request with add_headers=true explicitly
+        $this->client->stocks->quote(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV, add_headers: true)
+        );
+
+        // Verify headers=true was sent in the query string
+        $this->assertCount(1, $history);
+        $request = $history[0]['request'];
+        $query = [];
+        parse_str($request->getUri()->getQuery(), $query);
+        $this->assertArrayHasKey('headers', $query);
+        $this->assertEquals('true', $query['headers']);
+    }
 }

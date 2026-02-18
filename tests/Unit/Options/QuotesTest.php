@@ -1709,4 +1709,246 @@ class QuotesTest extends OptionsTestCase
         $this->assertEquals(5.50, $quote->ask);
         $this->assertEquals(5.20, $quote->bid);
     }
+
+    // =========================================================================
+    // quotesMultipleCsv Direct Tests (for defensive code coverage)
+    // =========================================================================
+
+    /**
+     * Test quotesMultipleCsv JSON error detection in CSV response.
+     *
+     * This test covers lines 637-641 in Options.php - the defensive JSON error
+     * detection that handles cases where the API returns JSON error content
+     * wrapped as CSV (bypassing processResponse's error detection).
+     *
+     * Uses reflection to call the protected method directly with controlled responses.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotesMultipleCsv_jsonErrorInResponse_recordsError(): void
+    {
+        // Create a test subclass that allows us to inject mock responses
+        $testOptions = new class($this->client) extends \MarketDataApp\Endpoints\Options {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            // Override execute_in_parallel to return mock responses
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock responses where one is valid CSV and one is JSON error wrapped as CSV
+        $testOptions->setMockParallelResponses([
+            0 => (object) ['csv' => "symbol,price\nAAPL250117C00150000,5.50"],
+            1 => (object) ['csv' => '{"s":"error","errmsg":"Symbol not found"}'],
+        ]);
+
+        // Use reflection to call the protected method
+        $reflection = new \ReflectionClass($testOptions);
+        $method = $reflection->getMethod('quotesMultipleCsv');
+
+        // Method signature: quotesMultipleCsv($symbols, $date, $from, $to, $parameters, $mergedParams)
+        $params = new Parameters(format: Format::CSV);
+        $result = $method->invoke(
+            $testOptions,
+            ['AAPL250117C00150000', 'INVALID_SYMBOL'],
+            null,    // date
+            null,    // from
+            null,    // to
+            $params, // parameters
+            $params  // mergedParams
+        );
+
+        // Verify the valid CSV was included
+        $this->assertInstanceOf(Quotes::class, $result);
+        $this->assertTrue($result->isCsv());
+        $this->assertStringContainsString('AAPL250117C00150000', $result->getCsv());
+        // JSON error should NOT be in the CSV output
+        $this->assertStringNotContainsString('{"s":"error"', $result->getCsv());
+    }
+
+    /**
+     * Test quotesMultipleCsv throws ApiException when ALL responses are JSON errors.
+     *
+     * This test covers lines 683-686 in Options.php - throwing ApiException
+     * when validResponseCount is 0 and lastErrorMessage is set.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotesMultipleCsv_allJsonErrors_throwsApiException(): void
+    {
+        // Create a test subclass that allows us to inject mock responses
+        $testOptions = new class($this->client) extends \MarketDataApp\Endpoints\Options {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock responses where ALL are JSON errors wrapped as CSV
+        $testOptions->setMockParallelResponses([
+            0 => (object) ['csv' => '{"s":"error","errmsg":"Symbol not found"}'],
+            1 => (object) ['csv' => '{"s":"error","errmsg":"Symbol not found"}'],
+        ]);
+
+        // Use reflection to call the protected method
+        $reflection = new \ReflectionClass($testOptions);
+        $method = $reflection->getMethod('quotesMultipleCsv');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('Symbol not found');
+
+        $params = new Parameters(format: Format::CSV);
+        $method->invoke(
+            $testOptions,
+            ['INVALID1', 'INVALID2'],
+            null,    // date
+            null,    // from
+            null,    // to
+            $params, // parameters
+            $params  // mergedParams
+        );
+    }
+
+    /**
+     * Test quotesMultipleCsv throws first failed request when no responses and no JSON errors.
+     *
+     * This test covers lines 687-688 in Options.php - rethrowing the first failed request
+     * when there are no valid responses and no JSON error messages but there are exceptions.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotesMultipleCsv_allFailedRequests_throwsFirstException(): void
+    {
+        $testOptions = new class($this->client) extends \MarketDataApp\Endpoints\Options {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock with empty responses but with failed requests
+        $exception = new \MarketDataApp\Exceptions\RequestError('Network timeout');
+        $testOptions->setMockParallelResponses(
+            [0 => (object) ['csv' => '']], // Empty CSV response
+            [1 => $exception]               // Failed request
+        );
+
+        $reflection = new \ReflectionClass($testOptions);
+        $method = $reflection->getMethod('quotesMultipleCsv');
+
+        $this->expectException(\MarketDataApp\Exceptions\RequestError::class);
+        $this->expectExceptionMessage('Network timeout');
+
+        $params = new Parameters(format: Format::CSV);
+        $method->invoke(
+            $testOptions,
+            ['SYM1', 'SYM2'],
+            null,
+            null,
+            null,
+            $params,
+            $params
+        );
+    }
+
+    /**
+     * Test quotesMultipleCsv throws generic ApiException when no data available.
+     *
+     * This test covers lines 690-692 in Options.php - throwing generic ApiException
+     * when there are no valid responses, no JSON errors, and no failed requests.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public function testQuotesMultipleCsv_noDataAvailable_throwsApiException(): void
+    {
+        $testOptions = new class($this->client) extends \MarketDataApp\Endpoints\Options {
+            public array $mockResponses = [];
+            public array $mockFailedRequests = [];
+
+            public function setMockParallelResponses(array $responses, array $failedRequests = []): void
+            {
+                $this->mockResponses = $responses;
+                $this->mockFailedRequests = $failedRequests;
+            }
+
+            public function execute_in_parallel(
+                array $calls,
+                ?\MarketDataApp\Endpoints\Requests\Parameters $parameters = null,
+                ?array &$failedRequests = null
+            ): array {
+                if ($failedRequests !== null) {
+                    $failedRequests = $this->mockFailedRequests;
+                }
+                return $this->mockResponses;
+            }
+        };
+
+        // Set up mock with empty CSV responses (no JSON errors, no failed requests)
+        $testOptions->setMockParallelResponses([
+            0 => (object) ['csv' => ''],
+            1 => (object) ['csv' => ''],
+        ]);
+
+        $reflection = new \ReflectionClass($testOptions);
+        $method = $reflection->getMethod('quotesMultipleCsv');
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available for the requested symbols');
+
+        $params = new Parameters(format: Format::CSV);
+        $method->invoke(
+            $testOptions,
+            ['SYM1', 'SYM2'],
+            null,
+            null,
+            null,
+            $params,
+            $params
+        );
+    }
 }

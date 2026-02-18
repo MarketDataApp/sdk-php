@@ -1240,4 +1240,146 @@ class ClientBaseErrorHandlingTest extends TestCase
 
         $this->assertEquals($csvContent, $result->csv);
     }
+
+    /**
+     * Test _setup_rate_limits with invalid token throws UnauthorizedException.
+     *
+     * This test covers line 143 in ClientBase.php - the re-throw of UnauthorizedException
+     * in the _setup_rate_limits() method when the token validation fails.
+     *
+     * @return void
+     */
+    public function testSetupRateLimits_withInvalidToken_throwsUnauthorizedException(): void
+    {
+        // Create a mock handler that returns 401 for the /user/ endpoint
+        $mockHandler = new \GuzzleHttp\Handler\MockHandler([
+            new Response(401, [], json_encode(['errmsg' => 'Unauthorized'])),
+        ]);
+        $handlerStack = \GuzzleHttp\HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client(['handler' => $handlerStack]);
+
+        // Create client with empty token first (skips rate limit setup in constructor)
+        $client = new Client("");
+        $client->setGuzzle($mockGuzzle);
+
+        // Use reflection to set token and call _setup_rate_limits
+        $reflection = new ReflectionClass($client);
+        $tokenProperty = $reflection->getProperty('token');
+        $tokenProperty->setValue($client, 'invalid_test_token');
+
+        $method = $reflection->getMethod('_setup_rate_limits');
+
+        // Expect UnauthorizedException to be thrown (line 143: throw $e)
+        $this->expectException(UnauthorizedException::class);
+
+        $method->invoke($client);
+    }
+
+    /**
+     * Test processResponse with JSON literal null returns structured no_data response.
+     *
+     * This test covers line 697 in ClientBase.php - handling of valid JSON `null` literal.
+     * When the API returns literally `null` (not empty string, not no_data object),
+     * we need to handle it gracefully.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     *
+     * @return void
+     */
+    public function testProcessResponse_withJsonNull_returnsNoDataResponse(): void
+    {
+        // Response body is literally the JSON value "null"
+        $response = new Response(200, [], 'null');
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('processResponse');
+
+        $result = $method->invoke($this->client, $response, 'json', []);
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('s', $result);
+        $this->assertEquals('no_data', $result->s);
+    }
+
+    /**
+     * Test makeRawRequest with 401 response throws UnauthorizedException.
+     *
+     * This test covers lines 1080-1086 in ClientBase.php - the 401 exception handling
+     * in the makeRawRequest() method.
+     *
+     * @return void
+     */
+    public function testMakeRawRequest_with401_throwsUnauthorizedException(): void
+    {
+        // Set up mock that returns 401
+        $this->setMockResponses([
+            new Response(401, [], json_encode(['errmsg' => 'Invalid API token'])),
+        ]);
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionMessage('Invalid API token');
+
+        $this->client->makeRawRequest('user/');
+    }
+
+    /**
+     * Test makeRawRequest with non-401 ClientException rethrows exception.
+     *
+     * This test covers line 1089 in ClientBase.php - the re-throw of non-401 ClientExceptions.
+     *
+     * @return void
+     */
+    public function testMakeRawRequest_withNon401ClientException_rethrowsException(): void
+    {
+        // Set up mock that returns 403 (should be re-thrown, not converted)
+        $this->setMockResponses([
+            new Response(403, [], json_encode(['errmsg' => 'Forbidden'])),
+        ]);
+
+        $this->expectException(\GuzzleHttp\Exception\ClientException::class);
+
+        $this->client->makeRawRequest('user/');
+    }
+
+    /**
+     * Test _setup_rate_limits success path - validates response and extracts rate limits.
+     *
+     * This test covers lines 135-139 in ClientBase.php - the success path in _setup_rate_limits()
+     * where the /user/ endpoint returns a valid response with rate limit headers.
+     *
+     * @return void
+     */
+    public function testSetupRateLimits_successPath_extractsRateLimits(): void
+    {
+        // Create a mock handler that returns successful response with rate limit headers
+        $resetTimestamp = time() + 3600;
+        $mockHandler = new \GuzzleHttp\Handler\MockHandler([
+            new Response(200, [
+                'x-api-ratelimit-limit'     => ['100'],
+                'x-api-ratelimit-remaining' => ['99'],
+                'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+                'x-api-ratelimit-consumed'  => ['1'],
+            ], json_encode([])),
+        ]);
+        $handlerStack = \GuzzleHttp\HandlerStack::create($mockHandler);
+        $mockGuzzle = new \GuzzleHttp\Client(['handler' => $handlerStack]);
+
+        // Create client with empty token first (skips rate limit setup in constructor)
+        $client = new Client("");
+        $client->setGuzzle($mockGuzzle);
+
+        // Use reflection to set token and call _setup_rate_limits
+        $reflection = new ReflectionClass($client);
+        $tokenProperty = $reflection->getProperty('token');
+        $tokenProperty->setValue($client, 'valid_test_token');
+
+        $method = $reflection->getMethod('_setup_rate_limits');
+        $method->invoke($client);
+
+        // Verify rate_limits was populated (lines 137-139)
+        $this->assertNotNull($client->rate_limits);
+        $this->assertEquals(100, $client->rate_limits->limit);
+        $this->assertEquals(99, $client->rate_limits->remaining);
+        $this->assertEquals(1, $client->rate_limits->consumed);
+    }
 }
