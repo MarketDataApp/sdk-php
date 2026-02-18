@@ -444,6 +444,44 @@ class QuoteTest extends StocksTestCase
     }
 
     /**
+     * Test that quote handles empty arrays in human-readable format (BUG-032 fix).
+     *
+     * When the API returns human-readable format with empty arrays, the code
+     * should handle this gracefully instead of throwing "Undefined array key 0".
+     *
+     * @return void
+     */
+    public function testQuote_humanReadable_emptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with empty arrays)
+        $mocked_response = [
+            'Symbol' => [],
+            'Ask' => [],
+            'Ask Size' => [],
+            'Bid' => [],
+            'Bid Size' => [],
+            'Mid' => [],
+            'Last' => [],
+            'Change $' => [],
+            'Change %' => [],
+            'Volume' => [],
+            'Date' => []
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('no_data', $quote->status);
+        $this->assertEquals('', $quote->symbol);
+        $this->assertNull($quote->ask);
+    }
+
+    /**
      * Test that quote properties are accessible for no_data responses (BUG-013 fix).
      *
      * no_data responses skip property initialization. Properties should

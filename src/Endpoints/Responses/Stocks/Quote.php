@@ -139,6 +139,10 @@ class Quote extends ResponseBase
         // Check for human-readable keys first (with spaces), then fall back to regular keys
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
+            // Check if arrays have data before accessing index 0
+            if (empty($responseArray['Symbol'])) {
+                return;
+            }
             $this->status = 'ok'; // Human-readable format always returns data when successful
             $this->symbol = $responseArray['Symbol'][0];
             $this->ask = $responseArray['Ask'][0];
