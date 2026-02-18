@@ -83,6 +83,10 @@ class News extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             // Note: News endpoint returns arrays for all fields, even for single items
+            // Check if arrays have data before accessing index 0
+            if (is_array($responseArray['Symbol']) && empty($responseArray['Symbol'])) {
+                return;
+            }
             $this->status = 'ok';
             $this->symbol = is_array($responseArray['Symbol']) ? $responseArray['Symbol'][0] : $responseArray['Symbol'];
             $this->headline = is_array($responseArray['headline']) ? $responseArray['headline'][0] : $responseArray['headline'];
@@ -93,9 +97,14 @@ class News extends ResponseBase
         } else {
             // Regular format
             // Note: News endpoint returns arrays for all fields, even for single items
-            $this->status = $response->s;
+            $this->status = $response->s ?? 'no_data';
 
             if ($this->status === 'ok') {
+                // Check if arrays have data before accessing index 0
+                if (is_array($response->symbol) && empty($response->symbol)) {
+                    $this->status = 'no_data';
+                    return;
+                }
                 $this->symbol = is_array($response->symbol) ? $response->symbol[0] : $response->symbol;
                 $this->headline = is_array($response->headline) ? $response->headline[0] : $response->headline;
                 $this->content = is_array($response->content) ? $response->content[0] : $response->content;

@@ -197,4 +197,64 @@ class NewsTest extends StocksTestCase
         $this->assertEquals('', $news->source);
         $this->assertNull($news->publication_date);
     }
+
+    /**
+     * Test that news handles empty arrays with ok status (BUG-046 fix).
+     *
+     * When the API returns 'ok' status but empty arrays, the code should
+     * handle this gracefully instead of throwing "Undefined array key 0".
+     *
+     * @return void
+     */
+    public function testNews_emptyArraysWithOkStatus_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $emptyArrayResponse = [
+            's' => 'ok',
+            'symbol' => [],
+            'headline' => [],
+            'content' => [],
+            'source' => [],
+            'publicationDate' => [],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($emptyArrayResponse))]);
+
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-01'
+        );
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals('no_data', $news->status);
+    }
+
+    /**
+     * Test that news handles missing 's' status field (BUG-049 fix).
+     *
+     * When the API returns a malformed response without the 's' status field,
+     * the code should handle this gracefully by defaulting to 'no_data'.
+     *
+     * @return void
+     */
+    public function testNews_missingStatusField_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $malformedResponse = [
+            'symbol' => ['AAPL'],
+            'headline' => ['Test Headline'],
+            'content' => ['Test Content'],
+            'source' => ['https://example.com'],
+            'publicationDate' => [1703041200],
+            // Note: 's' status field intentionally omitted
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($malformedResponse))]);
+
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-01'
+        );
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals('no_data', $news->status);
+    }
 }
