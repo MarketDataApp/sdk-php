@@ -62,9 +62,20 @@ If we need more information, we'll comment on the issue. Issues without a respon
 4. Keep commits focused and atomic
 5. Reference any related issues
 
+## Finding Bugs
+
+Want to help find bugs before other users encounter them? See [`.github/BUG_FINDING.md`](.github/BUG_FINDING.md) for a systematic exploration workflow:
+
+- Prioritized areas where bugs commonly occur
+- Test scenarios with runnable code snippets
+- Endpoint-specific checklists
+- Instructions for documenting and submitting found bugs
+
+Found bugs are submitted via the standard [bug report template](https://github.com/MarketDataApp/sdk-php/issues/new?template=bug.yml).
+
 ## For Maintainers
 
-If you have write access to the repository, see [`.github/ISSUE_WORKFLOW.md`](.github/ISSUE_WORKFLOW.md) for the complete issue triage and resolution process, including:
+If you have write access to the repository, see [`.github/ISSUE_WORKFLOW.md`](.github/ISSUE_WORKFLOW.md) for the complete issue triage and resolution process:
 
 - Validation checklist for bug reports
 - Response templates for common scenarios
