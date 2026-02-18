@@ -1,58 +1,108 @@
 name: Bug Report
-description: Report an Issue or Bug with the Package
+description: Report a bug in the Market Data PHP SDK
 title: "[Bug]: "
 labels: ["bug"]
 body:
-    - type: markdown
-      attributes:
-          value: |
-              We're sorry to hear you have a problem. Can you help us solve it by providing the following details.
-    - type: textarea
-      id: what-happened
-      attributes:
-          label: What happened?
-          description: What did you expect to happen?
-          placeholder: I cannot currently do X thing because when I do, it breaks X thing.
-      validations:
-          required: true
-    - type: textarea
-      id: how-to-reproduce
-      attributes:
-          label: How to reproduce the bug
-          description: How did this occur, please add any config values used and provide a set of reliable steps if possible.
-          placeholder: When I do X I see Y.
-      validations:
-          required: true
-    - type: input
-      id: package-version
-      attributes:
-          label: Package Version
-          description: What version of our Package are you running? Please be as specific as possible
-          placeholder: 2.0.0
-      validations:
-          required: true
-    - type: input
-      id: php-version
-      attributes:
-          label: PHP Version
-          description: What version of PHP are you running? Please be as specific as possible
-          placeholder: 8.2.0
-      validations:
-          required: true
-    - type: dropdown
-      id: operating-systems
-      attributes:
-        label: Which operating systems does with happen with?
-        description: You may select more than one.
-        multiple: true
-        options:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out all required fields to help us reproduce and fix the issue.
+
+  - type: dropdown
+    id: endpoint
+    attributes:
+      label: SDK Endpoint
+      description: Which part of the SDK is affected?
+      options:
+        - stocks
+        - options
+        - markets
+        - mutual_funds
+        - utilities
+        - Client (general)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: method
+    attributes:
+      label: Method
+      description: Which method are you calling? (e.g., candles, quote, option_chain)
+      placeholder: candles
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Code
+      description: Complete, runnable PHP code that demonstrates the bug. Must be self-contained.
+      placeholder: |
+        <?php
+        require 'vendor/autoload.php';
+
+        $client = new MarketDataApp\Client();
+        $result = $client->stocks->candles('AAPL', from: '2024-01-01');
+        // Bug: ...
+      render: php
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: The method should return candle data for the specified date range.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens? Include any error messages.
+      placeholder: |
+        TypeError: Cannot access property on null
+        Stack trace: ...
+    validations:
+      required: true
+
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK Version
+      description: Run `composer show marketdataapp/sdk-php` to find this
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP Version
+      description: Run `php -v` to find this
+      placeholder: "8.2.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      multiple: true
+      options:
         - macOS
         - Windows
         - Linux
-    - type: textarea
-      id: notes
-      attributes:
-          label: Notes
-          description: Use this field to provide any other notes that you feel might be relevant to the issue.
-      validations:
-          required: false
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Context
+      description: Any other relevant information (config, workarounds tried, etc.)
+    validations:
+      required: false

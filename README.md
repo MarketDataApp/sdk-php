@@ -179,6 +179,14 @@ export MARKETDATA_TOKEN=your_token_here
 ./test-with-act.sh
 ```
 
+## Contributing
+
+Found a bug or want to contribute? See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+- Reporting bugs with reproduction code
+- Setting up a development environment
+- Running tests
+- Submitting pull requests
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
