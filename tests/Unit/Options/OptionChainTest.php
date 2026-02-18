@@ -1129,6 +1129,56 @@ class OptionChainTest extends OptionsTestCase
     }
 
     /**
+     * Test that option_chain handles missing optional fields without crashing (BUG-031 fix).
+     *
+     * When the API omits optional fields (last, iv, delta, gamma, theta, vega) from
+     * regular JSON format responses, the response class should handle this gracefully
+     * using null guards instead of causing PHP errors.
+     */
+    public function testOptionChain_missingOptionalFields_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data with optional fields omitted)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL250117C00150000'],
+            'underlying'      => ['AAPL'],
+            'expiration'      => [1737072000],
+            'side'            => ['call'],
+            'strike'          => [150.0],
+            'firstTraded'     => [1617197400],
+            'dte'             => [30],
+            'ask'             => [5.50],
+            'askSize'         => [10],
+            'bid'             => [5.20],
+            'bidSize'         => [12],
+            'mid'             => [5.35],
+            'volume'          => [100],
+            'openInterest'    => [500],
+            'underlyingPrice' => [150.00],
+            'inTheMoney'      => [true],
+            'intrinsicValue'  => [1.00],
+            'extrinsicValue'  => [4.35],
+            'updated'         => [1617197400],
+            // Optional fields intentionally omitted: last, iv, delta, gamma, theta, vega
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->option_chains);
+
+        $quote = $response->getAllQuotes()[0];
+        $this->assertNull($quote->last);
+        $this->assertNull($quote->implied_volatility);
+        $this->assertNull($quote->delta);
+        $this->assertNull($quote->gamma);
+        $this->assertNull($quote->theta);
+        $this->assertNull($quote->vega);
+    }
+
+    /**
      * Test that option_chain properties are accessible for no_data responses without next/prev times (BUG-013 fix).
      *
      * Some no_data responses may not include nextTime/prevTime fields.
