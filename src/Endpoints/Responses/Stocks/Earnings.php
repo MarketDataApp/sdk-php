@@ -47,8 +47,12 @@ class Earnings extends ResponseBase
 
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
+            // Validate Symbol is an array before counting
+            if (!is_array($responseArray['Symbol']) || empty($responseArray['Symbol'])) {
+                return;
+            }
             $this->status = 'ok';
-            
+
             $count = count($responseArray['Symbol']);
             for ($i = 0; $i < $count; $i++) {
                 $this->earnings[] = new Earning(

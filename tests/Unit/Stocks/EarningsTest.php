@@ -277,4 +277,42 @@ class EarningsTest extends StocksTestCase
         $this->assertEquals('no_data', $response->status);
         $this->assertIsArray($response->earnings);
     }
+
+    /**
+     * Test that earnings handles non-array Symbol in human-readable format (BUG-048 fix).
+     *
+     * When the API returns a malformed human-readable response where Symbol is
+     * a scalar instead of an array, the code should handle this gracefully.
+     *
+     * @return void
+     */
+    public function testEarnings_humanReadable_scalarSymbol_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $malformedResponse = [
+            'Symbol' => 'AAPL', // Should be an array like ['AAPL']
+            'Fiscal Year' => 2024,
+            'Fiscal Quarter' => 1,
+            'Date' => 1704067200,
+            'Report Date' => 1706745600,
+            'Report Time' => 'after close',
+            'Currency' => 'USD',
+            'Reported EPS' => 2.18,
+            'Estimated EPS' => 2.10,
+            'Surprise EPS' => 0.08,
+            'Surprise EPS %' => 3.81,
+            'Updated' => 1706832000,
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($malformedResponse))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('no_data', $response->status);
+        $this->assertEmpty($response->earnings);
+    }
 }
