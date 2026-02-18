@@ -319,4 +319,66 @@ class BulkCandlesTest extends StocksTestCase
         $this->assertStringContainsString('AAPL', (string) $response->candles[0]);
         $this->assertStringContainsString('MSFT', (string) $response->candles[1]);
     }
+
+    /**
+     * BUG-033: Test bulkCandles handles missing symbol field gracefully.
+     *
+     * When the API response omits the symbol field, the code should handle
+     * this gracefully without throwing "Cannot access offset on null".
+     */
+    public function testBulkCandles_missingSymbolField_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data without symbol field)
+        $mocked_response = [
+            's' => 'ok',
+            'o' => [248.7, 452.595],
+            'h' => [251.56, 452.69],
+            'l' => [245.18, 438.68],
+            'c' => [247.65, 444.11],
+            'v' => [54933217, 37939952],
+            't' => [1768971600, 1768971600]
+            // Note: symbol field intentionally omitted
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ['AAPL', 'MSFT'],
+            resolution: 'D'
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertCount(2, $response->candles);
+        $this->assertNull($response->candles[0]->symbol);
+        $this->assertNull($response->candles[1]->symbol);
+    }
+
+    /**
+     * BUG-033: Test bulkCandles handles missing Symbol field in human-readable format.
+     */
+    public function testBulkCandles_humanReadable_missingSymbolField_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data without Symbol field)
+        $mocked_response = [
+            'Date' => [1662004800, 1662091200],
+            'Open' => [156.64, 159.75],
+            'High' => [158.42, 160.362],
+            'Low' => [154.67, 154.965],
+            'Close' => [157.96, 155.81],
+            'Volume' => [74229896, 76957768]
+            // Note: Symbol field intentionally omitted
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->bulkCandles(
+            symbols: ['AAPL', 'MSFT'],
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->candles);
+        $this->assertNull($response->candles[0]->symbol);
+        $this->assertNull($response->candles[1]->symbol);
+    }
 }
