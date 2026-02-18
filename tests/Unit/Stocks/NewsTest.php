@@ -257,4 +257,39 @@ class NewsTest extends StocksTestCase
         $this->assertInstanceOf(News::class, $news);
         $this->assertEquals('no_data', $news->status);
     }
+
+    /**
+     * Test that human-readable news handles empty arrays gracefully.
+     *
+     * When the API returns human-readable format with empty Symbol array,
+     * the code should handle this gracefully by returning defaults.
+     *
+     * @return void
+     */
+    public function testNews_humanReadable_emptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        // Human-readable format is detected by presence of 'Symbol' key
+        $emptyHumanReadableResponse = [
+            'Symbol' => [],
+            'headline' => [],
+            'content' => [],
+            'source' => [],
+            'publicationDate' => [],
+            'Date' => [],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($emptyHumanReadableResponse))]);
+
+        $news = $this->client->stocks->news(
+            symbol: 'AAPL',
+            from: '2024-01-01',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(News::class, $news);
+        // Should return defaults since Symbol array is empty
+        $this->assertEquals('no_data', $news->status);
+        $this->assertEquals('', $news->symbol);
+        $this->assertEquals('', $news->headline);
+    }
 }
