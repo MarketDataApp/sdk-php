@@ -511,4 +511,70 @@ class QuoteTest extends StocksTestCase
         $this->assertNull($quote->volume);
         $this->assertNull($quote->updated);
     }
+
+    /**
+     * Test that quote handles empty arrays with ok status in regular format (BUG-047 fix).
+     *
+     * When the API returns 'ok' status but empty arrays in regular format, the code should
+     * handle this gracefully instead of throwing "Undefined array key 0".
+     *
+     * @return void
+     */
+    public function testQuote_regularFormat_emptyArraysWithOkStatus_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $emptyArrayResponse = [
+            's' => 'ok',
+            'symbol' => [],
+            'ask' => [],
+            'askSize' => [],
+            'bid' => [],
+            'bidSize' => [],
+            'mid' => [],
+            'last' => [],
+            'change' => [],
+            'changepct' => [],
+            'volume' => [],
+            'updated' => [],
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($emptyArrayResponse))]);
+
+        $quote = $this->client->stocks->quote('AAPL');
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('no_data', $quote->status);
+    }
+
+    /**
+     * Test that quote handles missing 's' status field in regular format (BUG-051 fix).
+     *
+     * When the API returns a malformed response without the 's' status field,
+     * the code should handle this gracefully by defaulting to 'no_data'.
+     *
+     * @return void
+     */
+    public function testQuote_regularFormat_missingStatusField_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $malformedResponse = [
+            'symbol' => ['AAPL'],
+            'ask' => [150.00],
+            'askSize' => [100],
+            'bid' => [149.95],
+            'bidSize' => [200],
+            'mid' => [149.975],
+            'last' => [150.00],
+            'change' => [0.50],
+            'changepct' => [0.0033],
+            'volume' => [1000000],
+            'updated' => [1703041200],
+            // Note: 's' status field intentionally omitted
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($malformedResponse))]);
+
+        $quote = $this->client->stocks->quote('AAPL');
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('no_data', $quote->status);
+    }
 }

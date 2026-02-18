@@ -166,10 +166,16 @@ class Quote extends ResponseBase
             }
         } else {
             // Regular format
-            $this->status = $response->s;
+            $this->status = $response->s ?? 'no_data';
 
             // Handle no_data status (e.g., 204 No Content or no data available)
             if ($this->status === 'no_data') {
+                return;
+            }
+
+            // Check if arrays have data before accessing index 0
+            if (empty($response->symbol)) {
+                $this->status = 'no_data';
                 return;
             }
 
