@@ -189,11 +189,13 @@ abstract class ClientBase
                 }
                 $arguments = $calls[$index][1];
 
-                // Build URL for exception context
+                // Build URL for exception context (without internal _filename parameter)
+                $queryParams = $arguments;
+                unset($queryParams['_filename']);
                 $method = $calls[$index][0];
                 $requestUrl = self::API_URL . $method;
-                if (!empty($arguments)) {
-                    $requestUrl .= '?' . http_build_query($arguments);
+                if (!empty($queryParams)) {
+                    $requestUrl .= '?' . http_build_query($queryParams);
                 }
 
                 // Process and store result at original index to maintain order
