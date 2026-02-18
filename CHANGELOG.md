@@ -14,6 +14,7 @@
 - **100% Test Coverage** - Comprehensive unit and integration tests across PHP 8.2, 8.3, 8.4, and 8.5
 - **Full Feature Parity** - Complete feature parity with the official Python SDK
 - **Production Ready** - Battle-tested with automatic retry, rate limiting, and comprehensive logging
+- **50+ Bug Fixes** - Extensive testing and fixes for edge cases, error handling, and API compatibility
 
 ### Breaking Changes
 
@@ -59,6 +60,20 @@ try {
     echo "Invalid token";
 }
 ```
+
+#### Options - option_chain() Parameter Changes
+- **Renamed `min_bid_ask_spread` to `max_bid_ask_spread`** - The previous parameter name was incorrect and silently ignored by the API
+- **Removed default `expiration=all`** - No longer sends a default expiration filter
+- **Removed default `nonstandard=true`** - Non-standard contracts are no longer included by default
+- **Changed `delta` parameter type to `string`** - Now accepts range expressions like `"0.3-0.5"`
+
+#### Options - expirations() Parameter Changes
+- **Changed `strike` parameter type to `int|float`** - Now accepts decimal strikes like `12.5` for non-standard options
+
+#### Removed Unsupported Parameters
+The following parameters were present in v0.6.x but were never supported by the API (silently ignored):
+- **Candles**: Removed `exchange`, `country`, `adjust_dividends` parameters from `candles()`, `bulkCandles()`, and concurrent candle methods
+- **Earnings**: Removed `datekey` parameter from `earnings()`
 
 ### New Features
 
@@ -176,6 +191,45 @@ MARKETDATA_LOGGING_LEVEL=INFO
 MARKETDATA_MODE=LIVE
 ```
 
+#### Cache Freshness Control (maxage)
+Control the maximum acceptable age for cached data when using `mode=CACHED`:
+
+```php
+use MarketDataApp\Enums\Mode;
+use MarketDataApp\Endpoints\Requests\Parameters;
+
+// Accept cached data up to 5 minutes old
+$params = new Parameters(mode: Mode::CACHED, maxage: 300);
+$quote = $client->stocks->quote('AAPL', parameters: $params);
+
+// Also accepts DateInterval or CarbonInterval
+$params = new Parameters(mode: Mode::CACHED, maxage: new DateInterval('PT5M'));
+```
+
+If cached data is older than `maxage`, the API returns 204 (no content) with no credit charge, enabling cost-efficient fallback strategies.
+
+#### Extended Hours Control
+New `extended` parameter on `quote()`, `quotes()`, and `prices()` methods:
+
+```php
+// Get primary session quote only (no extended hours)
+$quote = $client->stocks->quote('AAPL', extended: false);
+
+// Default is extended: true (includes extended hours when available)
+$quote = $client->stocks->quote('AAPL');
+```
+
+#### Options - AM/PM Settlement Filtering
+New `am` and `pm` parameters on `option_chain()` for filtering index options by settlement type:
+
+```php
+// Get only AM-settled SPX options
+$chain = $client->options->option_chain('SPX', am: true);
+
+// Get only PM-settled SPXW options
+$chain = $client->options->option_chain('SPX', pm: true);
+```
+
 #### New Enums
 - `ApiStatusResult` - Service status (ONLINE, OFFLINE, UNKNOWN)
 - `DateFormat` - CSV date formatting (TIMESTAMP, UNIX, SPREADSHEET)
@@ -212,7 +266,12 @@ $chain->count();                       // Total quote count
 2. **Replace `bulkQuotes()` with `quotes()`** for multi-symbol stock quotes
 3. **Update Options imports** - use `OptionQuote` instead of `Quote` or `OptionChainStrike`
 4. **Update exception handling** - catch `UnauthorizedException` during client construction
-5. **Update dependencies**: `composer update`
+5. **Update `option_chain()` calls**:
+   - Rename `min_bid_ask_spread` to `max_bid_ask_spread`
+   - Remove reliance on default `expiration=all` and `nonstandard=true` if you were depending on them
+   - Update `delta` values to strings if using range expressions
+6. **Remove unsupported parameters** - if you were passing `exchange`, `country`, `adjust_dividends` to candles or `datekey` to earnings, remove them (they were silently ignored)
+7. **Update dependencies**: `composer update`
 
 ### Dependencies
 
@@ -222,6 +281,17 @@ New required dependencies:
 
 Updated development dependencies:
 - `phpunit/phpunit: ^11.4.0` (was ^10.3.2)
+
+### Bug Fixes
+
+This release includes 50+ bug fixes addressing:
+- CSV/HTML format handling and error detection
+- Empty array and missing field guards across all response types
+- Date parsing and automatic date range splitting for large requests
+- Symbol whitespace trimming and URL encoding
+- Boolean parameter encoding for API compatibility
+- Endpoint URL construction and trailing slashes
+- Concurrent request error handling and partial failure tolerance
 
 ---
 

@@ -55,6 +55,18 @@ class Options
      * Get a list of current or historical option expiration dates for an underlying symbol. If no optional parameters
      * are used, the endpoint returns all expiration dates in the option chain.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/expirations API Documentation
+     * @see  strikes() For available strike prices
+     * @see  option_chain() For full option chain data
+     *
+     * @example
+     * // Get all expiration dates for AAPL
+     * $expirations = $client->options->expirations('AAPL');
+     *
+     * // Get expirations that have a $200 strike
+     * $expirations = $client->options->expirations('AAPL', strike: 200);
+     *
      * @param string          $symbol     The underlying ticker symbol for the options chain you wish to lookup.
      *
      * @param int|float|null  $strike     Limit the lookup of expiration dates to the strike provided. This will cause
@@ -91,6 +103,15 @@ class Options
      * Generate a properly formatted OCC option symbol based on the user's human-readable description of an option.
      * This endpoint converts text such as "AAPL 7/28/23 $200 Call" to OCC option symbol format: AAPL230728C00200000.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/lookup API Documentation
+     * @see  quotes() Use the returned OCC symbol to get option quotes
+     *
+     * @example
+     * // Convert human-readable description to OCC symbol
+     * $lookup = $client->options->lookup('AAPL 7/28/23 $200 Call');
+     * echo $lookup->option_symbol; // AAPL230728C00200000
+     *
      * @param string          $input      The human-readable string input that contains
      *                                    - (1) stock symbol
      *                                    - (2) strike
@@ -115,8 +136,19 @@ class Options
 
     /**
      * Get a list of current or historical options strikes for an underlying symbol. If no optional parameters are
-     * used,
-     * the endpoint returns the strikes for every expiration in the chain.
+     * used, the endpoint returns the strikes for every expiration in the chain.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/strikes API Documentation
+     * @see  expirations() For available expiration dates
+     * @see  option_chain() For full option chain data
+     *
+     * @example
+     * // Get all strikes for AAPL
+     * $strikes = $client->options->strikes('AAPL');
+     *
+     * // Get strikes for a specific expiration
+     * $strikes = $client->options->strikes('AAPL', expiration: '2025-01-17');
      *
      * @param string          $symbol     The underlying ticker symbol for the options chain you wish to lookup.
      *
@@ -152,6 +184,19 @@ class Options
      * Get a current or historical end of day options chain for an underlying ticker symbol. Optional parameters allow
      * for extensive filtering of the chain. Use the optionSymbol returned from this endpoint to get quotes, greeks, or
      * other information using the other endpoints.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/chain API Documentation
+     * @see  expirations() For available expiration dates
+     * @see  strikes() For available strike prices
+     * @see  quotes() For individual option quotes
+     *
+     * @example
+     * // Get calls for a specific expiration
+     * $chain = $client->options->option_chain('AAPL', expiration: '2025-01-17', side: Side::CALL);
+     *
+     * // Get ATM options with delta filtering
+     * $chain = $client->options->option_chain('SPY', expiration: '2025-01-17', delta: 0.50);
      *
      * @param string            $symbol                 The ticker symbol of the underlying asset.
      *
@@ -407,6 +452,18 @@ class Options
      *
      * When multiple option symbols are provided, requests are made concurrently using
      * a sliding window of up to 50 concurrent requests for optimal throughput.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/quotes API Documentation
+     * @see  option_chain() For full option chain data
+     * @see  lookup() To convert human-readable descriptions to OCC symbols
+     *
+     * @example
+     * // Get quote for a single option
+     * $quotes = $client->options->quotes('AAPL250117C00200000');
+     *
+     * // Get quotes for multiple options (concurrent requests)
+     * $quotes = $client->options->quotes(['AAPL250117C00180000', 'AAPL250117C00200000']);
      *
      * @param string|array    $option_symbols The option symbol(s) (as defined by the OCC) for the option(s) you wish
      *                                        to lookup. Use the current OCC option symbol format, even for historic

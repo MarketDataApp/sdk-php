@@ -41,6 +41,19 @@ class Markets
      * Get the past, present, or future status for a stock market. The endpoint will respond with "open" for trading
      * days or "closed" for weekends or market holidays.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/markets/status API Documentation
+     *
+     * @example
+     * // Get current market status
+     * $status = $client->markets->status();
+     *
+     * // Check if market was open on a specific date
+     * $status = $client->markets->status(date: '2024-01-01');
+     *
+     * // Get market calendar for a date range
+     * $status = $client->markets->status(from: '2024-01-01', to: '2024-01-31');
+     *
      * @param string          $country    The country. Use the two-digit ISO 3166 country code. If no country is
      *                                    specified, US will be assumed. Only countries that Market Data supports for
      *                                    stock price data are available (currently only the United States).

@@ -74,6 +74,14 @@ class Utilities
      * - If cache is in refresh window (4min30sec - 5min): Return cached data immediately AND trigger async refresh
      * - If cache is stale (> 5min): Block and fetch fresh data
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/utilities/status API Documentation
+     * @see  getServiceStatus() Check status of a specific service
+     *
+     * @example
+     * $status = $client->utilities->api_status();
+     * echo "30-day uptime: " . $status->uptime_30d . "%\n";
+     *
      * @return ApiStatus The current API status and historical uptime information.
      * @throws GuzzleException|ApiException
      */
@@ -126,6 +134,13 @@ class Utilities
      * TIP: The values in sensitive headers such as Authorization are partially redacted in the response for security
      * purposes.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/utilities/headers API Documentation
+     *
+     * @example
+     * $headers = $client->utilities->headers();
+     * print_r($headers->headers);
+     *
      * @return Headers The headers sent in the request.
      * @throws GuzzleException|ApiException
      */
@@ -145,6 +160,12 @@ class Utilities
      *
      * Note: Rate limits track credits, not requests. Most requests consume 1 credit,
      * but bulk requests or options requests may consume multiple credits.
+     *
+     * @api
+     *
+     * @example
+     * $user = $client->utilities->user();
+     * echo "Remaining: " . $user->remaining . " / " . $user->limit . " credits\n";
      *
      * @return User The user/rate limit information.
      * @throws GuzzleException|ApiException

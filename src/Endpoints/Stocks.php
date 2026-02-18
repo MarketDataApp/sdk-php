@@ -319,6 +319,17 @@ class Stocks
      * for this endpoint is to get a complete market snapshot during trading hours, though it can also be used for bulk
      * snapshots of historical daily candles.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/bulkcandles API Documentation
+     * @see  candles() For historical candles of a single symbol
+     *
+     * @example
+     * // Get bulk candles for multiple symbols
+     * $candles = $client->stocks->bulkCandles(['AAPL', 'MSFT', 'GOOGL']);
+     *
+     * // Get a market snapshot of all symbols
+     * $snapshot = $client->stocks->bulkCandles(snapshot: true);
+     *
      * @param array           $symbols       The ticker symbols to return in the response, separated by commas. The
      *                                       symbols parameter may be omitted if the snapshot parameter is set to true.
      *
@@ -384,6 +395,17 @@ class Stocks
 
     /**
      * Get historical price candles for a stock.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/candles API Documentation
+     * @see  bulkCandles() For bulk daily candles across multiple symbols
+     *
+     * @example
+     * // Get daily candles for AAPL
+     * $candles = $client->stocks->candles('AAPL', '2024-01-01', '2024-01-31');
+     *
+     * // Get 5-minute candles with extended hours
+     * $candles = $client->stocks->candles('AAPL', '2024-01-15', '2024-01-15', '5', extended: true);
      *
      * @param string          $symbol        The company's ticker symbol.
      *
@@ -727,6 +749,19 @@ class Stocks
     /**
      * Get a real-time price quote for a stock.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/quotes API Documentation
+     * @see  quotes() For quotes of multiple symbols in a single request
+     * @see  prices() For SmartMid midpoint prices
+     *
+     * @example
+     * // Get a real-time quote
+     * $quote = $client->stocks->quote('AAPL');
+     * echo $quote->last; // Last traded price
+     *
+     * // Get quote with 52-week high/low
+     * $quote = $client->stocks->quote('AAPL', fifty_two_week: true);
+     *
      * @param string          $symbol         The company's ticker symbol.
      *
      * @param bool            $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote
@@ -771,6 +806,18 @@ class Stocks
 
     /**
      * Get real-time price quotes for multiple stocks in a single API request.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/quotes API Documentation
+     * @see  quote() For a single symbol quote
+     * @see  bulkCandles() For bulk daily candle data
+     *
+     * @example
+     * // Get quotes for multiple symbols
+     * $quotes = $client->stocks->quotes(['AAPL', 'MSFT', 'GOOGL']);
+     * foreach ($quotes->quotes as $q) {
+     *     echo "{$q->symbol}: \${$q->last}\n";
+     * }
      *
      * @param array           $symbols        The ticker symbols to return in the response.
      * @param bool            $fifty_two_week Enable the output of 52-week high and 52-week low data in the quote
@@ -819,6 +866,17 @@ class Stocks
      * This endpoint returns real-time prices for stocks, using the SmartMid model.
      * The endpoint supports both single symbol (path parameter) and multiple symbols (query parameter) formats.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/prices API Documentation
+     * @see  quote() For full quote data including bid/ask
+     *
+     * @example
+     * // Get price for a single symbol
+     * $prices = $client->stocks->prices('AAPL');
+     *
+     * // Get prices for multiple symbols
+     * $prices = $client->stocks->prices(['AAPL', 'MSFT', 'GOOGL']);
+     *
      * @param string|array    $symbols     The ticker symbol(s). Can be a single string or an array of strings.
      * @param bool            $extended    Control the inclusion of extended hours data in the price output.
      *                                     Defaults to true if omitted.
@@ -865,6 +923,16 @@ class Stocks
      *
      * Premium subscription required.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/earnings API Documentation
+     *
+     * @example
+     * // Get upcoming earnings
+     * $earnings = $client->stocks->earnings('AAPL');
+     *
+     * // Get historical earnings for a date range
+     * $earnings = $client->stocks->earnings('AAPL', from: '2023-01-01', to: '2023-12-31');
+     *
      * @param string          $symbol     The company's ticker symbol.
      *
      * @param string|null     $from       The earliest earnings report to include in the output. Optional - if omitted
@@ -905,6 +973,16 @@ class Stocks
      * Retrieve news articles for a given stock symbol.
      *
      * CAUTION: This endpoint is in beta.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/stocks/news API Documentation
+     *
+     * @example
+     * // Get recent news for a symbol
+     * $news = $client->stocks->news('AAPL');
+     *
+     * // Get news for a specific date range
+     * $news = $client->stocks->news('AAPL', from: '2024-01-01', to: '2024-01-31');
      *
      * @param string          $symbol     The ticker symbol of the stock.
      *
