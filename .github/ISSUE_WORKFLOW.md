@@ -179,7 +179,7 @@ Closing this as it's outside the SDK's scope, but feel free to open a new issue 
 
 ### Comment Template: User Error
 
-```markdown
+~~~markdown
 Thanks for the report. After reviewing the reproduction code, I found an issue with the implementation rather than a bug in the SDK.
 
 **The issue:**
@@ -194,7 +194,7 @@ Thanks for the report. After reviewing the reproduction code, I found an issue w
 [Link to relevant docs if applicable]
 
 Feel free to ask questions in [GitHub Discussions](https://github.com/MarketDataApp/sdk-php/discussions) if you need more help. Closing this issue, but you're welcome to reopen if you believe there's still an SDK bug.
-```
+~~~
 
 ### Comment Template: Works as Designed
 
@@ -288,14 +288,14 @@ After the fix is merged:
 
 ### Comment Template: Fixed
 
-```markdown
+~~~markdown
 Fixed in [commit hash or PR link].
 
 This will be available in the next release. If you need the fix immediately, you can:
 ```bash
 composer require marketdataapp/sdk-php:dev-main
 ```
-```
+~~~
 
 ---
 
