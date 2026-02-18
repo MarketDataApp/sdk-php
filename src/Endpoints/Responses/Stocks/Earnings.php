@@ -68,7 +68,7 @@ class Earnings extends ResponseBase
             }
         } else {
             // Regular format
-            $this->status = $response->s;
+            $this->status = $response->s ?? 'no_data';
 
             if ($this->status === 'ok') {
                 for ($i = 0; $i < count($response->symbol); $i++) {

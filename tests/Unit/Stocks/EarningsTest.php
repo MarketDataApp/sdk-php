@@ -239,4 +239,42 @@ class EarningsTest extends StocksTestCase
         $this->assertIsArray($response->earnings);
         $this->assertCount(0, $response->earnings);
     }
+
+    /**
+     * Test that earnings handles missing 's' status field (BUG-045 fix).
+     *
+     * When the API returns a malformed response without the 's' status field,
+     * the code should handle this gracefully by defaulting to 'no_data'.
+     *
+     * @return void
+     */
+    public function testEarnings_missingStatusField_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic malformed response)
+        $malformedResponse = [
+            'symbol'         => ['AAPL'],
+            'fiscalYear'     => [2024],
+            'fiscalQuarter'  => [1],
+            'date'           => [1704067200],
+            'reportDate'     => [1706745600],
+            'reportTime'     => ['after close'],
+            'currency'       => ['USD'],
+            'reportedEPS'    => [2.18],
+            'estimatedEPS'   => [2.10],
+            'surpriseEPS'    => [0.08],
+            'surpriseEPSpct' => [3.81],
+            'updated'        => [1706832000],
+            // Note: 's' status field intentionally omitted
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($malformedResponse))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            from: '2024-01-01'
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->earnings);
+    }
 }
