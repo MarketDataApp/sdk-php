@@ -66,3 +66,22 @@ php examples/rate_limit_tracking.php
 | [rate_limit_tracking.php](rate_limit_tracking.php) | Automatic rate limit tracking and monitoring | [rate_limit_tracking.md](rate_limit_tracking.md) |
 | [error_handling.php](error_handling.php) | Exception handling, support ticket helpers, logging | [error_handling.md](error_handling.md) |
 | [logging.php](logging.php) | PSR-3 logging integration | [logging.md](logging.md) |
+
+## Mini-Applications
+
+These are more complete example applications demonstrating real-world use cases:
+
+| Application | Description | Complexity |
+|-------------|-------------|------------|
+| [portfolio-tracker](portfolio-tracker/) | Track portfolio value with real-time quotes and daily P&L | Medium |
+| [earnings-calendar](earnings-calendar/) | Generate earnings calendar for a watchlist | Medium |
+| [options-screener](options-screener/) | Screen for options opportunities (covered calls, CSPs) | High |
+| [historical-data-exporter](historical-data-exporter/) | Download multi-year historical data for backtesting | Medium |
+| [market-hours-scheduler](market-hours-scheduler/) | Schedule tasks around market sessions | Low-Medium |
+| [news-sentiment-monitor](news-sentiment-monitor/) | Monitor and aggregate stock news | Medium |
+| [api-health-dashboard](api-health-dashboard/) | Monitor API health and rate limits | Low-Medium |
+
+Each mini-application includes:
+- `plan.md` - Detailed planning document explaining purpose and SDK features
+- Main application script
+- Sample data files for testing

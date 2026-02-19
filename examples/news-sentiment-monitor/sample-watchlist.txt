@@ -1,0 +1,22 @@
+# News Watchlist
+# One symbol per line
+
+# Tech Giants
+AAPL
+MSFT
+GOOGL
+AMZN
+META
+
+# AI / Semiconductors
+NVDA
+AMD
+INTC
+
+# Electric Vehicles
+TSLA
+RIVN
+
+# Financials
+JPM
+GS

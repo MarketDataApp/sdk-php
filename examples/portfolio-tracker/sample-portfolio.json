@@ -1,0 +1,35 @@
+{
+  "name": "Sample Tech Portfolio",
+  "holdings": [
+    {
+      "symbol": "AAPL",
+      "shares": 100,
+      "cost_basis": 150.00,
+      "notes": "Long-term holding"
+    },
+    {
+      "symbol": "MSFT",
+      "shares": 50,
+      "cost_basis": 280.00,
+      "notes": "Added on pullback"
+    },
+    {
+      "symbol": "GOOGL",
+      "shares": 25,
+      "cost_basis": 140.00,
+      "notes": "Post-split position"
+    },
+    {
+      "symbol": "AMZN",
+      "shares": 30,
+      "cost_basis": 175.00,
+      "notes": "Core holding"
+    },
+    {
+      "symbol": "NVDA",
+      "shares": 40,
+      "cost_basis": 450.00,
+      "notes": "AI play"
+    }
+  ]
+}
