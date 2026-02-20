@@ -315,4 +315,120 @@ class EarningsTest extends StocksTestCase
         $this->assertEquals('no_data', $response->status);
         $this->assertEmpty($response->earnings);
     }
+
+    /**
+     * Test that earnings handles null EPS values in human-readable format (Issue #47 fix).
+     *
+     * When the API returns human-readable format with null EPS values (future earnings),
+     * the code should handle this gracefully using null-coalescing.
+     *
+     * @return void
+     */
+    public function testEarnings_humanReadable_nullEpsValues_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with null EPS values)
+        $mocked_response = [
+            'Symbol' => ['AAPL'],
+            'Fiscal Year' => [2026],
+            'Fiscal Quarter' => [2],
+            'Date' => [1774929600],
+            'Report Date' => [1777435200],
+            'Report Time' => ['before open'],
+            'Currency' => [null],  // null currency for future earnings
+            'Reported EPS' => [null],  // null - future earnings
+            'Estimated EPS' => [null],  // null - no estimate yet
+            'Surprise EPS' => [null],  // null - future earnings
+            'Surprise EPS %' => [null],  // null - future earnings
+            'Updated' => [1769317200]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->earnings);
+        $this->assertNull($response->earnings[0]->currency);
+        $this->assertNull($response->earnings[0]->reported_eps);
+        $this->assertNull($response->earnings[0]->estimated_eps);
+        $this->assertNull($response->earnings[0]->surprise_eps);
+        $this->assertNull($response->earnings[0]->surprise_eps_pct);
+    }
+
+    /**
+     * Test that earnings handles mismatched array lengths in human-readable format (Issue #47/48 fix).
+     *
+     * When the API returns human-readable format with arrays of different lengths,
+     * the code should process only the entries where all required fields are available.
+     *
+     * @return void
+     */
+    public function testEarnings_humanReadable_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            'Symbol' => ['AAPL', 'AAPL', 'AAPL'],  // 3 items
+            'Fiscal Year' => [2023, 2023],  // 2 items (shorter)
+            'Fiscal Quarter' => [1, 2, 3],
+            'Date' => [1672462800, 1680235200, 1688097600],
+            'Report Date' => [1675314000, 1683172800, 1691060400],
+            'Report Time' => ['after close', 'after close', 'after close'],
+            'Currency' => ['USD', 'USD', 'USD'],
+            'Reported EPS' => [1.88, 1.52, 1.26],
+            'Estimated EPS' => [1.95, 1.43, 1.19],
+            'Surprise EPS' => [-0.07, 0.09, 0.07],
+            'Surprise EPS %' => [-0.0359, 0.0629, 0.0588],
+            'Updated' => [1768971600, 1768971600, 1768971600]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 earnings (the minimum array length)
+        $this->assertCount(2, $response->earnings);
+    }
+
+    /**
+     * Test that earnings handles mismatched array lengths in regular format (Issue #48 fix).
+     *
+     * When the API returns regular format with arrays of different lengths,
+     * the code should process only the entries where all required fields are available.
+     *
+     * @return void
+     */
+    public function testEarnings_regularFormat_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => ['AAPL', 'AAPL', 'AAPL'],  // 3 items
+            'fiscalYear' => [2023, 2023],  // 2 items (shorter)
+            'fiscalQuarter' => [1, 2, 3],
+            'date' => [1672462800, 1680235200, 1688097600],
+            'reportDate' => [1675314000, 1683172800, 1691060400],
+            'reportTime' => ['after close', 'after close', 'after close'],
+            'currency' => ['USD', 'USD', 'USD'],
+            'reportedEPS' => [1.88, 1.52, 1.26],
+            'estimatedEPS' => [1.95, 1.43, 1.19],
+            'surpriseEPS' => [-0.07, 0.09, 0.07],
+            'surpriseEPSpct' => [-0.0359, 0.0629, 0.0588],
+            'updated' => [1768971600, 1768971600, 1768971600]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 earnings (the minimum array length)
+        $this->assertCount(2, $response->earnings);
+    }
 }

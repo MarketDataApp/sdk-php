@@ -53,7 +53,16 @@ class Earnings extends ResponseBase
             }
             $this->status = 'ok';
 
-            $count = count($responseArray['Symbol']);
+            // Use minimum array length across all required fields to prevent out-of-bounds access
+            $count = min(
+                count($responseArray['Symbol'] ?? []),
+                count($responseArray['Fiscal Year'] ?? []),
+                count($responseArray['Fiscal Quarter'] ?? []),
+                count($responseArray['Date'] ?? []),
+                count($responseArray['Report Date'] ?? []),
+                count($responseArray['Report Time'] ?? []),
+                count($responseArray['Updated'] ?? [])
+            );
             for ($i = 0; $i < $count; $i++) {
                 $this->earnings[] = new Earning(
                     symbol: $responseArray['Symbol'][$i],
@@ -63,10 +72,10 @@ class Earnings extends ResponseBase
                     report_date: Carbon::parse($responseArray['Report Date'][$i]),
                     report_time: $responseArray['Report Time'][$i],
                     currency: $responseArray['Currency'][$i] ?? null,
-                    reported_eps: $responseArray['Reported EPS'][$i],
-                    estimated_eps: $responseArray['Estimated EPS'][$i],
-                    surprise_eps: $responseArray['Surprise EPS'][$i],
-                    surprise_eps_pct: $responseArray['Surprise EPS %'][$i],
+                    reported_eps: $responseArray['Reported EPS'][$i] ?? null,
+                    estimated_eps: $responseArray['Estimated EPS'][$i] ?? null,
+                    surprise_eps: $responseArray['Surprise EPS'][$i] ?? null,
+                    surprise_eps_pct: $responseArray['Surprise EPS %'][$i] ?? null,
                     updated: Carbon::parse($responseArray['Updated'][$i]),
                 );
             }
@@ -75,7 +84,17 @@ class Earnings extends ResponseBase
             $this->status = $response->s ?? 'no_data';
 
             if ($this->status === 'ok') {
-                for ($i = 0; $i < count($response->symbol); $i++) {
+                // Use minimum array length across all required fields to prevent out-of-bounds access
+                $count = min(
+                    count($response->symbol ?? []),
+                    count($response->fiscalYear ?? []),
+                    count($response->fiscalQuarter ?? []),
+                    count($response->date ?? []),
+                    count($response->reportDate ?? []),
+                    count($response->reportTime ?? []),
+                    count($response->updated ?? [])
+                );
+                for ($i = 0; $i < $count; $i++) {
                     $this->earnings[] = new Earning(
                         symbol: $response->symbol[$i],
                         fiscal_year: $response->fiscalYear[$i],
@@ -84,10 +103,10 @@ class Earnings extends ResponseBase
                         report_date: Carbon::parse($response->reportDate[$i]),
                         report_time: $response->reportTime[$i],
                         currency: $response->currency[$i] ?? null,
-                        reported_eps: $response->reportedEPS[$i],
-                        estimated_eps: $response->estimatedEPS[$i],
-                        surprise_eps: $response->surpriseEPS[$i],
-                        surprise_eps_pct: $response->surpriseEPSpct[$i],
+                        reported_eps: $response->reportedEPS[$i] ?? null,
+                        estimated_eps: $response->estimatedEPS[$i] ?? null,
+                        surprise_eps: $response->surpriseEPS[$i] ?? null,
+                        surprise_eps_pct: $response->surpriseEPSpct[$i] ?? null,
                         updated: Carbon::parse($response->updated[$i]),
                     );
                 }
