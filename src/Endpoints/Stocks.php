@@ -847,9 +847,23 @@ class Stocks
         // Validate symbols array
         $this->validateSymbols($symbols);
 
-        // Build comma-separated symbols string
-        // Deduplicate and trim symbols to avoid redundant API calls
-        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
+        // Deduplicate and trim symbols
+        $uniqueSymbols = array_values(array_unique(array_map('trim', $symbols)));
+
+        // If only one symbol after deduplication, use single-symbol path (more efficient)
+        if (count($uniqueSymbols) === 1) {
+            $arguments = [];
+            if ($fifty_two_week) {
+                $arguments['52week'] = 'true';
+            }
+            if (!$extended) {
+                $arguments['extended'] = 'false';
+            }
+            return new Quotes($this->execute("quotes/{$uniqueSymbols[0]}/", $arguments, $parameters));
+        }
+
+        // Build comma-separated symbols string for multi-symbol request
+        $symbolsString = implode(',', $uniqueSymbols);
 
         $arguments = ['symbols' => $symbolsString];
         if ($fifty_two_week) {
