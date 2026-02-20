@@ -46,6 +46,7 @@ request_logs.md
 CLAUDE.md
 SDK_FEATURE_COMPARISON.md
 documentation-tests/*
+release-readiness/*
 
 # -----------------------------------------------------------------------------
 # OS
