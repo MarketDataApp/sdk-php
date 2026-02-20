@@ -1198,4 +1198,100 @@ class OptionChainTest extends OptionsTestCase
         $this->assertNull($response->next_time);
         $this->assertNull($response->prev_time);
     }
+
+    /**
+     * Test that option_chain handles mismatched array lengths in human-readable format (Issue #46 fix).
+     *
+     * When the API returns human-readable format with arrays of different lengths,
+     * the code should process only the entries where all required fields are available.
+     */
+    public function testOptionChain_humanReadable_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            'Symbol' => ['AAPL230616C00060000', 'AAPL230616C00065000', 'AAPL230616C00070000'],  // 3 items
+            'Underlying' => ['AAPL', 'AAPL'],  // 2 items (shorter)
+            'Expiration Date' => [1686945600, 1686945600, 1686945600],
+            'Option Side' => ['call', 'call', 'call'],
+            'Strike' => [60, 65, 70],
+            'First Traded' => [1617197400, 1616592600, 1616602600],
+            'Days To Expiration' => [26, 26, 26],
+            'Date' => [1684702875, 1684702875, 1684702876],
+            'Bid' => [114.1, 108.6, 100.0],
+            'Bid Size' => [90, 90, 90],
+            'Mid' => [115.5, 110.38, 101.0],
+            'Ask' => [116.9, 112.15],  // 2 items (shorter)
+            'Ask Size' => [90, 90, 90],
+            'Last' => [115, 107.82, 100.5],
+            'Open Interest' => [21957, 3012, 5000],
+            'Volume' => [0, 0, 100],
+            'In The Money' => [true, true, true],
+            'Intrinsic Value' => [115.13, 110.13, 105.13],
+            'Extrinsic Value' => [0.37, 0.25, 0.13],
+            'Underlying Price' => [175.13, 175.13, 175.13],
+            'IV' => [1.629, 1.923, 1.5],
+            'Delta' => [1, 1, 1],
+            'Gamma' => [0, 0, 0],
+            'Theta' => [-0.009, -0.009, -0.009],
+            'Vega' => [0, 0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 option quotes (the minimum array length)
+        $this->assertEquals(2, $response->count());
+    }
+
+    /**
+     * Test that option_chain handles mismatched array lengths in regular format (Issue #46 fix).
+     *
+     * When the API returns regular format with arrays of different lengths,
+     * the code should process only the entries where all required fields are available.
+     */
+    public function testOptionChain_regularFormat_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => ['AAPL230616C00060000', 'AAPL230616C00065000', 'AAPL230616C00070000'],
+            'underlying'      => ['AAPL', 'AAPL'],  // 2 items (shorter)
+            'expiration'      => [1686945600, 1686945600, 1686945600],
+            'side'            => ['call', 'call', 'call'],
+            'strike'          => [60, 65, 70],
+            'firstTraded'     => [1617197400, 1617197400, 1617197400],
+            'dte'             => [26, 26, 26],
+            'updated'         => [1684702875, 1684702875, 1684702876],
+            'bid'             => [114.1, 108.6],  // 2 items (shorter)
+            'bidSize'         => [90, 90, 90],
+            'mid'             => [115.5, 110.38, 101.0],
+            'ask'             => [116.9, 112.15, 102.0],
+            'askSize'         => [90, 90, 90],
+            'last'            => [115, 107.82, 100.5],
+            'openInterest'    => [21957, 3012, 5000],
+            'volume'          => [0, 0, 100],
+            'inTheMoney'      => [true, true, true],
+            'intrinsicValue'  => [115.13, 110.13, 105.13],
+            'extrinsicValue'  => [0.37, 0.25, 0.13],
+            'underlyingPrice' => [175.13, 175.13, 175.13],
+            'iv'              => [1.629, 1.923, 1.5],
+            'delta'           => [1, 1, 1],
+            'gamma'           => [0, 0, 0],
+            'theta'           => [-0.009, -0.009, -0.009],
+            'vega'            => [0, 0, 0]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 option quotes (the minimum array length)
+        $this->assertEquals(2, $response->count());
+    }
 }

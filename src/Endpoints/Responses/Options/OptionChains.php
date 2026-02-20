@@ -62,8 +62,29 @@ class OptionChains extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field, always has data when successful
             $this->status = 'ok';
-            
-            $count = count($responseArray['Symbol']);
+
+            // Use minimum array length across all required fields to prevent out-of-bounds access
+            $count = min(
+                count($responseArray['Symbol'] ?? []),
+                count($responseArray['Underlying'] ?? []),
+                count($responseArray['Expiration Date'] ?? []),
+                count($responseArray['Option Side'] ?? []),
+                count($responseArray['Strike'] ?? []),
+                count($responseArray['First Traded'] ?? []),
+                count($responseArray['Days To Expiration'] ?? []),
+                count($responseArray['Ask'] ?? []),
+                count($responseArray['Ask Size'] ?? []),
+                count($responseArray['Bid'] ?? []),
+                count($responseArray['Bid Size'] ?? []),
+                count($responseArray['Mid'] ?? []),
+                count($responseArray['Volume'] ?? []),
+                count($responseArray['Open Interest'] ?? []),
+                count($responseArray['Underlying Price'] ?? []),
+                count($responseArray['In The Money'] ?? []),
+                count($responseArray['Intrinsic Value'] ?? []),
+                count($responseArray['Extrinsic Value'] ?? []),
+                count($responseArray['Date'] ?? [])
+            );
             for ($i = 0; $i < $count; $i++) {
                 $expiration = Carbon::parse($responseArray['Expiration Date'][$i]);
                 $this->option_chains[$expiration->toDateString()][] = new OptionQuote(
@@ -100,7 +121,29 @@ class OptionChains extends ResponseBase
 
             switch ($this->status) {
                 case 'ok':
-                    for ($i = 0; $i < count($response->optionSymbol); $i++) {
+                    // Use minimum array length across all required fields to prevent out-of-bounds access
+                    $count = min(
+                        count($response->optionSymbol ?? []),
+                        count($response->underlying ?? []),
+                        count($response->expiration ?? []),
+                        count($response->side ?? []),
+                        count($response->strike ?? []),
+                        count($response->firstTraded ?? []),
+                        count($response->dte ?? []),
+                        count($response->ask ?? []),
+                        count($response->askSize ?? []),
+                        count($response->bid ?? []),
+                        count($response->bidSize ?? []),
+                        count($response->mid ?? []),
+                        count($response->volume ?? []),
+                        count($response->openInterest ?? []),
+                        count($response->underlyingPrice ?? []),
+                        count($response->inTheMoney ?? []),
+                        count($response->intrinsicValue ?? []),
+                        count($response->extrinsicValue ?? []),
+                        count($response->updated ?? [])
+                    );
+                    for ($i = 0; $i < $count; $i++) {
                         $expiration = Carbon::parse($response->expiration[$i]);
                         $this->option_chains[$expiration->toDateString()][] = new OptionQuote(
                             option_symbol: $response->optionSymbol[$i],
