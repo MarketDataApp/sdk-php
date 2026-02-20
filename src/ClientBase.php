@@ -168,7 +168,8 @@ abstract class ClientBase
         $maxConcurrent = Settings::MAX_CONCURRENT_REQUESTS;
         $results = [];
         $exceptions = [];
-        $tolerateFailed = func_num_args() >= 2;
+        // Only tolerate failures when caller provides a non-null array for capturing errors
+        $tolerateFailed = $failedRequests !== null;
 
         // Create a generator that yields promises with their original indices
         $promiseGenerator = function () use ($calls) {
