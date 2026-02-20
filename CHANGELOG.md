@@ -280,7 +280,7 @@ New required dependencies:
 - `vlucas/phpdotenv: ^5.5` - Environment file support
 
 Updated development dependencies:
-- `phpunit/phpunit: ^11.4.0` (was ^10.3.2)
+- `phpunit/phpunit: ^11.5.50` (was ^10.3.2)
 
 ### Bug Fixes
 

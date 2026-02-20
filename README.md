@@ -91,7 +91,7 @@ $client = new MarketDataApp\Client('your_api_token');
 
 // Stocks
 $candles = $client->stocks->candles('AAPL');
-$bulk_candles = $client->stocks->bulkCandles(['AAPL, MSFT']);
+$bulk_candles = $client->stocks->bulkCandles(['AAPL', 'MSFT']);
 $quote = $client->stocks->quote('AAPL');
 $quotes = $client->stocks->quotes(['AAPL', 'MSFT']);
 $earnings = $client->stocks->earnings(symbol: 'AAPL', from: '2023-01-01');
