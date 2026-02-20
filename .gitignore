@@ -47,6 +47,8 @@ CLAUDE.md
 SDK_FEATURE_COMPARISON.md
 documentation-tests/*
 release-readiness/*
+docs/*
+!docs/.nojekyll
 
 # -----------------------------------------------------------------------------
 # OS

@@ -162,6 +162,7 @@ class Utilities
      * but bulk requests or options requests may consume multiple credits.
      *
      * @api
+     * @link https://www.marketdata.app/docs/api/utilities/user API Documentation
      *
      * @example
      * $user = $client->utilities->user();
