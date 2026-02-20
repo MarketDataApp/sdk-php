@@ -16,7 +16,7 @@ class Strikes extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The expiration dates requested for the underlying with the option strikes for each expiration.
@@ -29,23 +29,23 @@ class Strikes extends ResponseBase
      * The date and time of this list of options strikes was updated in Unix time.
      * For historical strikes, this number should match the date parameter.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $updated;
+    public ?Carbon $updated = null;
 
     /**
      * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $next_time;
+    public ?Carbon $next_time = null;
 
     /**
      * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $prev_time;
+    public ?Carbon $prev_time = null;
 
     /**
      * Constructs a new Strikes instance from the given response object.
@@ -59,25 +59,97 @@ class Strikes extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        switch ($this->status) {
-            case 'ok':
-                foreach ($response as $key => $value) {
-                    if (in_array($key, ['s', 'updated'])) {
-                        continue;
-                    }
+        // Determine if this is human-readable format (has "Date" key but no "s" status) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Date']) && !isset($responseArray['s']);
 
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+
+            foreach ($responseArray as $key => $value) {
+                if ($key === 'Date') {
+                    $this->updated = Carbon::parse($value);
+                    continue;
+                }
+                // Only include keys that look like dates (YYYY-MM-DD format)
+                // to avoid including unintended metadata fields
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $key) && is_array($value)) {
                     $this->dates[$key] = $value;
                 }
-                $this->updated = Carbon::parse($response->updated);
-                break;
+            }
+        } else {
+            // Regular format
+            $this->status = $response->s;
 
-            case 'no_data' && isset($response->nextTime):
-                $this->next_time = Carbon::parse($response->nextTime);
-                $this->prev_time = Carbon::parse($response->prevTime);
-                break;
+            switch ($this->status) {
+                case 'ok':
+                    foreach ($response as $key => $value) {
+                        if ($key === 's') {
+                            continue;
+                        }
+                        if ($key === 'updated') {
+                            $this->updated = Carbon::parse($value);
+                            continue;
+                        }
+                        // Only include keys that look like dates (YYYY-MM-DD format)
+                        // to avoid including unintended metadata fields
+                        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $key) && is_array($value)) {
+                            $this->dates[$key] = $value;
+                        }
+                    }
+                    break;
+
+                case 'no_data':
+                    if (isset($response->nextTime)) {
+                        $this->next_time = Carbon::parse($response->nextTime);
+                    }
+
+                    if (isset($response->prevTime)) {
+                        $this->prev_time = Carbon::parse($response->prevTime);
+                    }
+                    break;
+            }
         }
+    }
+
+    /**
+     * Returns a string representation of the strikes collection.
+     *
+     * @return string Human-readable strikes summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Strikes - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $dateCount = count($this->dates);
+        $totalStrikes = array_sum(array_map('count', $this->dates));
+        $lines = [sprintf(
+            "Strikes: %d date%s, %d total strike%s (status: %s)",
+            $dateCount,
+            $dateCount === 1 ? '' : 's',
+            $totalStrikes,
+            $totalStrikes === 1 ? '' : 's',
+            $this->status
+        )];
+
+        $displayCount = 0;
+        foreach ($this->dates as $date => $strikes) {
+            if ($displayCount >= 3) {
+                break;
+            }
+            $lines[] = sprintf("  %s: %d strikes", $date, count($strikes));
+            $displayCount++;
+        }
+
+        if ($dateCount > 3) {
+            $lines[] = sprintf("  ... and %d more date(s)", $dateCount - 3);
+        }
+
+        return implode("\n", $lines);
     }
 }

@@ -2,41 +2,36 @@
 
 namespace MarketDataApp\Exceptions;
 
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * ApiException class
  *
- * This exception is thrown when an API error occurs. It extends the base PHP Exception class
- * and adds functionality to store and retrieve the API response.
+ * This exception is thrown when an API error occurs (business logic errors like
+ * "no data found" or invalid symbol). It extends the base MarketDataException class
+ * and provides access to request context for debugging and support.
+ *
+ * @method string getSupportInfo() Get pre-formatted support ticket information.
+ * @method array  getSupportContext() Get support context as an associative array.
  */
-class ApiException extends \Exception
+class ApiException extends MarketDataException
 {
-
-    /**
-     * @var mixed The API response associated with this exception.
-     */
-    private $response;
-
     /**
      * ApiException constructor.
      *
-     * @param string          $message  The exception message.
-     * @param int             $code     The exception code.
-     * @param \Exception|null $previous The previous exception used for exception chaining.
-     * @param mixed           $response The API response associated with this exception.
+     * @param string                 $message    The exception message.
+     * @param int                    $code       The exception code.
+     * @param \Throwable|null        $previous   The previous exception used for exception chaining.
+     * @param ResponseInterface|null $response   The HTTP response associated with this exception.
+     * @param string|null            $requestUrl The URL that was requested when the error occurred.
      */
-    public function __construct($message, $code = 0, \Exception $previous = null, $response = null)
-    {
-        parent::__construct($message, $code, $previous);
-        $this->response = $response;
-    }
-
-    /**
-     * Get the API response associated with this exception.
-     *
-     * @return mixed The API response.
-     */
-    public function getResponse()
-    {
-        return $this->response;
+    public function __construct(
+        string $message,
+        int $code = 0,
+        ?\Throwable $previous = null,
+        ?ResponseInterface $response = null,
+        ?string $requestUrl = null
+    ) {
+        parent::__construct($message, $code, $previous, $response, $requestUrl);
     }
 }

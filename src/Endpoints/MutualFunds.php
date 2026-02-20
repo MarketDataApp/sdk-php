@@ -8,6 +8,7 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * MutualFunds class for handling mutual fund-related API endpoints.
@@ -16,6 +17,7 @@ class MutualFunds
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /** @var Client The Market Data API client instance. */
     private Client $client;
@@ -35,6 +37,17 @@ class MutualFunds
 
     /**
      * Get historical price candles for a mutual fund.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/funds/candles API Documentation
+     * @see  \MarketDataApp\Endpoints\Stocks::candles() For stock candles
+     *
+     * @example
+     * // Get daily candles for a mutual fund
+     * $candles = $client->mutual_funds->candles('VFINX', '2024-01-01', '2024-01-31');
+     *
+     * // Get weekly candles
+     * $candles = $client->mutual_funds->candles('VFINX', '2023-01-01', '2023-12-31', 'W');
      *
      * @param string          $symbol     The mutual fund's ticker symbol.
      *
@@ -63,11 +76,17 @@ class MutualFunds
     public function candles(
         string $symbol,
         string $from,
-        string $to = null,
+        ?string $to = null,
         string $resolution = 'D',
-        int $countback = null,
+        ?int $countback = null,
         ?Parameters $parameters = null
     ): Candles {
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
+        $this->validateResolution($resolution);
+        $this->validateDateRange($from, $to, $countback);
+
         return new Candles($this->execute("candles/{$resolution}/{$symbol}/",
             compact('from', 'to', 'countback'), $parameters
         ));

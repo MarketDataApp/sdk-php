@@ -16,7 +16,7 @@ class Statuses extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of Status objects representing market statuses for different dates.
@@ -36,16 +36,81 @@ class Statuses extends ResponseBase
         if (!$this->isJson()) {
             return;
         }
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        if ($this->status === 'ok') {
-            for ($i = 0; $i < count($response->date); $i++) {
+        // Determine if this is human-readable format (has "Status" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Status']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+
+            $dates = $responseArray['Date'];
+            $statusValues = $responseArray['Status'];
+
+            // Handle both single values and arrays (multi-date queries)
+            if (is_array($dates)) {
+                for ($i = 0; $i < count($dates); $i++) {
+                    $dateValue = $dates[$i];
+                    $date = is_numeric($dateValue)
+                        ? Carbon::createFromTimestamp((int) $dateValue)
+                        : Carbon::parse($dateValue);
+                    // Status may be array or single value
+                    $statusValue = is_array($statusValues) ? ($statusValues[$i] ?? null) : $statusValues;
+                    $this->statuses[] = new Status(
+                        $date,
+                        $statusValue,
+                    );
+                }
+            } else {
+                // Single date response
+                $date = is_numeric($dates)
+                    ? Carbon::createFromTimestamp((int) $dates)
+                    : Carbon::parse($dates);
                 $this->statuses[] = new Status(
-                    Carbon::parse($response->date[$i]),
-                    $response->status[$i],
+                    $date,
+                    $statusValues ?? null,
                 );
             }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            if ($this->status === 'ok') {
+                for ($i = 0; $i < count($response->date); $i++) {
+                    $this->statuses[] = new Status(
+                        Carbon::parse($response->date[$i]),
+                        $response->status[$i] ?? null,
+                    );
+                }
+            }
         }
+    }
+
+    /**
+     * Returns a string representation of the market statuses collection.
+     *
+     * @return string Human-readable market statuses summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Market Statuses - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->statuses);
+        $lines = [sprintf("Market Statuses: %d date%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . (string) $this->statuses[$i];
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
     }
 }

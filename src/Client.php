@@ -2,29 +2,22 @@
 
 namespace MarketDataApp;
 
-use MarketDataApp\Endpoints\Indices;
 use MarketDataApp\Endpoints\Markets;
 use MarketDataApp\Endpoints\MutualFunds;
 use MarketDataApp\Endpoints\Options;
 use MarketDataApp\Endpoints\Stocks;
 use MarketDataApp\Endpoints\Utilities;
+use MarketDataApp\Logging\LoggerFactory;
+use Psr\Log\LoggerInterface;
 
 /**
  * Client class for the Market Data API.
  *
  * This class provides access to various endpoints of the Market Data API,
- * including indices, stocks, options, markets, mutual funds, and utilities.
+ * including stocks, options, markets, mutual funds, and utilities.
  */
 class Client extends ClientBase
 {
-
-    /**
-     * The index endpoints provided by the Market Data API offer access to both real-time and historical data related to
-     * financial indices. These endpoints are designed to cater to a wide range of financial data needs.
-     *
-     * @var Indices
-     */
-    public Indices $indices;
 
     /**
      * Stock endpoints include numerous fundamental, technical, and pricing data.
@@ -70,17 +63,51 @@ class Client extends ClientBase
      *
      * Initializes all endpoint classes with the provided API token.
      *
-     * @param string $token The API token for authentication.
+     * @param string|null          $token  The API token for authentication. If not provided, the token will be
+     *                                     automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
+     *                                     An empty string is allowed for accessing free symbols like AAPL.
+     *                                     A valid token is required for authenticated endpoints. An invalid token will throw
+     *                                     UnauthorizedException during construction.
+     * @param LoggerInterface|null $logger Optional PSR-3 logger instance. If not provided, uses the default logger
+     *                                     configured via MARKETDATA_LOGGING_LEVEL environment variable.
+     *
+     * @throws \MarketDataApp\Exceptions\UnauthorizedException If the token is invalid (non-empty but returns 401 from /user endpoint)
      */
-    public function __construct($token)
+    public function __construct(?string $token = null, ?LoggerInterface $logger = null)
     {
-        parent::__construct($token);
+        // Initialize logger first so it's available for ClientBase
+        $this->logger = $logger ?? LoggerFactory::getLogger();
 
-        $this->indices = new Indices($this);
+        // Log initialization
+        $this->logger->info('MarketDataClient initialized');
+
+        // Log obfuscated token at DEBUG level
+        $resolvedToken = Settings::getToken($token);
+        $this->logger->debug('Token: {token}', ['token' => self::obfuscateToken($resolvedToken)]);
+
+        parent::__construct($token, $this->logger);
+
         $this->stocks = new Stocks($this);
         $this->options = new Options($this);
         $this->markets = new Markets($this);
         $this->mutual_funds = new MutualFunds($this);
         $this->utilities = new Utilities($this);
+    }
+
+    /**
+     * Obfuscate token for logging - show full length with asterisks, last 4 chars visible.
+     *
+     * Example: "abc123xyz789" becomes "********z789"
+     *
+     * @param string $token The token to obfuscate.
+     *
+     * @return string The obfuscated token.
+     */
+    private static function obfuscateToken(string $token): string
+    {
+        if (strlen($token) <= 4) {
+            return str_repeat('*', strlen($token));
+        }
+        return str_repeat('*', strlen($token) - 4) . substr($token, -4);
     }
 }

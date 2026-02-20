@@ -1,0 +1,214 @@
+<?php
+
+namespace MarketDataApp\Tests\Unit\Options;
+
+use Carbon\Carbon;
+use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
+use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Endpoints\Responses\Options\Expirations;
+use MarketDataApp\Enums\DateFormat;
+use MarketDataApp\Enums\Format;
+
+/**
+ * Unit tests for the Options Expirations endpoint.
+ */
+class ExpirationsTest extends OptionsTestCase
+{
+    /**
+     * Test the expirations endpoint for a successful response.
+     */
+    public function testExpirations_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'           => 'ok',
+            'expirations' => ['2022-09-23', '2022-09-30'],
+            'updated'     => 1663704000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->expirations('AAPL');
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertCount(2, $response->expirations);
+        $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
+
+        for ($i = 0; $i < count($response->expirations); $i++) {
+            $this->assertEquals(Carbon::parse($mocked_response['expirations'][$i]), $response->expirations[$i]);
+        }
+    }
+
+    /**
+     * Test the expirations endpoint for a successful CSV response.
+     */
+    public function testExpirations_csv_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "s, expirations, updated\r\n";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals($mocked_response, $response->getCsv());
+    }
+
+    /**
+     * Test the expirations endpoint for a successful 'no data' response.
+     */
+    public function testExpirations_noData_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'        => 'no_data',
+            'nextTime' => 1663704000,
+            'prevTime' => 1663705000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->expirations('AAPL');
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEmpty($response->expirations);
+        $this->assertEquals(Carbon::parse($mocked_response['nextTime']), $response->next_time);
+        $this->assertEquals(Carbon::parse($mocked_response['prevTime']), $response->prev_time);
+    }
+
+    /**
+     * Test the expirations endpoint with human-readable format.
+     */
+    public function testExpirations_humanReadable_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            'Expirations' => ['2022-09-23', '2022-09-30'],
+            'Date' => 1663704000
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->expirations(
+            'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(2, $response->expirations);
+        $this->assertEquals(Carbon::parse($mocked_response['Date']), $response->updated);
+    }
+
+    /**
+     * Test that date_format parameter can be used with CSV format for options.
+     */
+    public function testParameters_dateFormat_withCsv_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = "s, symbol, ask, bid";
+        $this->setMockResponses([new Response(200, [], $mocked_response)]);
+
+        $response = $this->client->options->expirations(
+            symbol: 'AAPL',
+            parameters: new Parameters(format: Format::CSV, date_format: DateFormat::UNIX)
+        );
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertTrue($response->isCsv());
+    }
+
+    /**
+     * Test that date_format parameter with JSON format throws InvalidArgumentException.
+     */
+    public function testParameters_dateFormat_withJson_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('date_format parameter can only be used with CSV or HTML format');
+
+        new Parameters(format: Format::JSON, date_format: DateFormat::TIMESTAMP);
+    }
+
+    /**
+     * Test expirations endpoint with invalid strike (zero).
+     */
+    public function testExpirations_invalidStrike_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a positive number');
+
+        $this->client->options->expirations('AAPL', strike: 0);
+    }
+
+    /**
+     * Test expirations endpoint accepts decimal strike values.
+     *
+     * This verifies the fix for Bug 007: strike should accept decimal values
+     * (e.g., 12.5) for non-standard options strikes.
+     */
+    public function testExpirations_decimalStrike_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'           => 'ok',
+            'expirations' => ['2024-01-19'],
+            'updated'     => 1234567890
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        // Should not throw - decimal strikes are valid
+        $response = $this->client->options->expirations('AAPL', strike: 12.5);
+
+        $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertEquals('ok', $response->status);
+    }
+
+    /**
+     * Test that expirations properties are accessible for CSV responses (BUG-013 fix).
+     *
+     * CSV responses trigger an early return in the constructor. Properties should
+     * have default values to prevent "uninitialized property" errors.
+     */
+    public function testExpirations_csv_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic CSV data)
+        $csvResponse = "expirations,updated\n2024-01-19,1234567890";
+        $this->setMockResponses([new Response(200, [], $csvResponse)]);
+
+        $response = $this->client->options->expirations(
+            'AAPL',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->expirations);
+        $this->assertCount(0, $response->expirations);
+        $this->assertNull($response->updated);
+        $this->assertNull($response->next_time);
+        $this->assertNull($response->prev_time);
+    }
+
+    /**
+     * Test that expirations properties are accessible for no_data responses without next/prev times (BUG-013 fix).
+     *
+     * Some no_data responses may not include nextTime/prevTime fields.
+     */
+    public function testExpirations_noData_withoutTimes_propertiesAccessible(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic no_data response)
+        $noDataResponse = ['s' => 'no_data'];
+        $this->setMockResponses([new Response(200, [], json_encode($noDataResponse))]);
+
+        $response = $this->client->options->expirations('INVALID');
+
+        // These should NOT throw "uninitialized property" errors
+        $this->assertEquals('no_data', $response->status);
+        $this->assertIsArray($response->expirations);
+        $this->assertCount(0, $response->expirations);
+        $this->assertNull($response->updated);
+        $this->assertNull($response->next_time);
+        $this->assertNull($response->prev_time);
+    }
+}

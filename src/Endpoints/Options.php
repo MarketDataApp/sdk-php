@@ -14,7 +14,9 @@ use MarketDataApp\Enums\Expiration;
 use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Exceptions\ApiException;
+use MarketDataApp\Settings;
 use MarketDataApp\Traits\UniversalParameters;
+use MarketDataApp\Traits\ValidatesInputs;
 
 /**
  * Class Options
@@ -25,6 +27,7 @@ class Options
 {
 
     use UniversalParameters;
+    use ValidatesInputs;
 
     /**
      * The MarketDataApp API client instance.
@@ -52,10 +55,23 @@ class Options
      * Get a list of current or historical option expiration dates for an underlying symbol. If no optional parameters
      * are used, the endpoint returns all expiration dates in the option chain.
      *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/expirations API Documentation
+     * @see  strikes() For available strike prices
+     * @see  option_chain() For full option chain data
+     *
+     * @example
+     * // Get all expiration dates for AAPL
+     * $expirations = $client->options->expirations('AAPL');
+     *
+     * // Get expirations that have a $200 strike
+     * $expirations = $client->options->expirations('AAPL', strike: 200);
+     *
      * @param string          $symbol     The underlying ticker symbol for the options chain you wish to lookup.
      *
-     * @param int|null        $strike     Limit the lookup of expiration dates to the strike provided. This will cause
+     * @param int|float|null  $strike     Limit the lookup of expiration dates to the strike provided. This will cause
      *                                    the endpoint to only return expiration dates that include this strike.
+     *                                    Accepts decimal values (e.g., 12.5) for non-standard strikes.
      *
      * @param string|null     $date       Use to lookup a historical list of expiration dates from a specific previous
      *                                    trading day. If date is omitted the expiration dates will be from the current
@@ -70,17 +86,31 @@ class Options
      */
     public function expirations(
         string $symbol,
-        int $strike = null,
-        string $date = null,
+        int|float|null $strike = null,
+        ?string $date = null,
         ?Parameters $parameters = null
     ): Expirations {
-        return new Expirations($this->execute("expirations/$symbol",
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
+        $this->validatePositiveNumber($strike, 'strike');
+
+        return new Expirations($this->execute("expirations/$symbol/",
             compact('strike', 'date'), $parameters));
     }
 
     /**
      * Generate a properly formatted OCC option symbol based on the user's human-readable description of an option.
      * This endpoint converts text such as "AAPL 7/28/23 $200 Call" to OCC option symbol format: AAPL230728C00200000.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/lookup API Documentation
+     * @see  quotes() Use the returned OCC symbol to get option quotes
+     *
+     * @example
+     * // Convert human-readable description to OCC symbol
+     * $lookup = $client->options->lookup('AAPL 7/28/23 $200 Call');
+     * echo $lookup->option_symbol; // AAPL230728C00200000
      *
      * @param string          $input      The human-readable string input that contains
      *                                    - (1) stock symbol
@@ -97,13 +127,28 @@ class Options
      */
     public function lookup(string $input, ?Parameters $parameters = null): Lookup
     {
-        return new Lookup($this->execute("lookup/" . $input, [], $parameters));
+        // Validate input
+        $this->validateNonEmptyString($input, 'input');
+        $input = trim($input);
+
+        return new Lookup($this->execute("lookup/" . rawurlencode($input) . "/", [], $parameters));
     }
 
     /**
      * Get a list of current or historical options strikes for an underlying symbol. If no optional parameters are
-     * used,
-     * the endpoint returns the strikes for every expiration in the chain.
+     * used, the endpoint returns the strikes for every expiration in the chain.
+     *
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/strikes API Documentation
+     * @see  expirations() For available expiration dates
+     * @see  option_chain() For full option chain data
+     *
+     * @example
+     * // Get all strikes for AAPL
+     * $strikes = $client->options->strikes('AAPL');
+     *
+     * // Get strikes for a specific expiration
+     * $strikes = $client->options->strikes('AAPL', expiration: '2025-01-17');
      *
      * @param string          $symbol     The underlying ticker symbol for the options chain you wish to lookup.
      *
@@ -123,11 +168,15 @@ class Options
      */
     public function strikes(
         string $symbol,
-        string $expiration = null,
-        string $date = null,
+        ?string $expiration = null,
+        ?string $date = null,
         ?Parameters $parameters = null
     ): Strikes {
-        return new Strikes($this->execute("strikes/$symbol",
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
+
+        return new Strikes($this->execute("strikes/$symbol/",
             compact('expiration', 'date'), $parameters));
     }
 
@@ -136,10 +185,18 @@ class Options
      * for extensive filtering of the chain. Use the optionSymbol returned from this endpoint to get quotes, greeks, or
      * other information using the other endpoints.
      *
-     * CAUTION: The from, to, month, year, weekly, monthly, and quarterly filtering parameters are not yet supported
-     * for
-     * real-time quotes. If you are requesting a real-time quote you must request a single expiration date or request
-     * all expirations.
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/chain API Documentation
+     * @see  expirations() For available expiration dates
+     * @see  strikes() For available strike prices
+     * @see  quotes() For individual option quotes
+     *
+     * @example
+     * // Get calls for a specific expiration
+     * $chain = $client->options->option_chain('AAPL', expiration: '2025-01-17', side: Side::CALL);
+     *
+     * // Get ATM options with delta filtering
+     * $chain = $client->options->option_chain('SPY', expiration: '2025-01-17', delta: 0.50);
      *
      * @param string            $symbol                 The ticker symbol of the underlying asset.
      *
@@ -204,7 +261,7 @@ class Options
      *                                                  can return. If you are using the date parameter, dte is
      *                                                  relative to the date provided.
      *
-     * @param float|null        $delta
+     * @param string|float|null $delta
      *                                                  - Limit the option chain to a single strike closest to the
      *                                                  delta provided. (e.g. .50)
      *                                                  - Limit the option chain to a specific set of deltas (e.g.
@@ -259,7 +316,7 @@ class Options
      * @param float|null        $max_ask                Limit the option chain to options with an ask price less than
      *                                                  or equal to the number provided.
      *
-     * @param float|null        $min_bid_ask_spread     Limit the option chain to options with a bid-ask spread less
+     * @param float|null        $max_bid_ask_spread     Limit the option chain to options with a bid-ask spread less
      *                                                  than or equal to the number provided.
      *
      * @param float|null        $max_bid_ask_spread_pct Limit the option chain to options with a bid-ask spread less
@@ -274,6 +331,16 @@ class Options
      * @param int|null          $min_volume             Limit the option chain to options with a volume transacted
      *                                                  greater than or equal to the number provided.
      *
+     * @param bool|null         $am                     Limit the option chain to AM-settled index options. These are
+     *                                                  options that settle based on the opening price of the index on
+     *                                                  expiration day. Only applicable to index options like SPX.
+     *                                                  When true, only AM-settled options are returned.
+     *
+     * @param bool|null         $pm                     Limit the option chain to PM-settled index options. These are
+     *                                                  options that settle based on the closing price of the index on
+     *                                                  expiration day. Only applicable to index options like SPX.
+     *                                                  When true, only PM-settled options are returned.
+     *
      * @param Parameters|null   $parameters             Universal parameters for all methods (such as format).
      *
      * @return OptionChains
@@ -282,43 +349,62 @@ class Options
      */
     public function option_chain(
         string $symbol,
-        string $date = null,
-        string|Expiration $expiration = Expiration::ALL,
-        string $from = null,
-        string $to = null,
-        int $month = null,
-        int $year = null,
+        ?string $date = null,
+        string|Expiration|null $expiration = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $month = null,
+        ?int $year = null,
         bool $weekly = true,
         bool $monthly = true,
         bool $quarterly = true,
-        bool $non_standard = true,
-        int $dte = null,
-        float $delta = null,
-        Side $side = null,
+        ?bool $non_standard = null,
+        ?int $dte = null,
+        string|float|null $delta = null,
+        ?Side $side = null,
         Range $range = Range::ALL,
-        string $strike = null,
-        int $strike_limit = null,
-        float $min_bid = null,
-        float $max_bid = null,
-        float $min_ask = null,
-        float $max_ask = null,
-        float $min_bid_ask_spread = null,
-        float $max_bid_ask_spread_pct = null,
-        int $min_open_interest = null,
-        int $min_volume = null,
+        ?string $strike = null,
+        ?int $strike_limit = null,
+        ?float $min_bid = null,
+        ?float $max_bid = null,
+        ?float $min_ask = null,
+        ?float $max_ask = null,
+        ?float $max_bid_ask_spread = null,
+        ?float $max_bid_ask_spread_pct = null,
+        ?int $min_open_interest = null,
+        ?int $min_volume = null,
+        ?bool $am = null,
+        ?bool $pm = null,
         ?Parameters $parameters = null
     ): OptionChains {
-        return new OptionChains($this->execute("chain/$symbol", [
+        // Validate inputs
+        $this->validateNonEmptyString($symbol, 'symbol');
+        $symbol = trim($symbol);
+
+        // Validate date range
+        $this->validateDateRange($from, $to);
+        
+        // Validate numeric ranges
+        if ($month !== null && ($month < 1 || $month > 12)) {
+            throw new \InvalidArgumentException("`month` must be between 1 and 12. Got: {$month}");
+        }
+        $this->validatePositiveInteger($year, 'year');
+        $this->validatePositiveInteger($dte, 'dte');
+        $this->validatePositiveInteger($strike_limit, 'strike_limit');
+        $this->validatePositiveInteger($min_open_interest, 'min_open_interest');
+        $this->validatePositiveInteger($min_volume, 'min_volume');
+        
+        // Validate min/max ranges
+        $this->validateNumericRange($min_bid, $max_bid, 'min_bid', 'max_bid');
+        $this->validateNumericRange($min_ask, $max_ask, 'min_ask', 'max_ask');
+
+        $arguments = [
             'date'               => $date,
             'expiration'         => $expiration instanceof Expiration ? $expiration->value : $expiration,
             'from'               => $from,
             'to'                 => $to,
             'month'              => $month,
             'year'               => $year,
-            'weekly'             => $weekly,
-            'monthly'            => $monthly,
-            'quarterly'          => $quarterly,
-            'nonstandard'        => $non_standard,
             'dte'                => $dte,
             'delta'              => $delta,
             'side'               => $side instanceof Side ? $side->value : $side,
@@ -329,53 +415,393 @@ class Options
             'maxBid'             => $max_bid,
             'minAsk'             => $min_ask,
             'maxAsk'             => $max_ask,
-            'minBidAskSpread'    => $min_bid_ask_spread,
+            'maxBidAskSpread'    => $max_bid_ask_spread,
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
             'minOpenInterest'    => $min_open_interest,
             'minVolume'          => $min_volume,
-        ], $parameters));
+        ];
+
+        // am and pm are boolean filters for index options settlement type
+        if ($am !== null) {
+            $arguments['am'] = $am ? 'true' : 'false';
+        }
+        if ($pm !== null) {
+            $arguments['pm'] = $pm ? 'true' : 'false';
+        }
+
+        // Boolean params: weekly, monthly, quarterly default to true on API, send 'false' when false
+        if (!$weekly) {
+            $arguments['weekly'] = 'false';
+        }
+        if (!$monthly) {
+            $arguments['monthly'] = 'false';
+        }
+        if (!$quarterly) {
+            $arguments['quarterly'] = 'false';
+        }
+        // nonstandard defaults to false on API, only send when explicitly set
+        if ($non_standard !== null) {
+            $arguments['nonstandard'] = $non_standard ? 'true' : 'false';
+        }
+
+        return new OptionChains($this->execute("chain/$symbol/", $arguments, $parameters));
     }
 
     /**
-     * Get a current or historical end of day quote for a single options contract.
+     * Get current or historical end of day quotes for one or more options contracts.
      *
-     * @param string          $option_symbol The option symbol (as defined by the OCC) for the option you wish to
-     *                                       lookup. Use the current OCC option symbol format, even for historic
-     *                                       options that quoted before the format change in 2010.
+     * When multiple option symbols are provided, requests are made concurrently using
+     * a sliding window of up to 50 concurrent requests for optimal throughput.
      *
-     * @param string|null     $date          Use to lookup a historical end of day quote from a specific trading day.
-     *                                       If no date is specified the quote will be the most current price available
-     *                                       during market hours. When the market is closed the quote will be from the
-     *                                       last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     * @api
+     * @link https://www.marketdata.app/docs/api/options/quotes API Documentation
+     * @see  option_chain() For full option chain data
+     * @see  lookup() To convert human-readable descriptions to OCC symbols
      *
-     * @param string|null     $from          Use to lookup a series of end of day quotes. From is the oldest (leftmost)
-     *                                       date to return (inclusive). If from/to is not specified the quote will be
-     *                                       the most current price available during market hours. When the market is
-     *                                       closed the quote will be from the last trading day. Accepted timestamp
-     *                                       inputs: ISO
-     *                                       8601, unix, spreadsheet.
+     * @example
+     * // Get quote for a single option
+     * $quotes = $client->options->quotes('AAPL250117C00200000');
      *
-     * @param string|null     $to            Use to lookup a series of end of day quotes. From is the newest
-     *                                       (rightmost) date to return
-     *                                       (exclusive). If from/to is not specified the quote will be the most
-     *                                       current price available during market hours. When the market is closed the
-     *                                       quote will be from the last trading day. Accepted timestamp inputs: ISO
-     *                                       8601, unix, spreadsheet.
+     * // Get quotes for multiple options (concurrent requests)
+     * $quotes = $client->options->quotes(['AAPL250117C00180000', 'AAPL250117C00200000']);
      *
-     * @param Parameters|null $parameters    Universal parameters for all methods (such as format).
+     * @param string|array    $option_symbols The option symbol(s) (as defined by the OCC) for the option(s) you wish
+     *                                        to lookup. Use the current OCC option symbol format, even for historic
+     *                                        options that quoted before the format change in 2010.
+     *                                        Can be a single string or an array of strings for multiple symbols.
+     *
+     * @param string|null     $date           Use to lookup a historical end of day quote from a specific trading day.
+     *                                        If no date is specified the quote will be the most current price available
+     *                                        during market hours. When the market is closed the quote will be from the
+     *                                        last trading day. Accepted timestamp inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param string|null     $from           Use to lookup a series of end of day quotes. From is the oldest (leftmost)
+     *                                        date to return (inclusive). If from/to is not specified the quote will be
+     *                                        the most current price available during market hours. When the market is
+     *                                        closed the quote will be from the last trading day. Accepted timestamp
+     *                                        inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param string|null     $to             Use to lookup a series of end of day quotes. To is the newest (rightmost)
+     *                                        date to return (exclusive). If from/to is not specified the quote will be
+     *                                        the most current price available during market hours. When the market is
+     *                                        closed the quote will be from the last trading day. Accepted timestamp
+     *                                        inputs: ISO 8601, unix, spreadsheet.
+     *
+     * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
      * @return Quotes
      *
-     * @throws ApiException|GuzzleException
+     * @throws ApiException|GuzzleException|\Throwable
      */
     public function quotes(
-        string $option_symbol,
-        string $date = null,
-        string $from = null,
-        string $to = null,
+        string|array $option_symbols,
+        ?string $date = null,
+        ?string $from = null,
+        ?string $to = null,
         ?Parameters $parameters = null
     ): Quotes {
-        return new Quotes($this->execute("quotes/$option_symbol/",
-            compact('date', 'from', 'to'), $parameters));
+        // Validate date range
+        $this->validateDateRange($from, $to);
+
+        // Handle single symbol (string) - existing behavior
+        if (is_string($option_symbols)) {
+            $this->validateNonEmptyString($option_symbols, 'option_symbols');
+            $option_symbols = trim($option_symbols);
+
+            return new Quotes($this->execute("quotes/$option_symbols/",
+                compact('date', 'from', 'to'), $parameters));
+        }
+
+        // Handle multiple symbols (array)
+        return $this->quotesMultiple($option_symbols, $date, $from, $to, $parameters);
+    }
+
+    /**
+     * Get quotes for multiple option symbols concurrently.
+     *
+     * Uses a sliding window of up to 50 concurrent requests. As each request completes,
+     * the next one starts immediately for optimal throughput.
+     *
+     * @param array           $option_symbols Array of option symbols (OCC format).
+     * @param string|null     $date           Historical date for EOD quotes.
+     * @param string|null     $from           Start date for series of EOD quotes.
+     * @param string|null     $to             End date for series of EOD quotes.
+     * @param Parameters|null $parameters     Universal parameters.
+     *
+     * @return Quotes Merged quotes from all symbols.
+     * @throws \Throwable
+     */
+    protected function quotesMultiple(
+        array $option_symbols,
+        ?string $date,
+        ?string $from,
+        ?string $to,
+        ?Parameters $parameters
+    ): Quotes {
+        // Validate non-empty array with non-empty string elements
+        if (empty($option_symbols)) {
+            throw new \InvalidArgumentException('`option_symbols` array cannot be empty.');
+        }
+
+        foreach ($option_symbols as $symbol) {
+            if (!is_string($symbol) || trim($symbol) === '') {
+                throw new \InvalidArgumentException(
+                    'All elements in `option_symbols` must be non-empty strings.'
+                );
+            }
+        }
+
+        // Deduplicate and normalize symbols
+        $symbols = array_values(array_unique(array_map('trim', $option_symbols)));
+
+        // If only one symbol after deduplication, delegate to single-symbol path
+        if (count($symbols) === 1) {
+            return new Quotes($this->execute("quotes/{$symbols[0]}/",
+                compact('date', 'from', 'to'), $parameters));
+        }
+
+        // Check format to handle CSV/HTML specially
+        $mergedParams = $this->mergeParameters($parameters);
+        $format = $mergedParams->format;
+
+        // HTML format is not supported for multi-symbol requests
+        if ($format === \MarketDataApp\Enums\Format::HTML) {
+            throw new \InvalidArgumentException(
+                'HTML format is not supported for multi-symbol options quotes. ' .
+                'Use JSON or CSV format instead.'
+            );
+        }
+
+        // CSV format requires special handling to combine responses
+        if ($format === \MarketDataApp\Enums\Format::CSV) {
+            return $this->quotesMultipleCsv($symbols, $date, $from, $to, $parameters, $mergedParams);
+        }
+
+        // JSON format: existing behavior
+        // Build API calls for all symbols
+        $calls = [];
+        foreach ($symbols as $symbol) {
+            $calls[] = [
+                "quotes/{$symbol}/",
+                compact('date', 'from', 'to'),
+            ];
+        }
+
+        // Execute all requests concurrently with partial failure tolerance
+        // (sliding window up to MAX_CONCURRENT_REQUESTS)
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $parameters, $failedRequests);
+
+        // If ALL requests failed, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Merge all successful responses into a single Quotes object
+        // (partial failures are tolerated - we return whatever data we got)
+        return $this->mergeQuotesResponses($responses, $failedRequests, $symbols);
+    }
+
+    /**
+     * Handle CSV format for multiple option symbols.
+     *
+     * Makes separate requests for each symbol, with headers=true on the first request
+     * (unless user explicitly set add_headers=false) and headers=false on subsequent
+     * requests. Combines all responses into a single CSV output.
+     *
+     * @param array           $symbols      Deduplicated and trimmed option symbols.
+     * @param string|null     $date         Historical date for EOD quotes.
+     * @param string|null     $from         Start date for series of EOD quotes.
+     * @param string|null     $to           End date for series of EOD quotes.
+     * @param Parameters|null $parameters   Original parameters from caller.
+     * @param Parameters      $mergedParams Merged parameters with defaults applied.
+     *
+     * @return Quotes Quotes object containing combined CSV.
+     * @throws \Throwable
+     */
+    protected function quotesMultipleCsv(
+        array $symbols,
+        ?string $date,
+        ?string $from,
+        ?string $to,
+        ?Parameters $parameters,
+        Parameters $mergedParams
+    ): Quotes {
+        // Validate that filename is not provided with multi-symbol requests
+        if ($mergedParams->filename !== null) {
+            throw new \InvalidArgumentException(
+                'filename parameter cannot be used with multi-symbol options quotes. ' .
+                'Each parallel response would conflict writing to the same file. ' .
+                'Use filename only with single-symbol requests, or use saveToFile() method on the response object.'
+            );
+        }
+
+        // Determine if user explicitly requested no headers
+        $userRequestedNoHeaders = $mergedParams->add_headers === false;
+
+        // Build calls with appropriate headers setting:
+        // - If user wants no headers: request headers=false, no SDK processing needed
+        // - If user wants headers: request headers=true on ALL calls, SDK strips duplicates
+        $calls = [];
+        foreach ($symbols as $symbol) {
+            $callArgs = compact('date', 'from', 'to');
+            $callArgs['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
+
+            $calls[] = [
+                "quotes/{$symbol}/",
+                $callArgs,
+            ];
+        }
+
+        // Create modified parameters without add_headers (we're handling it manually per-call)
+        $csvParams = new Parameters(
+            format: $mergedParams->format,
+            use_human_readable: $mergedParams->use_human_readable,
+            mode: $mergedParams->mode,
+            maxage: $mergedParams->maxage,
+            date_format: $mergedParams->date_format,
+            columns: $mergedParams->columns,
+            add_headers: null, // We handle headers per-call
+            filename: null     // Cannot use filename with multi-symbol
+        );
+
+        // Execute all requests concurrently
+        $failedRequests = [];
+        $responses = $this->execute_in_parallel($calls, $csvParams, $failedRequests);
+
+        // If ALL requests failed via exceptions, throw the first exception
+        if (empty($responses) && !empty($failedRequests)) {
+            throw reset($failedRequests);
+        }
+
+        // Combine CSV responses, filtering out JSON error responses
+        // (API returns JSON even when CSV is requested if there's an error)
+        $combinedCsv = '';
+        $validResponseCount = 0;
+        $lastErrorMessage = null;
+        $headerRow = null; // Track the header row from first successful response
+        ksort($responses); // Ensure responses are in original order
+        foreach ($responses as $response) {
+            if (isset($response->csv)) {
+                $csv = $response->csv;
+                // Trim trailing newlines to avoid extra blank lines when combining
+                $csv = rtrim($csv, "\r\n");
+
+                // Check if this is a JSON error response instead of valid CSV
+                // API returns JSON for errors even when CSV format is requested
+                // Use ltrim() to handle responses with leading whitespace
+                if ($csv !== '' && str_starts_with(ltrim($csv), '{')) {
+                    $decoded = json_decode($csv);
+                    if (isset($decoded->s) && $decoded->s === 'error') {
+                        // This is a JSON error response, skip it but record the error
+                        $lastErrorMessage = $decoded->errmsg ?? 'Unknown error';
+                        continue;
+                    }
+                }
+
+                if ($csv !== '') {
+                    // Header handling depends on user preference:
+                    // - If user wants no headers: API returns no headers, combine all data as-is
+                    // - If user wants headers: API returns headers on all calls, SDK strips duplicates
+                    if ($userRequestedNoHeaders) {
+                        // User wants no headers - API returned data without headers
+                        // Just combine all data rows without any header processing
+                        $combinedCsv .= $csv . "\n";
+                    } else {
+                        // User wants headers - strip duplicate headers from subsequent responses
+                        $firstNewline = strpos($csv, "\n");
+                        if ($headerRow === null) {
+                            // First valid response - capture header and include entire response
+                            if ($firstNewline !== false) {
+                                $headerRow = substr($csv, 0, $firstNewline);
+                            }
+                            $combinedCsv .= $csv . "\n";
+                        } else {
+                            // Subsequent responses - strip header row if present
+                            if ($firstNewline !== false) {
+                                $firstLine = substr($csv, 0, $firstNewline);
+                                // Trim whitespace for robust comparison
+                                if (trim($firstLine) === trim($headerRow)) {
+                                    // Skip the header row
+                                    $csv = substr($csv, $firstNewline + 1);
+                                }
+                            }
+                            if ($csv !== '') {
+                                $combinedCsv .= $csv . "\n";
+                            }
+                        }
+                    }
+                    $validResponseCount++;
+                }
+            }
+        }
+
+        // If ALL responses were errors (no valid CSV data), throw an exception
+        if ($validResponseCount === 0) {
+            if ($lastErrorMessage !== null) {
+                throw new ApiException(
+                    message: $lastErrorMessage
+                );
+            } elseif (!empty($failedRequests)) {
+                throw reset($failedRequests);
+            } else {
+                throw new ApiException(
+                    message: 'No data available for the requested symbols'
+                );
+            }
+        }
+
+        // Create a response object with the combined CSV
+        $combinedResponse = (object) ['csv' => $combinedCsv];
+
+        return new Quotes($combinedResponse);
+    }
+
+    /**
+     * Merge multiple quotes responses into a single Quotes object.
+     *
+     * @param array $responses      Array of response objects from execute_in_parallel, keyed by call index.
+     * @param array $failedRequests Array of exceptions from failed requests, keyed by call index.
+     * @param array $symbols        Original symbols array for error reporting.
+     *
+     * @return Quotes Merged quotes response.
+     */
+    protected function mergeQuotesResponses(array $responses, array $failedRequests = [], array $symbols = []): Quotes
+    {
+        $allQuotes = [];
+        $overallStatus = 'no_data';
+        $nextTime = null;
+        $prevTime = null;
+
+        foreach ($responses as $response) {
+            $quotesResponse = new Quotes($response);
+
+            if ($quotesResponse->status === 'ok') {
+                $overallStatus = 'ok';
+                $allQuotes = array_merge($allQuotes, $quotesResponse->quotes);
+            } elseif ($quotesResponse->status === 'no_data') {
+                // Track earliest next_time
+                if (isset($quotesResponse->next_time)) {
+                    if ($nextTime === null || $quotesResponse->next_time->lt($nextTime)) {
+                        $nextTime = $quotesResponse->next_time;
+                    }
+                }
+                // Track latest prev_time
+                if (isset($quotesResponse->prev_time)) {
+                    if ($prevTime === null || $quotesResponse->prev_time->gt($prevTime)) {
+                        $prevTime = $quotesResponse->prev_time;
+                    }
+                }
+            }
+        }
+
+        // Build errors array for failed requests
+        $errors = [];
+        foreach ($failedRequests as $index => $exception) {
+            $symbol = $symbols[$index] ?? "unknown (index $index)";
+            $errors[$symbol] = $exception->getMessage();
+        }
+
+        return Quotes::createMerged($overallStatus, $allQuotes, $nextTime, $prevTime, $errors);
     }
 }

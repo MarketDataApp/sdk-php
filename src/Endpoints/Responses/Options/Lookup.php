@@ -15,14 +15,14 @@ class Lookup extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The generated OCC option symbol based on the user's input.
      *
-     * @var string
+     * @var string|null
      */
-    public string $option_symbol;
+    public ?string $option_symbol = null;
 
     /**
      * Constructs a new Lookup instance from the given response object.
@@ -36,8 +36,35 @@ class Lookup extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
-        $this->option_symbol = $response->optionSymbol;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
+
+        // Determine if this is human-readable format (has "Symbol" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Symbol']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+            $symbol = $responseArray['Symbol'];
+            $this->option_symbol = is_array($symbol) ? ($symbol[0] ?? null) : $symbol;
+        } else {
+            // Regular format
+            $this->status = $response->s;
+            $this->option_symbol = $response->optionSymbol;
+        }
+    }
+
+    /**
+     * Returns a string representation of the lookup result.
+     *
+     * @return string Human-readable lookup result.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Lookup - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        return sprintf("Lookup: %s", $this->option_symbol ?? '');
     }
 }

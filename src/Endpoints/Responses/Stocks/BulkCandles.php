@@ -16,7 +16,7 @@ class BulkCandles extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * Array of Candle objects representing individual stock candles.
@@ -37,20 +37,74 @@ class BulkCandles extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        if ($this->status === 'ok') {
-            for ($i = 0; $i < count($response->o); $i++) {
+        // Determine if this is human-readable format (has "Open" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Open']);
+
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            // Note: Human-readable format does not include symbol data from the API
+            $this->status = 'ok';
+            $symbols = $responseArray['Symbol'] ?? null;
+
+            $count = count($responseArray['Open']);
+            for ($i = 0; $i < $count; $i++) {
                 $this->candles[] = new Candle(
-                    $response->o[$i],
-                    $response->h[$i],
-                    $response->l[$i],
-                    $response->c[$i],
-                    $response->v[$i],
-                    Carbon::parse($response->t[$i]),
+                    $responseArray['Open'][$i],
+                    $responseArray['High'][$i],
+                    $responseArray['Low'][$i],
+                    $responseArray['Close'][$i],
+                    $responseArray['Volume'][$i],
+                    Carbon::parse($responseArray['Date'][$i]),
+                    $symbols[$i] ?? null,
                 );
             }
+        } else {
+            // Regular format
+            $this->status = $response->s;
+
+            if ($this->status === 'ok') {
+                $symbols = $response->symbol ?? null;
+                for ($i = 0; $i < count($response->o); $i++) {
+                    $this->candles[] = new Candle(
+                        $response->o[$i],
+                        $response->h[$i],
+                        $response->l[$i],
+                        $response->c[$i],
+                        $response->v[$i],
+                        Carbon::parse($response->t[$i]),
+                        $symbols[$i] ?? null,
+                    );
+                }
+            }
         }
+    }
+
+    /**
+     * Returns a string representation of the bulk candles collection.
+     *
+     * @return string Human-readable bulk candles summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "BulkCandles - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->candles);
+        $lines = [sprintf("BulkCandles: %d candle%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(3, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . (string) $this->candles[$i];
+        }
+
+        if ($count > 3) {
+            $lines[] = sprintf("  ... and %d more", $count - 3);
+        }
+
+        return implode("\n", $lines);
     }
 }

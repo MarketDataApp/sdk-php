@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.4/phpunit.xsd"
     backupGlobals="false"
     bootstrap="vendor/autoload.php"
     colors="true"
@@ -15,9 +15,20 @@
     cacheDirectory=".phpunit.cache"
     backupStaticProperties="false"
 >
+    <php>
+        <!-- Set log level to CRITICAL to reduce verbose output during tests.
+             Logging tests override this in their setUp/tearDown methods. -->
+        <env name="MARKETDATA_LOGGING_LEVEL" value="CRITICAL"/>
+    </php>
     <testsuites>
-        <testsuite name="MarketDataApp Test Suite">
-            <directory>tests</directory>
+        <!-- Unit tests (fast, use mocks) - run by default -->
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        
+        <!-- Integration tests (slow, make real API calls) - opt-in -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
     <coverage>
@@ -34,5 +45,8 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
+        <exclude>
+            <directory>./examples</directory>
+        </exclude>
     </source>
 </phpunit>

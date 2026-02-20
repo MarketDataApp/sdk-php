@@ -4,12 +4,14 @@ namespace MarketDataApp\Endpoints\Responses\Options;
 
 use Carbon\Carbon;
 use MarketDataApp\Endpoints\Responses\ResponseBase;
+use MarketDataApp\Traits\FormatsForDisplay;
 
 /**
  * Represents a collection of option expirations dates and related data.
  */
 class Expirations extends ResponseBase
 {
+    use FormatsForDisplay;
 
     /**
      * Status of the expirations request. Will always be ok when there is strike data for the underlying/expirations
@@ -17,7 +19,7 @@ class Expirations extends ResponseBase
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'no_data';
 
     /**
      * The expiration dates requested for the underlying with the option strikes for each expiration.
@@ -30,23 +32,23 @@ class Expirations extends ResponseBase
      * The date and time this list of options strikes was updated in Unix time.
      * For historical strikes, this number should match the date parameter.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $updated;
+    public ?Carbon $updated = null;
 
     /**
      * Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $next_time;
+    public ?Carbon $next_time = null;
 
     /**
      * Time of the previous quote if there is no data in the requested period, but there is data in a previous period.
      *
-     * @var Carbon
+     * @var Carbon|null
      */
-    public Carbon $prev_time;
+    public ?Carbon $prev_time = null;
 
     /**
      * Constructs a new Expirations instance from the given response object.
@@ -60,26 +62,67 @@ class Expirations extends ResponseBase
             return;
         }
 
-        // Convert the response to this object.
-        $this->status = $response->s;
+        // Convert to array for easier access to keys with spaces (human-readable format)
+        $responseArray = (array) $response;
 
-        switch ($this->status) {
-            case 'ok':
-                $this->expirations = array_map(function ($expiration) {
-                    return Carbon::parse($expiration);
-                }, $response->expirations);
-                $this->updated = Carbon::parse($response->updated);
-                break;
+        // Determine if this is human-readable format (has "Expirations" key) or regular format (has "s" status)
+        $isHumanReadable = isset($responseArray['Expirations']);
 
-            case 'no_data':
-                if (isset($response->nextTime)) {
-                    $this->next_time = Carbon::parse($response->nextTime);
-                }
+        if ($isHumanReadable) {
+            // Human-readable format - no "s" status field
+            $this->status = 'ok';
+            $this->expirations = array_map(function ($expiration) {
+                return Carbon::parse($expiration);
+            }, $responseArray['Expirations']);
+            $this->updated = Carbon::parse($responseArray['Date']);
+        } else {
+            // Regular format
+            $this->status = $response->s;
 
-                if (isset($response->prevTime)) {
-                    $this->prev_time = Carbon::parse($response->prevTime);
-                }
-                break;
+            switch ($this->status) {
+                case 'ok':
+                    $this->expirations = array_map(function ($expiration) {
+                        return Carbon::parse($expiration);
+                    }, $response->expirations);
+                    $this->updated = Carbon::parse($response->updated);
+                    break;
+
+                case 'no_data':
+                    if (isset($response->nextTime)) {
+                        $this->next_time = Carbon::parse($response->nextTime);
+                    }
+
+                    if (isset($response->prevTime)) {
+                        $this->prev_time = Carbon::parse($response->prevTime);
+                    }
+                    break;
+            }
         }
+    }
+
+    /**
+     * Returns a string representation of the expirations collection.
+     *
+     * @return string Human-readable expirations summary.
+     */
+    public function __toString(): string
+    {
+        if (!$this->isJson()) {
+            return "Expirations - Non-JSON format, use getCsv() or getHtml()";
+        }
+
+        $count = count($this->expirations);
+        $lines = [sprintf("Expirations: %d date%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
+
+        $displayCount = min(5, $count);
+        for ($i = 0; $i < $displayCount; $i++) {
+            $lines[] = "  " . $this->formatDate($this->expirations[$i]);
+        }
+
+        if ($count > 5) {
+            $lines[] = sprintf("  ... and %d more", $count - 5);
+        }
+
+        return implode("\n", $lines);
     }
 }

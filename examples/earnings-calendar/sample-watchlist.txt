@@ -1,0 +1,23 @@
+# Sample Watchlist for Earnings Calendar
+# One symbol per line, lines starting with # are comments
+
+# Mega-cap Tech
+AAPL
+MSFT
+GOOGL
+AMZN
+META
+NVDA
+
+# Other Large Cap
+TSLA
+JPM
+V
+JNJ
+UNH
+
+# Growth Stocks
+CRM
+NFLX
+AMD
+SHOP

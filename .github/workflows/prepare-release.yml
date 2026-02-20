@@ -1,0 +1,118 @@
+name: Prepare and Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without v prefix (example: 1.0.0)"
+        required: true
+        type: string
+      ref:
+        description: "Git ref to release (branch, tag, or commit SHA)"
+        required: false
+        default: "main"
+        type: string
+      prerelease:
+        description: "Mark GitHub Release as prerelease"
+        required: false
+        default: false
+        type: boolean
+      confirm:
+        description: "Type RELEASE to confirm publish"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Gate / P${{ matrix.php }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        php: ["8.5", "8.4", "8.3", "8.2"]
+        stability: [prefer-lowest, prefer-stable]
+
+    steps:
+      - name: Validate release request
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.5' && matrix.stability == 'prefer-stable'
+        shell: bash
+        run: |
+          test "${{ inputs.confirm }}" = "RELEASE" || {
+            echo "confirm input must be exactly RELEASE"
+            exit 1
+          }
+          [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || {
+            echo "version must be semver-like (for example: 1.0.0)"
+            exit 1
+          }
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, xdebug
+          coverage: xdebug
+
+      - name: Composer validate (strict)
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+
+      - name: Security audit (canonical job only)
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.5' && matrix.stability == 'prefer-stable'
+        run: composer audit --format=plain
+
+      - name: Execute tests
+        run: vendor/bin/phpunit --coverage-clover coverage.xml
+
+  publish:
+    name: Publish Tag and GitHub Release
+    runs-on: ubuntu-latest
+    needs: gate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+
+      - name: Verify tag does not already exist
+        shell: bash
+        run: |
+          TAG="v${{ inputs.version }}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists on origin"
+            exit 1
+          fi
+
+      - name: Create and publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TAG="v${{ inputs.version }}"
+          FLAGS=""
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            FLAGS="${FLAGS} --prerelease"
+          fi
+
+          gh release create "${TAG}" \
+            --target "${{ inputs.ref }}" \
+            --title "${TAG}" \
+            --generate-notes \
+            ${FLAGS}

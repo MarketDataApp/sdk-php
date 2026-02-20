@@ -5,6 +5,8 @@ namespace MarketDataApp\Tests\Traits;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Trait for setting up mock responses in HTTP client tests.
@@ -22,11 +24,135 @@ trait MockResponses
      *
      * @return void
      */
-    private function setMockResponses(array $responses): void
+    protected function setMockResponses(array $responses): void
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
 
         $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
+    }
+
+    /**
+     * Set mock responses for the HTTP client with request history tracking.
+     *
+     * This method creates a new GuzzleHttp client with a mock handler
+     * and history middleware to capture all requests made.
+     *
+     * @param array $responses An array of mock responses to be returned by the client.
+     * @param array &$history  By-reference array that will be populated with request/response history.
+     *                         Each entry contains 'request', 'response', 'error', and 'options' keys.
+     *
+     * @return void
+     */
+    protected function setMockResponsesWithHistory(array $responses, array &$history): void
+    {
+        $mock = new MockHandler($responses);
+        $handlerStack = HandlerStack::create($mock);
+        $handlerStack->push(Middleware::history($history));
+
+        $this->client->setGuzzle(new GuzzleClient(['handler' => $handlerStack]));
+    }
+
+    /**
+     * Get a mocked response for the /user/ endpoint.
+     *
+     * This helper method provides a standard mock response for the /user/ endpoint
+     * with valid rate limit headers.
+     *
+     * @return Response A mocked response for the /user/ endpoint.
+     */
+    protected function getMockedUserEndpointResponse(): Response
+    {
+        $resetTimestamp = time() + 3600;
+        return new Response(200, [
+            'x-api-ratelimit-limit'     => ['100'],
+            'x-api-ratelimit-remaining' => ['99'],
+            'x-api-ratelimit-reset'     => [(string)$resetTimestamp],
+            'x-api-ratelimit-consumed'  => ['1'],
+        ], json_encode([]));
+    }
+
+    /**
+     * Original MARKETDATA_TOKEN environment variable values to restore after tests.
+     *
+     * @var array|null
+     */
+    private ?array $originalTokenState = null;
+
+    /**
+     * Save the original MARKETDATA_TOKEN environment variable state.
+     *
+     * This should be called in setUp() before clearMarketDataToken().
+     *
+     * @return void
+     */
+    protected function saveMarketDataTokenState(): void
+    {
+        $this->originalTokenState = [
+            'getenv' => getenv('MARKETDATA_TOKEN'),
+            '_ENV' => $_ENV['MARKETDATA_TOKEN'] ?? null,
+            '_SERVER' => $_SERVER['MARKETDATA_TOKEN'] ?? null,
+        ];
+    }
+
+    /**
+     * Restore the original MARKETDATA_TOKEN environment variable state.
+     *
+     * This should be called in tearDown() to restore the token for subsequent tests.
+     *
+     * @return void
+     */
+    protected function restoreMarketDataTokenState(): void
+    {
+        if ($this->originalTokenState === null) {
+            return;
+        }
+
+        if ($this->originalTokenState['getenv'] !== false) {
+            putenv('MARKETDATA_TOKEN=' . $this->originalTokenState['getenv']);
+        } else {
+            putenv('MARKETDATA_TOKEN');
+        }
+
+        if ($this->originalTokenState['_ENV'] !== null) {
+            $_ENV['MARKETDATA_TOKEN'] = $this->originalTokenState['_ENV'];
+        } else {
+            unset($_ENV['MARKETDATA_TOKEN']);
+        }
+
+        if ($this->originalTokenState['_SERVER'] !== null) {
+            $_SERVER['MARKETDATA_TOKEN'] = $this->originalTokenState['_SERVER'];
+        } else {
+            unset($_SERVER['MARKETDATA_TOKEN']);
+        }
+    }
+
+    /**
+     * Clear MARKETDATA_TOKEN environment variable to ensure empty token is used.
+     *
+     * This method clears the token from all possible locations where it might be set:
+     * - putenv()
+     * - $_ENV superglobal
+     * - $_SERVER superglobal
+     *
+     * This prevents real API calls during Client construction in unit tests by ensuring
+     * that an empty token is used, which causes _setup_rate_limits() to skip the /user/
+     * endpoint validation call.
+     *
+     * IMPORTANT: Call saveMarketDataTokenState() before this method, and
+     * restoreMarketDataTokenState() in tearDown() to prevent affecting other tests.
+     *
+     * @return void
+     */
+    protected function clearMarketDataToken(): void
+    {
+        // Clear putenv
+        putenv('MARKETDATA_TOKEN');
+        
+        // Clear $_ENV
+        unset($_ENV['MARKETDATA_TOKEN']);
+        
+        // Clear $_SERVER
+        unset($_SERVER['MARKETDATA_TOKEN']);
     }
 }
