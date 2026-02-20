@@ -29,17 +29,29 @@ trait ValidatesInputs
         if ($value === null) {
             return false;
         }
-        
-        // Check if it contains date-like separators (ISO 8601 or American format)
-        if (strpos($value, '-') !== false || strpos($value, '/') !== false) {
-            return true;
-        }
-        
+
         // Check if it's numeric (unix timestamp or spreadsheet format)
         if (is_numeric($value)) {
             return true;
         }
-        
+
+        // Check for specific date patterns (not just any string with - or /)
+        // ISO 8601: YYYY-MM-DD, YYYY-MM, YYYY/MM/DD
+        // American: MM/DD/YYYY, MM-DD-YYYY
+        // Relative: -5 days, +1 week (strtotime relative format)
+        $datePatterns = [
+            '/^\d{4}-\d{2}(-\d{2})?/',           // ISO: 2024-01-15 or 2024-01
+            '/^\d{4}\/\d{2}(\/\d{2})?/',         // ISO with slashes: 2024/01/15
+            '/^\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/', // American: 1/15/2024, 01-15-24
+            '/^[-+]\d+\s+(day|week|month|year)s?/i', // Relative: -5 days, +1 week
+        ];
+
+        foreach ($datePatterns as $pattern) {
+            if (preg_match($pattern, $value)) {
+                return true;
+            }
+        }
+
         return false;
     }
     
