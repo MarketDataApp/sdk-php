@@ -4,7 +4,7 @@
 
 ---
 
-## v1.0.0 (2026-01-24)
+## v1.0.0 (2026-02-20)
 
 **🎉 First Stable Release** - Production-ready PHP SDK for Market Data API with full feature parity with the Python SDK.
 
