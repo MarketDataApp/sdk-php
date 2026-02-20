@@ -518,4 +518,107 @@ class CandlesTest extends StocksTestCase
         $this->assertInstanceOf(Candles::class, $response);
         $this->assertCount(1, $response->candles);
     }
+
+    /**
+     * Test that candles handles mismatched array lengths in human-readable format (Issue #45 fix).
+     *
+     * When the API returns human-readable format with arrays of different lengths,
+     * the code should process only the entries where all fields are available.
+     *
+     * @return void
+     */
+    public function testCandles_humanReadable_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            'Date' => [1662004800, 1662091200, 1662177600],  // 3 items
+            'Open' => [156.64, 159.75, 160.00],              // 3 items
+            'High' => [158.42, 160.362],                     // 2 items (shorter)
+            'Low' => [154.67, 154.965, 155.00],              // 3 items
+            'Close' => [157.96, 155.81],                     // 2 items (shorter)
+            'Volume' => [74229896, 76807768, 80000000]       // 3 items
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 candles (the minimum array length)
+        $this->assertCount(2, $response->candles);
+        $this->assertEquals(156.64, $response->candles[0]->open);
+        $this->assertEquals(159.75, $response->candles[1]->open);
+    }
+
+    /**
+     * Test that candles handles mismatched array lengths in regular format (Issue #45 fix).
+     *
+     * When the API returns regular format with arrays of different lengths,
+     * the code should process only the entries where all fields are available.
+     *
+     * @return void
+     */
+    public function testCandles_regularFormat_mismatchedArrayLengths_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with mismatched lengths)
+        $mocked_response = [
+            's' => 'ok',
+            't' => [1662004800, 1662091200, 1662177600],  // 3 items
+            'o' => [156.64, 159.75, 160.00],              // 3 items
+            'h' => [158.42, 160.362],                     // 2 items (shorter)
+            'l' => [154.67, 154.965, 155.00],             // 3 items
+            'c' => [157.96, 155.81],                      // 2 items (shorter)
+            'v' => [74229896, 76807768, 80000000]         // 3 items
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D'
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        // Should only have 2 candles (the minimum array length)
+        $this->assertCount(2, $response->candles);
+    }
+
+    /**
+     * Test that candles handles empty Open array in human-readable format (Issue #45 fix).
+     *
+     * @return void
+     */
+    public function testCandles_humanReadable_emptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with empty arrays)
+        $mocked_response = [
+            'Date' => [],
+            'Open' => [],
+            'High' => [],
+            'Low' => [],
+            'Close' => [],
+            'Volume' => []
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-09-01',
+            to: '2022-09-05',
+            resolution: 'D',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(0, $response->candles);
+    }
 }

@@ -66,7 +66,15 @@ class Candles extends ResponseBase
             // Human-readable format - no "s" status field
             $this->status = 'ok';
 
-            $count = count($responseArray['Open']);
+            // Use minimum array length to prevent out-of-bounds access
+            $count = min(
+                count($responseArray['Open'] ?? []),
+                count($responseArray['High'] ?? []),
+                count($responseArray['Low'] ?? []),
+                count($responseArray['Close'] ?? []),
+                count($responseArray['Volume'] ?? []),
+                count($responseArray['Date'] ?? [])
+            );
             for ($i = 0; $i < $count; $i++) {
                 $this->candles[] = new Candle(
                     $responseArray['Open'][$i],
@@ -84,7 +92,16 @@ class Candles extends ResponseBase
 
             switch ($this->status) {
                 case 'ok':
-                    for ($i = 0; $i < count($response->o); $i++) {
+                    // Use minimum array length to prevent out-of-bounds access
+                    $count = min(
+                        count($response->o ?? []),
+                        count($response->h ?? []),
+                        count($response->l ?? []),
+                        count($response->c ?? []),
+                        count($response->v ?? []),
+                        count($response->t ?? [])
+                    );
+                    for ($i = 0; $i < $count; $i++) {
                         $this->candles[] = new Candle(
                             $response->o[$i],
                             $response->h[$i],
