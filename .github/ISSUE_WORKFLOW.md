@@ -55,16 +55,17 @@ Run through this checklist for every new bug report. All items in the "Required"
 
 | # | Criterion | How to Check | Pass | Fail |
 |---|-----------|--------------|------|------|
-| 1 | **Has reproduction code** | Look for code block in "Reproduction Code" field | Contains `<?php` or PHP code | Empty, pseudocode, or prose description only |
-| 2 | **Code is complete** | Check for autoloader and client instantiation | Has `require 'vendor/autoload.php'` (or equivalent) AND creates `Client` | Missing autoloader or client setup |
-| 3 | **Specifies SDK version** | Check "SDK Version" field | Version number present (e.g., `1.0.0`) | Empty or "latest" |
-| 4 | **Specifies PHP version** | Check "PHP Version" field | Version number present (e.g., `8.2.0`) | Empty or vague (e.g., "8.x") |
-| 5 | **Describes expected behavior** | Check "Expected Behavior" field | Clear statement of what should happen | Empty or unclear |
-| 6 | **Describes actual behavior** | Check "Actual Behavior" field | Clear statement of what happens, ideally with error message | Empty or unclear |
+| 1 | **API docs verified** | Check "API Documentation Verification" checkboxes | Both boxes checked | One or both unchecked |
+| 2 | **Has reproduction code** | Look for code block in "Reproduction Code" field | Contains `<?php` or PHP code | Empty, pseudocode, or prose description only |
+| 3 | **Code is complete** | Check for autoloader and client instantiation | Has `require 'vendor/autoload.php'` (or equivalent) AND creates `Client` | Missing autoloader or client setup |
+| 4 | **Specifies SDK version** | Check "SDK Version" field | Version number present (e.g., `1.0.0`) | Empty or "latest" |
+| 5 | **Specifies PHP version** | Check "PHP Version" field | Version number present (e.g., `8.2.0`) | Empty or vague (e.g., "8.x") |
+| 6 | **Describes expected behavior** | Check "Expected Behavior" field | Clear statement of what should happen | Empty or unclear |
+| 7 | **Describes actual behavior** | Check "Actual Behavior" field | Clear statement of what happens, ideally with error message | Empty or unclear |
 
 ### Validation Decision
 
-- **All 6 criteria pass** → Proceed to Step 2 (Reproduce)
+- **All 7 criteria pass** → Proceed to Step 2 (Reproduce)
 - **Any criterion fails** → Go to Step 4 (Request More Information)
 
 ---
@@ -89,6 +90,7 @@ Attempt to reproduce the reported behavior.
 | **Bug does not reproduce** - Code works correctly | → Step 3B (Cannot Reproduce) |
 | **Different error occurs** - Code fails but differently than reported | → Step 4 (Request More Information) |
 | **API error, not SDK error** - The API itself returns an error | → Step 3C (Not an SDK Bug) |
+| **Expected API behavior** - The SDK correctly returns what the API provides | → Step 3C (Not an SDK Bug) |
 | **User error in code** - The reproduction code has mistakes | → Step 3C (Not an SDK Bug) |
 
 ---
@@ -177,6 +179,22 @@ Thanks for the report. After investigation, this appears to be related to the Ma
 Closing this as it's outside the SDK's scope, but feel free to open a new issue if you find an SDK-specific problem.
 ```
 
+### Comment Template: Expected API Behavior
+
+```markdown
+Thanks for the report. After checking the [API documentation](https://www.marketdata.app/docs/api), this behavior is consistent with how the API is designed to work.
+
+**What you're seeing:**
+[Describe the behavior]
+
+**API documentation reference:**
+[Link to specific docs section or quote relevant documentation]
+
+The SDK returns data exactly as provided by the API. If you believe the API documentation is incorrect or the API should behave differently, please contact Market Data support or join the [Discord](https://discord.com/invite/GmdeAVRtnT).
+
+Closing this as working-as-designed.
+```
+
 ### Comment Template: User Error
 
 ~~~markdown
@@ -229,6 +247,7 @@ Thanks for the report. To investigate this issue, I need some additional informa
 
 [Select applicable items:]
 
+- [ ] **API documentation verification**: Please confirm you've checked the [API documentation](https://www.marketdata.app/docs/api) and that the behavior you're seeing differs from what's documented
 - [ ] **Complete reproduction code**: Please provide a full, runnable PHP script including the `require 'vendor/autoload.php'` line and client initialization
 - [ ] **SDK version**: Run `composer show marketdataapp/sdk-php` and provide the version number
 - [ ] **PHP version**: Run `php -v` and provide the version number
@@ -369,11 +388,11 @@ gh issue list --label "needs-info"
 - SDK Version: (empty)
 - PHP Version: 8.x
 
-**Action**: Fails criteria 1, 2, 3, 4, 5, 6 → Request more information with specific asks
+**Action**: Fails criteria 2, 3, 4, 5, 6, 7 → Request more information with specific asks
 
 ---
 
-### Example C: Not a Bug
+### Example C: Not a Bug (API Behavior)
 
 **Issue #44:**
 - Endpoint: `stocks`
@@ -387,3 +406,21 @@ gh issue list --label "needs-info"
 **After investigation**: The API returns regular session prices by default; after-hours requires a different endpoint or parameter.
 
 **Action**: Close as "Not an SDK Bug" (API behavior) with explanation and pointer to docs
+
+---
+
+### Example D: Expected API Behavior
+
+**Issue #45:**
+- Endpoint: `stocks`
+- Method: `earnings`
+- Reproduction code: Complete PHP script
+- Expected: "Percentage values should be like 5.2 for 5.2%"
+- Actual: "Returns 0.052 instead of 5.2"
+- SDK Version: 1.0.0
+- PHP Version: 8.3.0
+- API docs verified: Both checkboxes checked
+
+**After investigation**: The API documentation specifies that percentage fields are returned as decimal values (0.052 = 5.2%). The SDK correctly passes through the API response.
+
+**Action**: Close as "Expected API Behavior" with reference to API documentation

@@ -8,6 +8,19 @@ body:
       value: |
         Thanks for reporting a bug. Please fill out all required fields to help us reproduce and fix the issue.
 
+        **Important:** The SDK returns data exactly as the API provides it. Before reporting, please verify the behavior you're seeing differs from what the [API documentation](https://www.marketdata.app/docs/api) describes.
+
+  - type: checkboxes
+    id: api-docs-verified
+    attributes:
+      label: API Documentation Verification
+      description: Confirm you've checked the API documentation before reporting this as an SDK bug.
+      options:
+        - label: I have reviewed the [API documentation](https://www.marketdata.app/docs/api) for this endpoint
+          required: true
+        - label: The behavior I'm reporting differs from what the API documentation describes (not just unexpected to me)
+          required: true
+
   - type: dropdown
     id: endpoint
     attributes:
