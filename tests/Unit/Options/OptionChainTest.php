@@ -1200,6 +1200,52 @@ class OptionChainTest extends OptionsTestCase
     }
 
     /**
+     * Test that option_chain handles ok status with empty arrays in regular format (Issue #50 fix).
+     *
+     * When the API returns 'ok' status but with empty arrays, the code should
+     * handle this gracefully by producing an empty option_chains array.
+     */
+    public function testOptionChain_regularFormat_okStatusEmptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with empty arrays)
+        $mocked_response = [
+            's'               => 'ok',
+            'optionSymbol'    => [],
+            'underlying'      => [],
+            'expiration'      => [],
+            'side'            => [],
+            'strike'          => [],
+            'firstTraded'     => [],
+            'dte'             => [],
+            'updated'         => [],
+            'bid'             => [],
+            'bidSize'         => [],
+            'mid'             => [],
+            'ask'             => [],
+            'askSize'         => [],
+            'last'            => [],
+            'openInterest'    => [],
+            'volume'          => [],
+            'inTheMoney'      => [],
+            'intrinsicValue'  => [],
+            'extrinsicValue'  => [],
+            'underlyingPrice' => [],
+            'iv'              => [],
+            'delta'           => [],
+            'gamma'           => [],
+            'theta'           => [],
+            'vega'            => []
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->option_chain(symbol: 'AAPL');
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertEquals(0, $response->count());
+    }
+
+    /**
      * Test that option_chain handles mismatched array lengths in human-readable format (Issue #46 fix).
      *
      * When the API returns human-readable format with arrays of different lengths,
