@@ -12,6 +12,7 @@
 #   ./test-with-act.sh 8.2          # Quick test: PHP 8.2 only (prefer-stable)
 
 set -e
+set -o pipefail
 
 # Parse optional PHP version argument
 PHP_VERSION="${1:-}"
@@ -172,6 +173,14 @@ if [ $ACT_EXIT_CODE -ne 0 ]; then
     print_separator "❌ FAILED: Act workflow execution failed"
     echo -e "${RED}Exit code: $ACT_EXIT_CODE${NC}"
     exit $ACT_EXIT_CODE
+fi
+
+# Defensive check: fail if act output indicates any job/setup failures
+# even if the process exit code is unexpectedly 0.
+if grep -Eq "🏁  Job failed|❌  Failure - " "$OUTPUT_FILE"; then
+    print_separator "❌ FAILED: Act reported job/setup failures"
+    grep -E "🏁  Job failed|❌  Failure - " "$OUTPUT_FILE"
+    exit 1
 fi
 
 # Check for test failures
