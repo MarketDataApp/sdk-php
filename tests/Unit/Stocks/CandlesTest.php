@@ -419,11 +419,11 @@ class CandlesTest extends StocksTestCase
             new Response(200, [], json_encode(['s' => 'ok', 't' => [], 'o' => [], 'h' => [], 'l' => [], 'c' => [], 'v' => []])),
         ]);
 
-        // Relative dates should pass through without validation
+        // Valid relative date range (from is before to)
         $this->client->stocks->candles(
             symbol: 'AAPL',
-            from: 'today',
-            to: 'yesterday',
+            from: 'yesterday',
+            to: 'today',
             resolution: 'D'
         );
 

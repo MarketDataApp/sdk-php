@@ -55,30 +55,46 @@ class ValidatesInputsTest extends TestCase
     }
 
     /**
-     * Test canParseAsDate with relative dates.
-     * Note: Some relative dates like "-5 days" contain "-" so they return true,
-     * but that's okay - the date range validation will handle them correctly.
+     * Test canParseAsDate with relative dates supported by the API.
+     * See: https://www.marketdata.app/docs/api/dates-and-times
      */
-    public function testCanParseAsDate_relativeDates_mixedResults(): void
+    public function testCanParseAsDate_relativeDates_returnsTrue(): void
     {
-        // Relative dates without "-" or "/" return false
-        $this->assertFalse($this->invokeMethod('canParseAsDate', ['today']));
-        $this->assertFalse($this->invokeMethod('canParseAsDate', ['yesterday']));
-        $this->assertFalse($this->invokeMethod('canParseAsDate', ['2 weeks ago']));
-        $this->assertFalse($this->invokeMethod('canParseAsDate', ['last session']));
-        
-        // Relative dates with "-" return true (they can be parsed by strtotime)
-        // This is expected behavior - strtotime can handle "-5 days"
+        // Relative date keywords
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['today']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['yesterday']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['tomorrow']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['now']));
+
+        // Relative with +/- prefix
         $this->assertTrue($this->invokeMethod('canParseAsDate', ['-5 days']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['+1 week']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['-30 minutes']));
+
+        // "X ago" format
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['2 weeks ago']));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['5 days ago']));
+
+        // Non-API relative formats return false
+        $this->assertFalse($this->invokeMethod('canParseAsDate', ['last session']));
+        $this->assertFalse($this->invokeMethod('canParseAsDate', ['sometime']));
     }
 
     /**
-     * Test canParseAsDate with option expiration dates (should return false - not parseable).
+     * Test canParseAsDate with option expiration dates supported by the API.
+     * See: https://www.marketdata.app/docs/api/dates-and-times
      */
-    public function testCanParseAsDate_optionExpirationDates_returnsFalse(): void
+    public function testCanParseAsDate_optionExpirationDates_returnsCorrectly(): void
     {
+        // Supported expiration formats
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ["this month's expiration"]));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ["last week's expiration"]));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ["next months expiration"]));
+        $this->assertTrue($this->invokeMethod('canParseAsDate', ['expiration in 2 weeks']));
+
+        // Unsupported expiration formats
         $this->assertFalse($this->invokeMethod('canParseAsDate', ['December expiration']));
-        $this->assertFalse($this->invokeMethod('canParseAsDate', ["this month's expiration"]));
+        $this->assertFalse($this->invokeMethod('canParseAsDate', ['January 2025 expiration']));
     }
 
     /**
@@ -185,14 +201,26 @@ class ValidatesInputsTest extends TestCase
     }
 
     /**
-     * Test validateDateRange with relative dates (should not validate range).
+     * Test validateDateRange with valid relative date ranges.
      */
-    public function testValidateDateRange_relativeDates_noException(): void
+    public function testValidateDateRange_relativeDates_validRange_noException(): void
     {
         $this->expectNotToPerformAssertions();
-        // Relative dates should pass through without validation
+        // Valid relative date ranges (from is before to)
+        $this->invokeMethod('validateDateRange', ['yesterday', 'today', null]);
+        $this->invokeMethod('validateDateRange', ['-5 days', 'today', null]);
+        $this->invokeMethod('validateDateRange', ['2 weeks ago', 'yesterday', null]);
+    }
+
+    /**
+     * Test validateDateRange with invalid relative date ranges (backwards).
+     */
+    public function testValidateDateRange_relativeDates_invalidRange_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`from` date must be before `to` date');
+        // Invalid: today to yesterday is backwards
         $this->invokeMethod('validateDateRange', ['today', 'yesterday', null]);
-        $this->invokeMethod('validateDateRange', ['-5 days', '2 weeks ago', null]);
     }
 
     /**
@@ -211,9 +239,9 @@ class ValidatesInputsTest extends TestCase
     public function testValidateDateRange_mixedDates_noException(): void
     {
         $this->expectNotToPerformAssertions();
-        // When one is parseable and one is relative, should not validate range
+        // Valid mixed date ranges
         $this->invokeMethod('validateDateRange', ['2024-01-01', 'today', null]);
-        $this->invokeMethod('validateDateRange', ['yesterday', '2024-01-31', null]);
+        $this->invokeMethod('validateDateRange', ['2024-01-01', '2024-12-31', null]);
     }
 
     /**

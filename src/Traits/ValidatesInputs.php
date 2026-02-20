@@ -36,14 +36,23 @@ trait ValidatesInputs
         }
 
         // Check for specific date patterns (not just any string with - or /)
-        // ISO 8601: YYYY-MM-DD, YYYY-MM, YYYY/MM/DD
-        // American: MM/DD/YYYY, MM-DD-YYYY
-        // Relative: -5 days, +1 week (strtotime relative format)
+        // See: https://www.marketdata.app/docs/api/dates-and-times
         $datePatterns = [
-            '/^\d{4}-\d{2}(-\d{2})?/',           // ISO: 2024-01-15 or 2024-01
-            '/^\d{4}\/\d{2}(\/\d{2})?/',         // ISO with slashes: 2024/01/15
-            '/^\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/', // American: 1/15/2024, 01-15-24
-            '/^[-+]\d+\s+(day|week|month|year)s?/i', // Relative: -5 days, +1 week
+            // ISO 8601: YYYY-MM-DD, YYYY-MM, YYYY/MM/DD
+            '/^\d{4}-\d{2}(-\d{2})?/',
+            '/^\d{4}\/\d{2}(\/\d{2})?/',
+            // American: MM/DD/YYYY, MM-DD-YYYY
+            '/^\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/',
+            // Relative: -5 days, +1 week, -30 minutes
+            '/^[-+]\d+\s*(day|week|month|year|minute|hour)s?/i',
+            // Relative keywords: today, yesterday, tomorrow, now
+            '/^(today|yesterday|tomorrow|now)$/i',
+            // Relative: "X days ago", "X weeks ago"
+            '/^\d+\s+(day|week|month|year)s?\s+ago$/i',
+            // Option expiration: "this month's expiration", "next week's expiration"
+            '/^(this|last|next)\s+(month|week)\'?s?\s+expiration$/i',
+            // Option expiration: "expiration in X weeks"
+            '/^expiration\s+in\s+\d+\s+weeks?$/i',
         ];
 
         foreach ($datePatterns as $pattern) {
