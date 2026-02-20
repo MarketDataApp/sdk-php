@@ -375,7 +375,8 @@ class Stocks
         // Validate resolution
         $this->validateResolution($resolution);
 
-        $symbolsString = implode(',', array_map('trim', $symbols));
+        // Deduplicate and trim symbols to avoid redundant API calls
+        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
 
         $arguments = [
             'date' => $date,
@@ -847,7 +848,8 @@ class Stocks
         $this->validateSymbols($symbols);
 
         // Build comma-separated symbols string
-        $symbolsString = implode(',', array_map('trim', $symbols));
+        // Deduplicate and trim symbols to avoid redundant API calls
+        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
 
         $arguments = ['symbols' => $symbolsString];
         if ($fifty_two_week) {
@@ -913,7 +915,8 @@ class Stocks
             return new Prices($this->execute("prices/{$symbols}/", $arguments, $parameters));
         } else {
             // Multiple symbols: use query format prices/?symbols={comma-separated}
-            $symbolsString = implode(',', array_map('trim', $symbols));
+            // Deduplicate and trim symbols to avoid redundant API calls
+        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
             $arguments['symbols'] = $symbolsString;
             return new Prices($this->execute("prices/", $arguments, $parameters));
         }
