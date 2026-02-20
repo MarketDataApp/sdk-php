@@ -375,8 +375,8 @@ class Stocks
         // Validate resolution
         $this->validateResolution($resolution);
 
-        // Deduplicate and trim symbols to avoid redundant API calls
-        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
+        // Deduplicate, trim, and uppercase symbols to avoid redundant API calls
+        $symbolsString = implode(',', array_unique(array_map(fn($s) => strtoupper(trim($s)), $symbols)));
 
         $arguments = [
             'date' => $date,
@@ -847,8 +847,8 @@ class Stocks
         // Validate symbols array
         $this->validateSymbols($symbols);
 
-        // Deduplicate and trim symbols
-        $uniqueSymbols = array_values(array_unique(array_map('trim', $symbols)));
+        // Deduplicate, trim, and uppercase symbols
+        $uniqueSymbols = array_values(array_unique(array_map(fn($s) => strtoupper(trim($s)), $symbols)));
 
         // If only one symbol after deduplication, use single-symbol path (more efficient)
         if (count($uniqueSymbols) === 1) {
@@ -929,8 +929,8 @@ class Stocks
             return new Prices($this->execute("prices/{$symbols}/", $arguments, $parameters));
         } else {
             // Multiple symbols: use query format prices/?symbols={comma-separated}
-            // Deduplicate and trim symbols to avoid redundant API calls
-        $symbolsString = implode(',', array_unique(array_map('trim', $symbols)));
+            // Deduplicate, trim, and uppercase symbols to avoid redundant API calls
+        $symbolsString = implode(',', array_unique(array_map(fn($s) => strtoupper(trim($s)), $symbols)));
             $arguments['symbols'] = $symbolsString;
             return new Prices($this->execute("prices/", $arguments, $parameters));
         }
