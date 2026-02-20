@@ -1,6 +1,14 @@
 # Bug Finding Workflow
 
-This document defines a systematic process for proactively discovering bugs through codebase exploration and testing. Found bugs are reported via GitHub issues using the [bug template](https://github.com/MarketDataApp/sdk-php/issues/new?template=bug.yml).
+This document defines a systematic process for proactively discovering bugs through codebase exploration and testing.
+
+> **IMPORTANT: Every bug found MUST be submitted as a GitHub issue.**
+>
+> Do NOT just document bugs in markdown files, notes, or comments. Each bug you find must result in an actual GitHub issue created via:
+> - **CLI**: `gh issue create --label "bug" --title "[Bug]: ..." --body "..."`
+> - **Web**: [Create Bug Report](https://github.com/MarketDataApp/sdk-php/issues/new?template=bug.yml)
+>
+> A bug hunt is not complete until all discovered bugs exist as GitHub issues.
 
 ## Overview
 
@@ -9,7 +17,9 @@ This document defines a systematic process for proactively discovering bugs thro
 - **BUG_FINDING.md** (this document): Find bugs before users encounter them
 - **ISSUE_WORKFLOW.md**: Process bug reports submitted by users
 
-**Workflow**: Find Bug → Create Issue → [ISSUE_WORKFLOW.md] → Fix
+**Workflow**: Find Bug → **Create GitHub Issue (REQUIRED)** → [ISSUE_WORKFLOW.md] → Fix
+
+Each bug found MUST result in a GitHub issue. No exceptions.
 
 **When to use this document**:
 - QA passes before releases
@@ -496,9 +506,11 @@ $mixed = $client->stocks->candles('AaPl', '1D', from: '2024-01-02', to: '2024-01
 
 ## Bug Documentation
 
-When you find a bug, capture these details:
+When you find a bug, you MUST create a GitHub issue for it. Do not just document it in a file or note.
 
 ### Required Information
+
+Capture these details for each bug:
 
 1. **Minimal reproduction code** - Smallest code that demonstrates the bug
 2. **Expected behavior** - What should happen
@@ -508,11 +520,56 @@ When you find a bug, capture these details:
    - PHP version: `php -v`
    - OS: macOS/Windows/Linux
 
-### Submission
+### Creating the GitHub Issue (REQUIRED)
+
+**Option 1: CLI (Preferred)**
+
+```bash
+gh issue create --label "bug" --title "[Bug]: Brief description" --body "$(cat <<'EOF'
+## API Documentation Verification
+- [x] I have reviewed the [API documentation](https://www.marketdata.app/docs/api) for this endpoint
+- [x] The behavior I'm reporting differs from what the API documentation describes
+
+## SDK Endpoint
+stocks
+
+## Method
+candles
+
+## Reproduction Code
+```php
+<?php
+// Your minimal reproduction code here
+```
+
+## Expected Behavior
+What should happen
+
+## Actual Behavior
+What actually happens (include error messages)
+
+## SDK Version
+1.0.0
+
+## PHP Version
+8.2+
+
+## Additional Context
+Found via BUG_FINDING.md [Area N]
+
+Location: `src/path/to/file.php:LINE`
+EOF
+)"
+```
+
+**Option 2: Web Form**
 
 1. Go to [Create Bug Report](https://github.com/MarketDataApp/sdk-php/issues/new?template=bug.yml)
-2. Fill out all fields with captured information
+2. Fill out ALL fields with captured information
 3. In "Additional Context", note: `Found via BUG_FINDING.md [Area N]`
+4. Click "Submit new issue"
+
+> **The bug hunt is NOT complete until the GitHub issue URL exists.** Documenting bugs in markdown files, notes, or any other format is NOT a substitute for creating the actual issue.
 
 ### Example Bug Report
 
@@ -617,3 +674,16 @@ php exploration-test.php > output.txt 2>&1
 
 - [Bug Report Template](https://github.com/MarketDataApp/sdk-php/issues/new?template=bug.yml)
 - [Issue Workflow (for processing bugs)](ISSUE_WORKFLOW.md)
+
+---
+
+## Completion Checklist
+
+Before considering a bug hunt complete, verify:
+
+- [ ] All discovered bugs have been created as GitHub issues (not just documented)
+- [ ] Each issue has a URL (e.g., `https://github.com/MarketDataApp/sdk-php/issues/123`)
+- [ ] Each issue follows the bug template format
+- [ ] Each issue includes `Found via BUG_FINDING.md [Area N]` in Additional Context
+
+**If you documented bugs but did not create GitHub issues, the bug hunt is NOT complete. Go back and create the issues now.**
