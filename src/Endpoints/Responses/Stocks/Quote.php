@@ -145,16 +145,16 @@ class Quote extends ResponseBase
             }
             $this->status = 'ok'; // Human-readable format always returns data when successful
             $this->symbol = $responseArray['Symbol'][0];
-            $this->ask = $responseArray['Ask'][0];
-            $this->ask_size = $responseArray['Ask Size'][0];
-            $this->bid = $responseArray['Bid'][0];
-            $this->bid_size = $responseArray['Bid Size'][0];
-            $this->mid = $responseArray['Mid'][0];
-            $this->last = $responseArray['Last'][0];
-            $this->change = $responseArray['Change $'][0];
-            $this->change_percent = $responseArray['Change %'][0];
-            $this->volume = $responseArray['Volume'][0];
-            $this->updated = Carbon::parse($responseArray['Date'][0]);
+            $this->ask = $responseArray['Ask'][0] ?? null;
+            $this->ask_size = $responseArray['Ask Size'][0] ?? null;
+            $this->bid = $responseArray['Bid'][0] ?? null;
+            $this->bid_size = $responseArray['Bid Size'][0] ?? null;
+            $this->mid = $responseArray['Mid'][0] ?? null;
+            $this->last = $responseArray['Last'][0] ?? null;
+            $this->change = $responseArray['Change $'][0] ?? null;
+            $this->change_percent = $responseArray['Change %'][0] ?? null;
+            $this->volume = $responseArray['Volume'][0] ?? null;
+            $this->updated = isset($responseArray['Date'][0]) ? Carbon::parse($responseArray['Date'][0]) : null;
 
             // 52-week high/low may not be present in human-readable format
             // Check if they exist (API returns "52 Week High" with space)

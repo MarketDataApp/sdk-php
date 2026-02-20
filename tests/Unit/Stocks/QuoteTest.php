@@ -546,6 +546,84 @@ class QuoteTest extends StocksTestCase
     }
 
     /**
+     * Test that quote handles partial data in human-readable format (Issue #44 fix).
+     *
+     * When the API returns human-readable format with Symbol populated but other
+     * fields empty or missing, the code should handle this gracefully instead
+     * of throwing "Undefined array key 0".
+     *
+     * @return void
+     */
+    public function testQuote_humanReadable_partialData_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic partial data)
+        $mocked_response = [
+            'Symbol' => ['AAPL'],
+            'Ask' => [],  // Empty array
+            'Ask Size' => [],
+            'Bid' => [],
+            'Bid Size' => [],
+            'Mid' => [],
+            'Last' => [],
+            'Change $' => [],
+            'Change %' => [],
+            'Volume' => [],
+            'Date' => []
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('ok', $quote->status);
+        $this->assertEquals('AAPL', $quote->symbol);
+        $this->assertNull($quote->ask);
+        $this->assertNull($quote->ask_size);
+        $this->assertNull($quote->bid);
+        $this->assertNull($quote->bid_size);
+        $this->assertNull($quote->mid);
+        $this->assertNull($quote->last);
+        $this->assertNull($quote->change);
+        $this->assertNull($quote->change_percent);
+        $this->assertNull($quote->volume);
+        $this->assertNull($quote->updated);
+    }
+
+    /**
+     * Test that quote handles missing keys in human-readable format (Issue #44 fix).
+     *
+     * When the API returns human-readable format with Symbol populated but other
+     * keys missing entirely, the code should handle this gracefully.
+     *
+     * @return void
+     */
+    public function testQuote_humanReadable_missingKeys_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic partial data with missing keys)
+        $mocked_response = [
+            'Symbol' => ['AAPL'],
+            // All other keys missing entirely
+        ];
+        $this->setMockResponses([
+            new Response(200, [], json_encode($mocked_response)),
+        ]);
+        $quote = $this->client->stocks->quote(
+            'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Quote::class, $quote);
+        $this->assertEquals('ok', $quote->status);
+        $this->assertEquals('AAPL', $quote->symbol);
+        $this->assertNull($quote->ask);
+        $this->assertNull($quote->bid);
+    }
+
+    /**
      * Test that quote handles missing 's' status field in regular format (BUG-051 fix).
      *
      * When the API returns a malformed response without the 's' status field,
