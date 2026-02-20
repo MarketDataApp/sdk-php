@@ -2,6 +2,7 @@
 
 namespace MarketDataApp;
 
+use Composer\InstalledVersions;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
@@ -43,7 +44,12 @@ abstract class ClientBase
     public const API_HOST = "api.marketdata.app";
 
     /**
-     * SDK version for User-Agent header.
+     * Composer package name for this SDK.
+     */
+    public const PACKAGE_NAME = 'marketdataapp/sdk-php';
+
+    /**
+     * Fallback SDK version for User-Agent header.
      */
     public const VERSION = '1.0.0';
 
@@ -1028,7 +1034,7 @@ abstract class ClientBase
     {
         return [
             'Host'          => self::API_HOST,
-            'User-Agent'    => 'marketdata-sdk-php/' . self::VERSION,
+            'User-Agent'    => self::getUserAgent(),
             'Accept'        => match ($format) {
                 'json' => 'application/json',
                 'csv' => 'text/csv',
@@ -1036,6 +1042,34 @@ abstract class ClientBase
             },
             'Authorization' => "Bearer $this->token",
         ];
+    }
+
+    /**
+     * Resolve SDK version from Composer metadata when available.
+     */
+    public static function getVersion(): string
+    {
+        try {
+            if (!class_exists(InstalledVersions::class)) {
+                return self::VERSION;
+            }
+
+            if (!InstalledVersions::isInstalled(self::PACKAGE_NAME)) {
+                return self::VERSION;
+            }
+
+            return InstalledVersions::getPrettyVersion(self::PACKAGE_NAME) ?? self::VERSION;
+        } catch (\Throwable $e) {
+            return self::VERSION;
+        }
+    }
+
+    /**
+     * Build SDK User-Agent value.
+     */
+    public static function getUserAgent(): string
+    {
+        return 'marketdata-sdk-php/' . self::getVersion();
     }
 
     /**

@@ -85,14 +85,15 @@ class UserAgentTest extends TestCase
     }
 
     /**
-     * Test that VERSION constant is defined and has correct value.
+     * Test that version and User-Agent helpers produce expected format.
      *
      * @return void
      */
-    public function testVersionConstant_defined(): void
+    public function testVersionHelpers_defined(): void
     {
         $this->assertTrue(defined(ClientBase::class . '::VERSION'));
-        $this->assertEquals('1.0.0', ClientBase::VERSION);
+        $this->assertNotEmpty(ClientBase::getVersion());
+        $this->assertStringStartsWith('marketdata-sdk-php/', ClientBase::getUserAgent());
     }
 
     /**
@@ -133,9 +134,9 @@ class UserAgentTest extends TestCase
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present');
         $this->assertCount(1, $headers['User-Agent'], 'User-Agent header should have one value');
         
-        // Verify User-Agent format: marketdata-sdk-php/1.0.0 (RFC 7231 format)
+        // Verify User-Agent format: marketdata-sdk-php/{version} (RFC 7231 format)
         $userAgent = $headers['User-Agent'][0];
-        $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent, 
+        $this->assertEquals(ClientBase::getUserAgent(), $userAgent, 
             'User-Agent should follow RFC 7231 format: product/product-version');
     }
 
@@ -178,7 +179,7 @@ class UserAgentTest extends TestCase
         
         // Verify User-Agent header is present
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present in async request');
-        $this->assertEquals('marketdata-sdk-php/1.0.0', $headers['User-Agent'][0],
+        $this->assertEquals(ClientBase::getUserAgent(), $headers['User-Agent'][0],
             'User-Agent should follow RFC 7231 format in async requests');
     }
 
@@ -209,7 +210,7 @@ class UserAgentTest extends TestCase
         
         // Verify User-Agent header is present
         $this->assertArrayHasKey('User-Agent', $headers, 'User-Agent header should be present in raw request');
-        $this->assertEquals('marketdata-sdk-php/1.0.0', $headers['User-Agent'][0],
+        $this->assertEquals(ClientBase::getUserAgent(), $headers['User-Agent'][0],
             'User-Agent should follow RFC 7231 format in raw requests');
     }
 
@@ -267,17 +268,17 @@ class UserAgentTest extends TestCase
         $userAgent = $request->getHeaderLine('User-Agent');
         
         // RFC 7231 format: product/product-version (with slash separator)
-        // Should NOT be: marketdata-sdk-php-1.0.0 (missing slash - incorrect format)
-        // Should be: marketdata-sdk-php/1.0.0 (with slash - correct format)
+        // Should NOT be: marketdata-sdk-php-<version> (missing slash - incorrect format)
+        // Should be: marketdata-sdk-php/<version> (with slash - correct format)
         $this->assertStringContainsString('/', $userAgent, 
             'User-Agent should contain slash separator per RFC 7231');
         $this->assertStringStartsWith('marketdata-sdk-php/', $userAgent,
             'User-Agent should start with product name and slash');
-        $this->assertStringEndsWith(ClientBase::VERSION, $userAgent,
+        $this->assertStringEndsWith(ClientBase::getVersion(), $userAgent,
             'User-Agent should end with version number');
         
-        // Verify format: exactly "marketdata-sdk-php/1.0.0"
-        $this->assertEquals('marketdata-sdk-php/' . ClientBase::VERSION, $userAgent,
+        // Verify format: exactly "marketdata-sdk-php/{version}"
+        $this->assertEquals('marketdata-sdk-php/' . ClientBase::getVersion(), $userAgent,
             'User-Agent format should be: marketdata-sdk-php/{version}');
     }
 
@@ -334,7 +335,7 @@ class UserAgentTest extends TestCase
         foreach ($this->history as $index => $transaction) {
             $request = $transaction['request'];
             $userAgent = $request->getHeaderLine('User-Agent');
-            $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent,
+            $this->assertEquals(ClientBase::getUserAgent(), $userAgent,
                 "User-Agent should be present in request #{$index}");
         }
     }
@@ -409,7 +410,7 @@ class UserAgentTest extends TestCase
         foreach ($this->history as $index => $transaction) {
             $request = $transaction['request'];
             $userAgent = $request->getHeaderLine('User-Agent');
-            $this->assertEquals('marketdata-sdk-php/1.0.0', $userAgent,
+            $this->assertEquals(ClientBase::getUserAgent(), $userAgent,
                 "User-Agent should be present in parallel request #{$index}");
         }
     }
@@ -449,7 +450,7 @@ class UserAgentTest extends TestCase
         $this->client->stocks->quote('GOOGL');
 
         // Verify all requests have the same User-Agent
-        $expectedUserAgent = 'marketdata-sdk-php/' . ClientBase::VERSION;
+        $expectedUserAgent = ClientBase::getUserAgent();
         foreach ($this->history as $index => $transaction) {
             $request = $transaction['request'];
             $userAgent = $request->getHeaderLine('User-Agent');
