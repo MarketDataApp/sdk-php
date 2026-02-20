@@ -711,7 +711,8 @@ class Stocks
                         $firstNewline = strpos($csv, "\n");
                         if ($firstNewline !== false) {
                             $firstLine = substr($csv, 0, $firstNewline);
-                            if ($firstLine === $headerRow) {
+                            // Trim whitespace for robust comparison
+                            if (trim($firstLine) === trim($headerRow)) {
                                 // Skip the header row
                                 $csv = substr($csv, $firstNewline + 1);
                             }
