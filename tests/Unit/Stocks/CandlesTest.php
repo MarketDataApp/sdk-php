@@ -592,6 +592,40 @@ class CandlesTest extends StocksTestCase
     }
 
     /**
+     * Test that candles handles ok status with empty arrays in regular format (Issue #49 fix).
+     *
+     * When the API returns 'ok' status but with empty arrays, the code should
+     * handle this gracefully by producing an empty candles array.
+     *
+     * @return void
+     */
+    public function testCandles_regularFormat_okStatusEmptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with empty arrays)
+        $mocked_response = [
+            's' => 'ok',
+            't' => [],
+            'o' => [],
+            'h' => [],
+            'l' => [],
+            'c' => [],
+            'v' => []
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '1900-01-01',
+            to: '1900-01-02',
+            resolution: 'D'
+        );
+
+        $this->assertInstanceOf(Candles::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(0, $response->candles);
+    }
+
+    /**
      * Test that candles handles empty Open array in human-readable format (Issue #45 fix).
      *
      * @return void
