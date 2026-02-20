@@ -68,14 +68,17 @@ class Strikes extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             $this->status = 'ok';
-            
+
             foreach ($responseArray as $key => $value) {
                 if ($key === 'Date') {
                     $this->updated = Carbon::parse($value);
                     continue;
                 }
-                // All other keys are date keys with strike arrays
-                $this->dates[$key] = $value;
+                // Only include keys that look like dates (YYYY-MM-DD format)
+                // to avoid including unintended metadata fields
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $key) && is_array($value)) {
+                    $this->dates[$key] = $value;
+                }
             }
         } else {
             // Regular format
@@ -84,14 +87,18 @@ class Strikes extends ResponseBase
             switch ($this->status) {
                 case 'ok':
                     foreach ($response as $key => $value) {
-                        if (in_array($key, ['s', 'updated'])) {
-                            if ($key === 'updated') {
-                                $this->updated = Carbon::parse($value);
-                            }
+                        if ($key === 's') {
                             continue;
                         }
-
-                        $this->dates[$key] = $value;
+                        if ($key === 'updated') {
+                            $this->updated = Carbon::parse($value);
+                            continue;
+                        }
+                        // Only include keys that look like dates (YYYY-MM-DD format)
+                        // to avoid including unintended metadata fields
+                        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $key) && is_array($value)) {
+                            $this->dates[$key] = $value;
+                        }
                     }
                     break;
 

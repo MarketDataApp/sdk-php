@@ -163,4 +163,68 @@ class StrikesTest extends OptionsTestCase
         $this->assertNull($response->next_time);
         $this->assertNull($response->prev_time);
     }
+
+    /**
+     * Test that strikes ignores unknown metadata keys in regular format (Issue #51 fix).
+     *
+     * When the API returns additional metadata fields, they should not be
+     * included in the dates array.
+     */
+    public function testStrikes_regularFormat_ignoresUnknownKeys(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with unknown keys)
+        $mocked_response = [
+            's'          => 'ok',
+            'updated'    => 1663704000,
+            '2023-01-20' => [30.0, 35.0],
+            'Version'    => '1.0',  // Unknown metadata field - should be ignored
+            'RequestId'  => 'abc123',  // Unknown metadata field - should be ignored
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: '2023-01-20',
+            date: '2023-01-03'
+        );
+
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->dates);
+        $this->assertArrayHasKey('2023-01-20', $response->dates);
+        $this->assertArrayNotHasKey('Version', $response->dates);
+        $this->assertArrayNotHasKey('RequestId', $response->dates);
+    }
+
+    /**
+     * Test that strikes ignores unknown metadata keys in human-readable format (Issue #51 fix).
+     *
+     * When the API returns additional metadata fields, they should not be
+     * included in the dates array.
+     */
+    public function testStrikes_humanReadable_ignoresUnknownKeys(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with unknown keys)
+        $mocked_response = [
+            '2023-01-20' => [30.0, 35.0],
+            'Date'       => 1663704000,
+            'Version'    => '1.0',  // Unknown metadata field - should be ignored
+            'Updated'    => 1663704001,  // Similar to Date, should be ignored
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->strikes(
+            symbol: 'AAPL',
+            expiration: '2023-01-20',
+            date: '2023-01-03',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->dates);
+        $this->assertArrayHasKey('2023-01-20', $response->dates);
+        $this->assertArrayNotHasKey('Version', $response->dates);
+        $this->assertArrayNotHasKey('Updated', $response->dates);
+    }
 }
