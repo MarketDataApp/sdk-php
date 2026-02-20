@@ -397,6 +397,41 @@ class EarningsTest extends StocksTestCase
     }
 
     /**
+     * Test that earnings handles ok status with empty arrays in regular format (Issue #48 fix).
+     *
+     * When the API returns 'ok' status but with empty arrays, the code should
+     * handle this gracefully by producing an empty earnings array.
+     *
+     * @return void
+     */
+    public function testEarnings_regularFormat_okStatusEmptyArrays_handledGracefully(): void
+    {
+        // Mock response: NOT from real API output (synthetic data with empty arrays)
+        $mocked_response = [
+            's' => 'ok',
+            'symbol' => [],
+            'fiscalYear' => [],
+            'fiscalQuarter' => [],
+            'date' => [],
+            'reportDate' => [],
+            'reportTime' => [],
+            'currency' => [],
+            'reportedEPS' => [],
+            'estimatedEPS' => [],
+            'surpriseEPS' => [],
+            'surpriseEPSpct' => [],
+            'updated' => []
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '1900-01-01', to: '1900-01-02');
+
+        $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(0, $response->earnings);
+    }
+
+    /**
      * Test that earnings handles mismatched array lengths in regular format (Issue #48 fix).
      *
      * When the API returns regular format with arrays of different lengths,
