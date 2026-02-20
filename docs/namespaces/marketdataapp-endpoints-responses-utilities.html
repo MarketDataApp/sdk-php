@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -136,7 +144,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatus">ApiStatus</abbr></a></dt><dd>Represents the status of the API and its services.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\Headers">Headers</abbr></a></dt><dd>Represents the headers of an API response.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus">ServiceStatus</abbr></a></dt><dd>Represents the status of a service.</dd>    </dl>
+                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatus">ApiStatus</abbr></a></dt><dd>Represents the status of the API and its services.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a></dt><dd>Manages API status caching and provides service status checking.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\Headers">Headers</abbr></a></dt><dd>Represents the headers of an API response.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus">ServiceStatus</abbr></a></dt><dd>Represents the status of a service.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-User.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\User">User</abbr></a></dt><dd>Represents user/rate limit information from the API.</dd>    </dl>
 
 
 
@@ -184,6 +192,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -141,7 +149,7 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">18</span>
+    <span class="phpdocumentor-element-found-in__line">19</span>
 
     </aside>
 
@@ -149,15 +157,13 @@
 
 
     <section class="phpdocumentor-description"><p>This class provides access to various endpoints of the Market Data API,
-including indices, stocks, options, markets, mutual funds, and utilities.</p>
+including stocks, options, markets, mutual funds, and utilities.</p>
 </section>
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Client.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -190,6 +196,20 @@ including indices, stocks, options, markets, mutual funds, and utilities.</p>
 </dt>
 <dd>The base URL for the Market Data API.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -constant -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#constant_PACKAGE_NAME">PACKAGE_NAME</a>
+    <span>
+        &nbsp;= &#039;marketdataapp/sdk-php&#039;                            </span>
+</dt>
+<dd>Composer package name for this SDK.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -constant -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#constant_VERSION">VERSION</a>
+    <span>
+        &nbsp;= &#039;1.0.0&#039;                            </span>
+</dt>
+<dd>Fallback SDK version for User-Agent header.</dd>
+
     </dl>
 
 
@@ -200,12 +220,16 @@ including indices, stocks, options, markets, mutual funds, and utilities.</p>
 </h4>
 <dl class="phpdocumentor-table-of-contents">
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
-    <a class="" href="classes/MarketDataApp-Client.html#property_indices">$indices</a>
+    <a class="" href="classes/MarketDataApp-ClientBase.html#property_default_params">$default_params</a>
     <span>
-                        &nbsp;: <a href="classes/MarketDataApp-Endpoints-Indices.html"><abbr title="\MarketDataApp\Endpoints\Indices">Indices</abbr></a>            </span>
+                        &nbsp;: <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>            </span>
 </dt>
-<dd>The index endpoints provided by the Market Data API offer access to both real-time and historical data related to
-financial indices. These endpoints are designed to cater to a wide range of financial data needs.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#property_logger">$logger</a>
+    <span>
+                        &nbsp;: <abbr title="\Psr\Log\LoggerInterface">LoggerInterface</abbr>            </span>
+</dt>
 
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Client.html#property_markets">$markets</a>
@@ -230,6 +254,12 @@ financial indices. These endpoints are designed to cater to a wide range of fina
 around options data. These endpoints are designed to be flexible and robust, supporting both real-time
 and historical data queries. They accommodate a wide range of optional parameters for detailed data
 retrieval, making the Market Data API a versatile tool for options traders and financial analysts.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#property_rate_limits">$rate_limits</a>
+    <span>
+                        &nbsp;: <a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a>|null            </span>
+</dt>
 
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Client.html#property_stocks">$stocks</a>
@@ -278,14 +308,42 @@ uptime.</dd>
     <span>
                                 &nbsp;: object    </span>
 </dt>
-<dd>Execute a single API request.</dd>
+<dd>Execute a single API request with retry logic.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-ClientBase.html#method_execute_in_parallel">execute_in_parallel()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Execute multiple API calls in parallel.</dd>
+<dd>Execute multiple API calls in parallel with concurrency limiting.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_extractRateLimitsFromResponse">extractRateLimitsFromResponse()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a>|null    </span>
+</dt>
+<dd>Extract rate limit information from response headers.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_getUserAgent">getUserAgent()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Build SDK User-Agent value.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_getVersion">getVersion()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Resolve SDK version from Composer metadata when available.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_makeRawRequest">makeRawRequest()</a>
+    <span>
+                                &nbsp;: <abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>    </span>
+</dt>
+<dd>Make a raw API request and return the response object.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-ClientBase.html#method_setGuzzle">setGuzzle()</a>
@@ -294,12 +352,54 @@ uptime.</dd>
 </dt>
 <dd>Set a custom Guzzle client.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_validateResponseStatusCode">validateResponseStatusCode()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Validate response status code and raise appropriate exceptions.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method__setup_rate_limits">_setup_rate_limits()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Set up initial rate limits by fetching from the /user/ endpoint.</dd>
+
             <dt class="phpdocumentor-table-of-contents__entry -method -protected">
     <a class="" href="classes/MarketDataApp-ClientBase.html#method_async">async()</a>
     <span>
                                 &nbsp;: <abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr>    </span>
 </dt>
-<dd>Perform an asynchronous API request.</dd>
+<dd>Perform an asynchronous API request with retry logic.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_calculateBackoffDelay">calculateBackoffDelay()</a>
+    <span>
+                                &nbsp;: float    </span>
+</dt>
+<dd>Calculate exponential backoff delay.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_createDelayedPromise">createDelayedPromise()</a>
+    <span>
+                                &nbsp;: <abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr>    </span>
+</dt>
+<dd>Create a promise that resolves after a delay.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_getErrorMessage">getErrorMessage()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Get error message from response.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_getServicePath">getServicePath()</a>
+    <span>
+                                &nbsp;: string|null    </span>
+</dt>
+<dd>Get service path from method path using hardcoded mapping.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -protected">
     <a class="" href="classes/MarketDataApp-ClientBase.html#method_headers">headers()</a>
@@ -307,6 +407,48 @@ uptime.</dd>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
 <dd>Generate headers for API requests.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_isInternalRequest">isInternalRequest()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Check if a URL is for an internal request.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_logRequest">logRequest()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Log a completed HTTP request.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_processResponse">processResponse()</a>
+    <span>
+                                &nbsp;: object    </span>
+</dt>
+<dd>Process the response and return the appropriate object.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_shouldSkipRetryDueToOfflineService">shouldSkipRetryDueToOfflineService()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Check if service is offline and should skip retries.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-ClientBase.html#method_waitForRetry">waitForRetry()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Wait for retry with exponential backoff.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -private">
+    <a class="" href="classes/MarketDataApp-Client.html#method_obfuscateToken">obfuscateToken()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Obfuscate token for logging - show full length with asterisks, last 4 chars visible.</dd>
 
     </dl>
 
@@ -329,7 +471,7 @@ uptime.</dd>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">28</span>
+    <span class="phpdocumentor-element-found-in__line">44</span>
 
     </aside>
 
@@ -348,9 +490,8 @@ uptime.</dd>
     
     
 
-    
-
-</article>
+        
+    </article>
                     <article class="phpdocumentor-element -constant -public ">
     <h4 class="phpdocumentor-element__name" id="constant_API_URL">
         API_URL
@@ -361,7 +502,7 @@ uptime.</dd>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">23</span>
+    <span class="phpdocumentor-element-found-in__line">39</span>
 
     </aside>
 
@@ -380,9 +521,70 @@ uptime.</dd>
     
     
 
+        
+    </article>
+                    <article class="phpdocumentor-element -constant -public ">
+    <h4 class="phpdocumentor-element__name" id="constant_PACKAGE_NAME">
+        PACKAGE_NAME
+        <a href="classes/MarketDataApp-ClientBase.html#constant_PACKAGE_NAME" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">49</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Composer package name for this SDK.</p>
+
+    
+    <code class="phpdocumentor-signature phpdocumentor-code ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+        <span class="phpdocumentor-signature__type">mixed</span>
+    <span class="phpdocumentor-signature__name">PACKAGE_NAME</span>
+    = <span class="phpdocumentor-signature__default-value">&#039;marketdataapp/sdk-php&#039;</span>
+</code>
+
+
+    
+    
     
 
-</article>
+        
+    </article>
+                    <article class="phpdocumentor-element -constant -public ">
+    <h4 class="phpdocumentor-element__name" id="constant_VERSION">
+        VERSION
+        <a href="classes/MarketDataApp-ClientBase.html#constant_VERSION" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">54</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Fallback SDK version for User-Agent header.</p>
+
+    
+    <code class="phpdocumentor-signature phpdocumentor-code ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+        <span class="phpdocumentor-signature__type">mixed</span>
+    <span class="phpdocumentor-signature__name">VERSION</span>
+    = <span class="phpdocumentor-signature__default-value">&#039;1.0.0&#039;</span>
+</code>
+
+
+    
+    
+    
+
+        
+    </article>
             </section>
 
         
@@ -397,37 +599,40 @@ uptime.</dd>
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
-    <h4 class="phpdocumentor-element__name" id="property_indices">
-        $indices
-        <a href="classes/MarketDataApp-Client.html#property_indices" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="property_default_params">
+        $default_params
+        <a href="classes/MarketDataApp-ClientBase.html#property_default_params" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">27</span>
+    <span class="phpdocumentor-element-found-in__line">77</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">The index endpoints provided by the Market Data API offer access to both real-time and historical data related to
-financial indices. These endpoints are designed to cater to a wide range of financial data needs.</p>
-
+    
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Indices.html"><abbr title="\MarketDataApp\Endpoints\Indices">Indices</abbr></a></span>
-    <span class="phpdocumentor-signature__name">$indices</span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a></span>
+    <span class="phpdocumentor-signature__name">$default_params</span>
     </code>
 
     
-    
-    
+        <section class="phpdocumentor-description"><p>Default universal parameters for all API requests.
+Can be modified programmatically: $client-&gt;default_params-&gt;format = Format::CSV;
+Method-level parameters override these defaults.</p>
+</section>
 
     
+
+        
+        
 
 </article>
                     <article
@@ -435,14 +640,91 @@ financial indices. These endpoints are designed to cater to a wide range of fina
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_logger">
+        $logger
+        <a href="classes/MarketDataApp-ClientBase.html#property_logger" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">82</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\Psr\Log\LoggerInterface">LoggerInterface</abbr></span>
+    <span class="phpdocumentor-signature__name">$logger</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>PSR-3 logger instance for request logging.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_markets">
         $markets
         <a href="classes/MarketDataApp-Client.html#property_markets" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">44</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">The Markets endpoints provide reference and status data about the markets covered by Market Data.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Markets.html"><abbr title="\MarketDataApp\Endpoints\Markets">Markets</abbr></a></span>
+    <span class="phpdocumentor-signature__name">$markets</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_mutual_funds">
+        $mutual_funds
+        <a href="classes/MarketDataApp-Client.html#property_mutual_funds" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
@@ -451,49 +733,12 @@ financial indices. These endpoints are designed to cater to a wide range of fina
 
     </aside>
 
-        <p class="phpdocumentor-summary">The Markets endpoints provide reference and status data about the markets covered by Market Data.</p>
-
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Markets.html"><abbr title="\MarketDataApp\Endpoints\Markets">Markets</abbr></a></span>
-    <span class="phpdocumentor-signature__name">$markets</span>
-    </code>
-
-    
-    
-    
-
-    
-
-</article>
-                    <article
-        class="
-            phpdocumentor-element
-            -property
-            -public
-                                                        "
->
-    <h4 class="phpdocumentor-element__name" id="property_mutual_funds">
-        $mutual_funds
-        <a href="classes/MarketDataApp-Client.html#property_mutual_funds" class="headerlink"><i class="fas fa-link"></i></a>
-
-        <span class="phpdocumentor-element__modifiers">
-                                </span>
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">58</span>
-
-    </aside>
-
         <p class="phpdocumentor-summary">The mutual funds endpoints offer access to historical pricing data for mutual funds.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-MutualFunds.html"><abbr title="\MarketDataApp\Endpoints\MutualFunds">MutualFunds</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-MutualFunds.html"><abbr title="\MarketDataApp\Endpoints\MutualFunds">MutualFunds</abbr></a></span>
     <span class="phpdocumentor-signature__name">$mutual_funds</span>
     </code>
 
@@ -501,7 +746,8 @@ financial indices. These endpoints are designed to cater to a wide range of fina
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -509,19 +755,19 @@ financial indices. These endpoints are designed to cater to a wide range of fina
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_options">
         $options
         <a href="classes/MarketDataApp-Client.html#property_options" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">44</span>
+    <span class="phpdocumentor-element-found-in__line">37</span>
 
     </aside>
 
@@ -532,8 +778,8 @@ retrieval, making the Market Data API a versatile tool for options traders and f
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Options.html"><abbr title="\MarketDataApp\Endpoints\Options">Options</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Options.html"><abbr title="\MarketDataApp\Endpoints\Options">Options</abbr></a></span>
     <span class="phpdocumentor-signature__name">$options</span>
     </code>
 
@@ -541,7 +787,8 @@ retrieval, making the Market Data API a versatile tool for options traders and f
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -549,19 +796,59 @@ retrieval, making the Market Data API a versatile tool for options traders and f
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_rate_limits">
+        $rate_limits
+        <a href="classes/MarketDataApp-ClientBase.html#property_rate_limits" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">70</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a>|null</span>
+    <span class="phpdocumentor-signature__name">$rate_limits</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+        <section class="phpdocumentor-description"><p>Current rate limit information, automatically updated after each request.
+Tracks credits (not requests), as some requests may consume multiple credits.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_stocks">
         $stocks
         <a href="classes/MarketDataApp-Client.html#property_stocks" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">34</span>
+    <span class="phpdocumentor-element-found-in__line">27</span>
 
     </aside>
 
@@ -569,8 +856,8 @@ retrieval, making the Market Data API a versatile tool for options traders and f
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Stocks.html"><abbr title="\MarketDataApp\Endpoints\Stocks">Stocks</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Stocks.html"><abbr title="\MarketDataApp\Endpoints\Stocks">Stocks</abbr></a></span>
     <span class="phpdocumentor-signature__name">$stocks</span>
     </code>
 
@@ -578,7 +865,8 @@ retrieval, making the Market Data API a versatile tool for options traders and f
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -586,19 +874,19 @@ retrieval, making the Market Data API a versatile tool for options traders and f
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_utilities">
         $utilities
         <a href="classes/MarketDataApp-Client.html#property_utilities" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">66</span>
+    <span class="phpdocumentor-element-found-in__line">59</span>
 
     </aside>
 
@@ -607,8 +895,8 @@ uptime.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Utilities.html"><abbr title="\MarketDataApp\Endpoints\Utilities">Utilities</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Utilities.html"><abbr title="\MarketDataApp\Endpoints\Utilities">Utilities</abbr></a></span>
     <span class="phpdocumentor-signature__name">$utilities</span>
     </code>
 
@@ -616,7 +904,8 @@ uptime.</p>
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -624,27 +913,27 @@ uptime.</p>
             phpdocumentor-element
             -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_guzzle">
         $guzzle
         <a href="classes/MarketDataApp-ClientBase.html#property_guzzle" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">33</span>
+    <span class="phpdocumentor-element-found-in__line">59</span>
 
     </aside>
 
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type"><abbr title="\GuzzleHttp\Client">Client</abbr></span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\GuzzleHttp\Client">Client</abbr></span>
     <span class="phpdocumentor-signature__name">$guzzle</span>
     </code>
 
@@ -654,7 +943,8 @@ uptime.</p>
 
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -662,27 +952,27 @@ uptime.</p>
             phpdocumentor-element
             -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_token">
         $token
         <a href="classes/MarketDataApp-ClientBase.html#property_token" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">38</span>
+    <span class="phpdocumentor-element-found-in__line">64</span>
 
     </aside>
 
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$token</span>
     </code>
 
@@ -692,7 +982,8 @@ uptime.</p>
 
     
 
-    
+        
+        
 
 </article>
             </section>
@@ -717,7 +1008,7 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">75</span>
+    <span class="phpdocumentor-element-found-in__line">76</span>
 
     </aside>
 
@@ -725,7 +1016,7 @@ uptime.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$token</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$token</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Log\LoggerInterface">LoggerInterface</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$logger</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -736,20 +1027,51 @@ uptime.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$token</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
-                            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$token</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>The API token for authentication.</p>
+                    <section class="phpdocumentor-description"><p>The API token for authentication. If not provided, the token will be
+automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
+An empty string is allowed for accessing free symbols like AAPL.
+A valid token is required for authenticated endpoints. An invalid token will throw
+UnauthorizedException during construction.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$logger</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Log\LoggerInterface">LoggerInterface</abbr>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Optional PSR-3 logger instance. If not provided, uses the default logger
+configured via MARKETDATA_LOGGING_LEVEL environment variable.</p>
 </section>
 
             </dd>
             </dl>
 
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Client.html#method___construct#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the token is invalid (non-empty but returns 401 from /user endpoint)</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
     
-
     
 </article>
                     <article
@@ -766,15 +1088,15 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">108</span>
+    <span class="phpdocumentor-element-found-in__line">459</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Execute a single API request.</p>
+        <p class="phpdocumentor-summary">Execute a single API request with retry logic.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">execute</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
+                    <span class="phpdocumentor-signature__name">execute</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -783,8 +1105,8 @@ uptime.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$method</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The API method to call.</p>
@@ -792,9 +1114,9 @@ uptime.</p>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$arguments</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">[]</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$arguments</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">[]</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The arguments for the API call.</p>
 </section>
@@ -825,10 +1147,34 @@ uptime.</p>
                                                             
                                              
                                     </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-RequestError.html"><abbr title="\MarketDataApp\Exceptions\RequestError">RequestError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-BadStatusCodeError.html"><abbr title="\MarketDataApp\Exceptions\BadStatusCodeError">BadStatusCodeError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
                                             </dl>
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">object</span>
@@ -853,28 +1199,43 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">69</span>
+    <span class="phpdocumentor-element-found-in__line">172</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Execute multiple API calls in parallel.</p>
+        <p class="phpdocumentor-summary">Execute multiple API calls in parallel with concurrency limiting.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">execute_in_parallel</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$calls</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">execute_in_parallel</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$calls</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;|null&nbsp;</span><span class="phpdocumentor-signature__argument__reference-operator">&amp;</span><span class="phpdocumentor-signature__argument__name">$failedRequests</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
     
-    
+        <section class="phpdocumentor-description"><p>Uses Guzzle's EachPromise to maintain a sliding window of concurrent requests.
+Unlike batch processing, this approach starts new requests as soon as previous
+ones complete, maintaining optimal throughput up to MAX_CONCURRENT_REQUESTS (50).</p>
+</section>
+
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$calls</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                <span class="phpdocumentor-argument-list__argument__name">$calls</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>An array of method calls, each containing the method name and arguments.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$failedRequests</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Optional by-reference array to collect failed requests instead of throwing.
+When provided, exceptions are stored here keyed by their call index,
+allowing callers to handle partial failures.</p>
 </section>
 
             </dd>
@@ -893,17 +1254,248 @@ uptime.</p>
                 <dd class="phpdocumentor-tag-list__definition">
                                                                 <span class="phpdocumentor-tag-link"><abbr title="\Throwable">Throwable</abbr></span>
                                                             
-                                             
+                                                 <section class="phpdocumentor-description"><p>When $failedRequests is not provided and any request fails.</p>
+</section>
+
                                     </dd>
                                             </dl>
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>An array of decoded JSON responses.</p>
+                <section class="phpdocumentor-description"><p>An array of decoded JSON responses. When $failedRequests is provided, successful responses
+are keyed by their original call index. Otherwise, returns a sequential array.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_extractRateLimitsFromResponse">
+        extractRateLimitsFromResponse()
+        <a href="classes/MarketDataApp-ClientBase.html#method_extractRateLimitsFromResponse" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">796</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Extract rate limit information from response headers.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">extractRateLimitsFromResponse</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a>|null</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This method extracts rate limit data from API response headers and returns
+a RateLimits object. Returns null if headers are missing, allowing
+graceful degradation. This method is designed to be reusable for future
+automatic rate limit tracking across all API requests.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a>|null</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The rate limit information, or null if headers are missing.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getUserAgent">
+        getUserAgent()
+        <a href="classes/MarketDataApp-ClientBase.html#method_getUserAgent" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">1070</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Build SDK User-Agent value.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__static">static</span>        <span class="phpdocumentor-signature__name">getUserAgent</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getVersion">
+        getVersion()
+        <a href="classes/MarketDataApp-ClientBase.html#method_getVersion" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">1050</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Resolve SDK version from Composer metadata when available.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__static">static</span>        <span class="phpdocumentor-signature__name">getVersion</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_makeRawRequest">
+        makeRawRequest()
+        <a href="classes/MarketDataApp-ClientBase.html#method_makeRawRequest" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">1088</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Make a raw API request and return the response object.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">makeRawRequest</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This method is useful for endpoints that need access to response headers,
+such as the /user/ endpoint for rate limit information.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The API method to call (no API version prefix).</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$arguments</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">[]</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Optional query parameters.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-ClientBase.html#method_makeRawRequest#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\GuzzleHttp\Exception\GuzzleException">GuzzleException</abbr></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The HTTP response.</p>
 </section>
 
             </section>
@@ -923,7 +1515,7 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">56</span>
+    <span class="phpdocumentor-element-found-in__line">110</span>
 
     </aside>
 
@@ -931,7 +1523,7 @@ uptime.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">setGuzzle</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type"><abbr title="\GuzzleHttp\Client">Client</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$guzzleClient</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+                    <span class="phpdocumentor-signature__name">setGuzzle</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\GuzzleHttp\Client">Client</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$guzzleClient</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -940,8 +1532,8 @@ uptime.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$guzzleClient</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\GuzzleHttp\Client">Client</abbr></span>
+                <span class="phpdocumentor-argument-list__argument__name">$guzzleClient</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\GuzzleHttp\Client">Client</abbr></span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The Guzzle client to use.</p>
@@ -952,8 +1544,165 @@ uptime.</p>
 
     
 
+        
     
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_validateResponseStatusCode">
+        validateResponseStatusCode()
+        <a href="classes/MarketDataApp-ClientBase.html#method_validateResponseStatusCode" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">729</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Validate response status code and raise appropriate exceptions.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">validateResponseStatusCode</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$raiseForStatus</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">true</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requestUrl</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$raiseForStatus</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">true</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Whether to raise for non-2xx status codes.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$requestUrl</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The URL that was requested.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-ClientBase.html#method_validateResponseStatusCode#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-RequestError.html"><abbr title="\MarketDataApp\Exceptions\RequestError">RequestError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-BadStatusCodeError.html"><abbr title="\MarketDataApp\Exceptions\BadStatusCodeError">BadStatusCodeError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method__setup_rate_limits">
+        _setup_rate_limits()
+        <a href="classes/MarketDataApp-ClientBase.html#method__setup_rate_limits" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">132</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Set up initial rate limits by fetching from the /user/ endpoint.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">_setup_rate_limits</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This method is called during client construction to initialize rate limit
+information. If the request fails, rate_limits will remain null until the
+first successful request with rate limit headers.</p>
+<p>Rate limits track credits, not requests. Most requests consume 1 credit,
+but bulk requests or options requests may consume multiple credits.</p>
+<p>If the token is empty, validation is skipped to allow free symbols like AAPL.
+If the token is invalid (returns 401), an UnauthorizedException is thrown
+to prevent client creation.</p>
+</section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-ClientBase.html#method__setup_rate_limits#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the token is invalid (non-empty but returns 401)</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
     
 </article>
                     <article
@@ -970,15 +1719,15 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">90</span>
+    <span class="phpdocumentor-element-found-in__line">262</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Perform an asynchronous API request.</p>
+        <p class="phpdocumentor-summary">Perform an asynchronous API request with retry logic.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">protected</span>
-                    <span class="phpdocumentor-signature__name">async</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr></span></code>
+                    <span class="phpdocumentor-signature__name">async</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr></span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -987,8 +1736,8 @@ uptime.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$method</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The API method to call.</p>
@@ -996,9 +1745,9 @@ uptime.</p>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$arguments</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">[]</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$arguments</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">[]</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The arguments for the API call.</p>
 </section>
@@ -1007,12 +1756,270 @@ uptime.</p>
             </dl>
 
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-ClientBase.html#method_async#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-RequestError.html"><abbr title="\MarketDataApp\Exceptions\RequestError">RequestError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-BadStatusCodeError.html"><abbr title="\MarketDataApp\Exceptions\BadStatusCodeError">BadStatusCodeError</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type"><abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr></span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_calculateBackoffDelay">
+        calculateBackoffDelay()
+        <a href="classes/MarketDataApp-ClientBase.html#method_calculateBackoffDelay" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">900</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Calculate exponential backoff delay.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">calculateBackoffDelay</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$attempt</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">float</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$attempt</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The current attempt number (1-based).</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">float</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The delay in seconds.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_createDelayedPromise">
+        createDelayedPromise()
+        <a href="classes/MarketDataApp-ClientBase.html#method_createDelayedPromise" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">917</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Create a promise that resolves after a delay.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">createDelayedPromise</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$delay</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Note: PHP doesn't have native async timers, so this uses a micro-delay
+approach. For true non-blocking behavior, an event loop would be needed.
+This implementation provides the delay while maintaining promise chaining.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$delay</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The delay in seconds.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><abbr title="\GuzzleHttp\Promise\PromiseInterface">PromiseInterface</abbr></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>A promise that resolves after the delay.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getErrorMessage">
+        getErrorMessage()
+        <a href="classes/MarketDataApp-ClientBase.html#method_getErrorMessage" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">766</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get error message from response.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">getErrorMessage</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The error message.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getServicePath">
+        getServicePath()
+        <a href="classes/MarketDataApp-ClientBase.html#method_getServicePath" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">952</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get service path from method path using hardcoded mapping.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">getServicePath</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string|null</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Maps method paths like &quot;v1/stocks/quotes/AAPL&quot; to service paths like &quot;/v1/stocks/quotes/&quot;.
+Returns null for status endpoint (to avoid checking its own status) or unknown services.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The method path (e.g., &quot;v1/stocks/quotes/AAPL&quot;).</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string|null</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The service path (e.g., &quot;/v1/stocks/quotes/&quot;) or null if not found/special case.</p>
+</section>
+
             </section>
 
 </article>
@@ -1030,7 +2037,7 @@ uptime.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">152</span>
+    <span class="phpdocumentor-element-found-in__line">1033</span>
 
     </aside>
 
@@ -1038,7 +2045,7 @@ uptime.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">protected</span>
-                    <span class="phpdocumentor-signature__name">headers</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$format</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;json&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">headers</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$format</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">'json'</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -1047,9 +2054,9 @@ uptime.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$format</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">&#039;json&#039;</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$format</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">'json'</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The desired response format (json, csv, or html).</p>
 </section>
@@ -1059,13 +2066,412 @@ uptime.</p>
 
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>An array of headers.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_isInternalRequest">
+        isInternalRequest()
+        <a href="classes/MarketDataApp-ClientBase.html#method_isInternalRequest" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">888</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Check if a URL is for an internal request.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">isInternalRequest</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$url</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Internal requests (rate limit setup, API status) are logged at DEBUG level.
+API requests are logged at INFO level.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$url</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The request URL.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True if internal request, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_logRequest">
+        logRequest()
+        <a href="classes/MarketDataApp-ClientBase.html#method_logRequest" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">862</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Log a completed HTTP request.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">logRequest</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$durationMs</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$url</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$logLevel</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">'info'</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Logs one line per request with format: METHOD STATUS DURATION REQUEST_ID URL</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>HTTP method (GET, POST, etc.).</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$durationMs</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Request duration in milliseconds.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$url</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The full request URL.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$logLevel</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">'info'</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Log level: 'info' for API requests, 'debug' for internal.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_processResponse">
+        processResponse()
+        <a href="classes/MarketDataApp-ClientBase.html#method_processResponse" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">636</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Process the response and return the appropriate object.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">processResponse</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$format</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requestUrl</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$format</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The response format.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$arguments</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The request arguments.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$requestUrl</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The URL that was requested.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-ClientBase.html#method_processResponse#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">object</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The processed response.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_shouldSkipRetryDueToOfflineService">
+        shouldSkipRetryDueToOfflineService()
+        <a href="classes/MarketDataApp-ClientBase.html#method_shouldSkipRetryDueToOfflineService" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">996</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Check if service is offline and should skip retries.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">shouldSkipRetryDueToOfflineService</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The method path being called.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True if service is offline (should skip retries), false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_waitForRetry">
+        waitForRetry()
+        <a href="classes/MarketDataApp-ClientBase.html#method_waitForRetry" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/ClientBase.php"><a href="files/src-clientbase.html"><abbr title="src/ClientBase.php">ClientBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">937</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Wait for retry with exponential backoff.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">waitForRetry</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$attempt</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$attempt</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The current attempt number (1-based).</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -private
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_obfuscateToken">
+        obfuscateToken()
+        <a href="classes/MarketDataApp-Client.html#method_obfuscateToken" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Client.php"><a href="files/src-client.html"><abbr title="src/Client.php">Client.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">106</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Obfuscate token for logging - show full length with asterisks, last 4 chars visible.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+            <span class="phpdocumentor-signature__static">static</span>        <span class="phpdocumentor-signature__name">obfuscateToken</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$token</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Example: &quot;abc123xyz789&quot; becomes &quot;********z789&quot;</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$token</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The token to obfuscate.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The obfuscated token.</p>
 </section>
 
             </section>
@@ -1109,6 +2515,8 @@ uptime.</p>
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -1186,16 +2594,20 @@ uptime.</p>
                     <ul class="phpdocumentor-list -clean">
                                                     <li class=""><a href="classes/MarketDataApp-ClientBase.html#constant_API_HOST">API_HOST</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-ClientBase.html#constant_API_URL">API_URL</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-ClientBase.html#constant_PACKAGE_NAME">PACKAGE_NAME</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-ClientBase.html#constant_VERSION">VERSION</a></li>
                                             </ul>
                 </li>
             
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
-                                                    <li class=""><a href="classes/MarketDataApp-Client.html#property_indices">$indices</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-ClientBase.html#property_default_params">$default_params</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-ClientBase.html#property_logger">$logger</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Client.html#property_markets">$markets</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Client.html#property_mutual_funds">$mutual_funds</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Client.html#property_options">$options</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-ClientBase.html#property_rate_limits">$rate_limits</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Client.html#property_stocks">$stocks</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Client.html#property_utilities">$utilities</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-ClientBase.html#property_guzzle">$guzzle</a></li>
@@ -1209,9 +2621,25 @@ uptime.</p>
                                             <li class=""><a href="classes/MarketDataApp-Client.html#method___construct">__construct()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_execute">execute()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_execute_in_parallel">execute_in_parallel()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_extractRateLimitsFromResponse">extractRateLimitsFromResponse()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_getUserAgent">getUserAgent()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_getVersion">getVersion()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_makeRawRequest">makeRawRequest()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_setGuzzle">setGuzzle()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_validateResponseStatusCode">validateResponseStatusCode()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method__setup_rate_limits">_setup_rate_limits()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_async">async()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_calculateBackoffDelay">calculateBackoffDelay()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_createDelayedPromise">createDelayedPromise()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_getErrorMessage">getErrorMessage()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_getServicePath">getServicePath()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_headers">headers()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_isInternalRequest">isInternalRequest()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_logRequest">logRequest()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_processResponse">processResponse()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_shouldSkipRetryDueToOfflineService">shouldSkipRetryDueToOfflineService()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-ClientBase.html#method_waitForRetry">waitForRetry()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Client.html#method_obfuscateToken">obfuscateToken()</a></li>
                                     </ul>
             </li>
                     </ul>

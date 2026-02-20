@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -134,7 +142,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></dt><dd>ApiException class</dd>    </dl>
+                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></dt><dd>ApiException class</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-BadStatusCodeError.html"><abbr title="\MarketDataApp\Exceptions\BadStatusCodeError">BadStatusCodeError</abbr></a></dt><dd>BadStatusCodeError class</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-MarketDataException.html"><abbr title="\MarketDataApp\Exceptions\MarketDataException">MarketDataException</abbr></a></dt><dd>Base exception class for all Market Data SDK exceptions.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-RequestError.html"><abbr title="\MarketDataApp\Exceptions\RequestError">RequestError</abbr></a></dt><dd>RequestError class</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Exceptions-UnauthorizedException.html"><abbr title="\MarketDataApp\Exceptions\UnauthorizedException">UnauthorizedException</abbr></a></dt><dd>UnauthorizedException class</dd>    </dl>
 
 
 
@@ -182,6 +190,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

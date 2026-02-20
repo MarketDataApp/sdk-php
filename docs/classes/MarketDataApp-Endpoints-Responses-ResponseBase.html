@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -152,10 +160,8 @@
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -176,6 +182,12 @@
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a>
+    <span>
+                        &nbsp;: string|null            </span>
+</dt>
+
             <dt class="phpdocumentor-table-of-contents__entry -property -protected">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv">$csv</a>
     <span>
@@ -238,6 +250,13 @@
 </dt>
 <dd>Check if the response is in JSON format.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Save CSV/HTML content to a file.</dd>
+
     </dl>
 
 
@@ -255,15 +274,54 @@
         class="
             phpdocumentor-element
             -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property__saved_filename">
+        $_saved_filename
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">20</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$_saved_filename</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+        <section class="phpdocumentor-description"><p>The filename where the response was saved (if filename parameter was used).</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_csv">
         $csv
         <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
@@ -275,8 +333,8 @@
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$csv</span>
     </code>
 
@@ -286,7 +344,8 @@
 
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -294,14 +353,14 @@
             phpdocumentor-element
             -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_html">
         $html
         <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
@@ -313,8 +372,8 @@
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$html</span>
     </code>
 
@@ -324,7 +383,8 @@
 
     
 
-    
+        
+        
 
 </article>
             </section>
@@ -349,7 +409,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">24</span>
+    <span class="phpdocumentor-element-found-in__line">27</span>
 
     </aside>
 
@@ -357,7 +417,7 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -366,8 +426,8 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$response</span>
-                : <span class="phpdocumentor-signature__argument__return-type">object</span>
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type">object</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The raw response object from the API.</p>
@@ -378,8 +438,8 @@
 
     
 
+        
     
-
     
 </article>
                     <article
@@ -396,7 +456,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">40</span>
+    <span class="phpdocumentor-element-found-in__line">49</span>
 
     </aside>
 
@@ -412,9 +472,26 @@
     
     
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in CSV format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">string</span>
@@ -439,7 +516,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">50</span>
+    <span class="phpdocumentor-element-found-in__line">66</span>
 
     </aside>
 
@@ -455,9 +532,26 @@
     
     
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in HTML format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">string</span>
@@ -482,7 +576,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">80</span>
+    <span class="phpdocumentor-element-found-in__line">104</span>
 
     </aside>
 
@@ -499,8 +593,8 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
@@ -525,7 +619,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">70</span>
+    <span class="phpdocumentor-element-found-in__line">94</span>
 
     </aside>
 
@@ -542,8 +636,8 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
@@ -568,7 +662,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">60</span>
+    <span class="phpdocumentor-element-found-in__line">82</span>
 
     </aside>
 
@@ -585,13 +679,95 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>True if the response is in JSON format, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_saveToFile">
+        saveToFile()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">117</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Save CSV/HTML content to a file.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">saveToFile</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$filename</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$filename</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The file path to save to.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If filename is invalid (wrong extension, etc.).</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\RuntimeException">RuntimeException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If file writing fails.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The absolute path of the saved file.</p>
 </section>
 
             </section>
@@ -635,6 +811,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -710,6 +888,7 @@
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv">$csv</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html">$html</a></li>
                                             </ul>
@@ -724,6 +903,7 @@
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv">isCsv()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isHtml">isHtml()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isJson">isJson()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a></li>
                                     </ul>
             </li>
                     </ul>

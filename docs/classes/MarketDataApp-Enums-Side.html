@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -143,16 +151,14 @@
 
             <p class="phpdocumentor-summary">Enum Side</p>
 
-
-    <section class="phpdocumentor-description"><p>Represents the types of options in options trading.</p>
+        
+            <section class="phpdocumentor-description"><p>Represents the types of options in options trading.</p>
 </section>
 
+        
 
 
-
-
-
-
+        
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Enums-Side.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -192,7 +198,6 @@
 
 
 
-
             <section class="phpdocumentor-cases">
         <h3 class="phpdocumentor-elements__header" id="cases">
             Cases
@@ -227,9 +232,8 @@ period.</p>
     
     
 
-    
-
-</article>
+        
+    </article>
                     <article
         class="
             phpdocumentor-element
@@ -258,9 +262,8 @@ period.</p>
     
     
 
-    
-
-</article>
+        
+    </article>
             </section>
 
         
@@ -300,6 +303,8 @@ period.</p>
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

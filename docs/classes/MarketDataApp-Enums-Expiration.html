@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -143,16 +151,14 @@
 
             <p class="phpdocumentor-summary">Enum Expiration</p>
 
-
-    <section class="phpdocumentor-description"><p>Represents expiration options for market data queries.</p>
+        
+            <section class="phpdocumentor-description"><p>Represents expiration options for market data queries.</p>
 </section>
 
+        
 
 
-
-
-
-
+        
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Enums-Expiration.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -180,7 +186,6 @@
 <dd>Represents all expirations.</dd>
 
     </dl>
-
 
 
 
@@ -217,9 +222,8 @@
     
     
 
-    
-
-</article>
+        
+    </article>
             </section>
 
         
@@ -259,6 +263,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

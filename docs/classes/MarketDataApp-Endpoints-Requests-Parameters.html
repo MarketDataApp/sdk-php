@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -129,6 +137,9 @@
                             </ul>
         </div>
     
+            <span class="phpdocumentor-element__implements">
+            implements
+                            <abbr title="\Stringable">Stringable</abbr>                    </span>
     
     </h2>
 
@@ -140,20 +151,34 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">10</span>
+    <span class="phpdocumentor-element-found-in__line">26</span>
 
     </aside>
 
-            <p class="phpdocumentor-summary">Represents parameters for API requests.</p>
+            <p class="phpdocumentor-summary">Represents universal parameters for API requests.</p>
+
+
+    <section class="phpdocumentor-description"><p>Supported REST API universal parameters:</p>
+<ul>
+<li>format: Response format (json, csv, html)</li>
+<li>human: Human-readable values</li>
+<li>mode: Data feed mode (live, cached, delayed)</li>
+<li>maxage: Cache freshness threshold (with mode=cached)</li>
+<li>dateformat: Date format for CSV/HTML</li>
+<li>columns: Column selection for CSV/HTML</li>
+<li>headers: Include headers in CSV/HTML</li>
+</ul>
+<p>Intentionally unsupported (by design):</p>
+<ul>
+<li>token: SDK uses Authorization header only</li>
+<li>limit/offset: SDK uses concurrent parallel requests instead</li>
+</ul>
+</section>
 
 
 
-
-
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -162,6 +187,13 @@
 
 
 
+    <h4 id="toc-interfaces">
+        Interfaces
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#toc-interfaces" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <dl class="phpdocumentor-table-of-contents">
+                    <dt class="phpdocumentor-table-of-contents__entry -interface"><abbr title="\Stringable">Stringable</abbr></dt>    </dl>
 
 
 
@@ -175,9 +207,52 @@
 </h4>
 <dl class="phpdocumentor-table-of-contents">
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_add_headers">$add_headers</a>
+    <span>
+                        &nbsp;: bool|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_columns">$columns</a>
+    <span>
+                        &nbsp;: array&lt;string|int, mixed&gt;|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_date_format">$date_format</a>
+    <span>
+                        &nbsp;: <a href="classes/MarketDataApp-Enums-DateFormat.html"><abbr title="\MarketDataApp\Enums\DateFormat">DateFormat</abbr></a>|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_filename">$filename</a>
+    <span>
+                        &nbsp;: string|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_format">$format</a>
     <span>
                         &nbsp;: <a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a>            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_maxage">$maxage</a>
+    <span>
+                        &nbsp;: int|null            </span>
+</dt>
+<dd>Maximum acceptable age for cached data in seconds.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_mode">$mode</a>
+    <span>
+                        &nbsp;: <a href="classes/MarketDataApp-Enums-Mode.html"><abbr title="\MarketDataApp\Enums\Mode">Mode</abbr></a>|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_use_human_readable">$use_human_readable</a>
+    <span>
+                        &nbsp;: bool|null            </span>
 </dt>
 
     </dl>
@@ -194,6 +269,13 @@
                                 &nbsp;: mixed    </span>
 </dt>
 <dd>Parameters constructor.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___toString">__toString()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Returns a string representation of the parameters.</dd>
 
     </dl>
 
@@ -213,27 +295,175 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
-    <h4 class="phpdocumentor-element__name" id="property_format">
-        $format
-        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_format" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="property_add_headers">
+        $add_headers
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_add_headers" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">20</span>
+    <span class="phpdocumentor-element-found-in__line">69</span>
 
     </aside>
 
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">bool|null</span>
+    <span class="phpdocumentor-signature__name">$add_headers</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_columns">
+        $columns
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_columns" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">68</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">array&lt;string|int, mixed&gt;|null</span>
+    <span class="phpdocumentor-signature__name">$columns</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_date_format">
+        $date_format
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_date_format" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">67</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Enums-DateFormat.html"><abbr title="\MarketDataApp\Enums\DateFormat">DateFormat</abbr></a>|null</span>
+    <span class="phpdocumentor-signature__name">$date_format</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_filename">
+        $filename
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_filename" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">70</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$filename</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_format">
+        $format
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_format" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">63</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></span>
     <span class="phpdocumentor-signature__name">$format</span>
      = <span class="phpdocumentor-signature__default-value">Format::JSON</span></code>
 
@@ -241,7 +471,122 @@
     
     
 
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_maxage">
+        $maxage
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_maxage" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">32</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Maximum acceptable age for cached data in seconds.</p>
+
     
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">int|null</span>
+    <span class="phpdocumentor-signature__name">$maxage</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"><p>Converted from int, DateInterval, or CarbonInterval input.</p>
+</section>
+
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_mode">
+        $mode
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_mode" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">65</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Enums-Mode.html"><abbr title="\MarketDataApp\Enums\Mode">Mode</abbr></a>|null</span>
+    <span class="phpdocumentor-signature__name">$mode</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_use_human_readable">
+        $use_human_readable
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_use_human_readable" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">64</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">bool|null</span>
+    <span class="phpdocumentor-signature__name">$use_human_readable</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+    
+    
+
+        
+        
 
 </article>
             </section>
@@ -266,7 +611,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">18</span>
+    <span class="phpdocumentor-element-found-in__line">62</span>
 
     </aside>
 
@@ -274,7 +619,7 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$format</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">Format::JSON</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$format</span><span> = </span><span class="phpdocumentor-signature__argument__default-value"><a href="classes/MarketDataApp-Enums-Format.html#enumcase_JSON"><abbr title="\MarketDataApp\Enums\Format::JSON">Format::JSON</abbr></a></span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">bool|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$use_human_readable</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Enums-Mode.html"><abbr title="\MarketDataApp\Enums\Mode">Mode</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$mode</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">int|<abbr title="\MarketDataApp\Endpoints\Requests\DateInterval">DateInterval</abbr>|<abbr title="\Carbon\CarbonInterval">CarbonInterval</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$maxage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Enums-DateFormat.html"><abbr title="\MarketDataApp\Enums\DateFormat">DateFormat</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$date_format</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$columns</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">bool|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$add_headers</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$filename</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -283,21 +628,213 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$format</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></span>
-                 = <span class="phpdocumentor-signature__argument__default-value">Format::JSON</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$format</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value"><a href="classes/MarketDataApp-Enums-Format.html#enumcase_JSON"><abbr title="\MarketDataApp\Enums\Format::JSON">Format::JSON</abbr></a></span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The format of the response. Defaults to JSON.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$use_human_readable</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Whether to use human-readable format for values. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$mode</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Enums-Mode.html"><abbr title="\MarketDataApp\Enums\Mode">Mode</abbr></a>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The data feed mode to use. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$maxage</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int|<abbr title="\MarketDataApp\Endpoints\Requests\DateInterval">DateInterval</abbr>|<abbr title="\Carbon\CarbonInterval">CarbonInterval</abbr>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Maximum acceptable age for cached data when using
+mode=CACHED. Accepts seconds as int, DateInterval, or CarbonInterval.
+Sets a threshold for data freshness - if no cached data exists within the
+specified age window, the API returns a 204 empty response with no credit charge.
+Examples: maxage: 300 (5 min), maxage: new DateInterval('PT5M'),
+maxage: CarbonInterval::minutes(5). If most recent cache is 180 seconds old
+and maxage=300, returns 203 with data (1 credit). If maxage=60, returns 204
+empty response (0 credits). Useful for implementing fallback logic: first try
+cached with maxage threshold, then request live data on 204.
+Can only be used when mode=CACHED. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$date_format</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Enums-DateFormat.html"><abbr title="\MarketDataApp\Enums\DateFormat">DateFormat</abbr></a>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The date format for CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$columns</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The columns to include in CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$add_headers</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Whether to add headers to CSV and HTML responses. Can only be used when format=CSV or format=HTML. Defaults to null.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$filename</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>File path for CSV and HTML output. Can only be used when format=CSV or format=HTML. Must end with .csv for CSV format or .html for HTML format. Directory must exist. File must not exist. Defaults to null.</p>
 </section>
 
             </dd>
             </dl>
 
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___construct#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If date_format is set but format is not CSV or HTML.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If columns is set but format is not CSV or HTML.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If add_headers is set but format is not CSV or HTML.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If filename is set but format is not CSV or HTML.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If columns contains non-string elements.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If filename has invalid extension, directory doesn't exist, or file already exists.</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If maxage is set but mode is not CACHED.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method___toString">
+        __toString()
+        <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___toString" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Requests/Parameters.php"><a href="files/src-endpoints-requests-parameters.html"><abbr title="src/Endpoints/Requests/Parameters.php">Parameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">173</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Returns a string representation of the parameters.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">__toString</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
     
 
+        
     
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Human-readable parameters summary.</p>
+</section>
+
+            </section>
+
 </article>
             </section>
 
@@ -337,6 +874,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -412,7 +951,14 @@
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_add_headers">$add_headers</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_columns">$columns</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_date_format">$date_format</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_filename">$filename</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_format">$format</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_maxage">$maxage</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_mode">$mode</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_use_human_readable">$use_human_readable</a></li>
                                             </ul>
                 </li>
             
@@ -420,6 +966,7 @@
             <li>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___construct">__construct()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___toString">__toString()</a></li>
                                     </ul>
             </li>
                     </ul>

@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -121,7 +129,7 @@
     ApiException
 
         <span class="phpdocumentor-element__extends">
-        extends <abbr title="\Exception">Exception</abbr>
+        extends <a href="classes/MarketDataApp-Exceptions-MarketDataException.html"><abbr title="\MarketDataApp\Exceptions\MarketDataException">MarketDataException</abbr></a>
     </span>
     
             <div class="phpdocumentor-element__package">
@@ -142,23 +150,22 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">11</span>
+    <span class="phpdocumentor-element-found-in__line">17</span>
 
     </aside>
 
             <p class="phpdocumentor-summary">ApiException class</p>
 
 
-    <section class="phpdocumentor-description"><p>This exception is thrown when an API error occurs. It extends the base PHP Exception class
-and adds functionality to store and retrieve the API response.</p>
+    <section class="phpdocumentor-description"><p>This exception is thrown when an API error occurs (business logic errors like
+&quot;no data found&quot; or invalid symbol). It extends the base MarketDataException class
+and provides access to request context for debugging and support.</p>
 </section>
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Exceptions-ApiException.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -179,10 +186,28 @@ and adds functionality to store and retrieve the API response.</p>
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
-            <dt class="phpdocumentor-table-of-contents__entry -property -private">
-    <a class="" href="classes/MarketDataApp-Exceptions-ApiException.html#property_response">$response</a>
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestId">$requestId</a>
     <span>
-                        &nbsp;: mixed            </span>
+                        &nbsp;: string|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestUrl">$requestUrl</a>
+    <span>
+                        &nbsp;: string|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_response">$response</a>
+    <span>
+                        &nbsp;: <abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_timestamp">$timestamp</a>
+    <span>
+                        &nbsp;: <abbr title="\DateTimeImmutable">DateTimeImmutable</abbr>            </span>
 </dt>
 
     </dl>
@@ -201,11 +226,60 @@ and adds functionality to store and retrieve the API response.</p>
 <dd>ApiException constructor.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
-    <a class="" href="classes/MarketDataApp-Exceptions-ApiException.html#method_getResponse">getResponse()</a>
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method___toString">__toString()</a>
     <span>
-                                &nbsp;: mixed    </span>
+                                &nbsp;: string    </span>
 </dt>
-<dd>Get the API response associated with this exception.</dd>
+<dd>Get string representation of the exception.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestId">getRequestId()</a>
+    <span>
+                                &nbsp;: string|null    </span>
+</dt>
+<dd>Get the Cloudflare request ID for support tickets.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestUrl">getRequestUrl()</a>
+    <span>
+                                &nbsp;: string|null    </span>
+</dt>
+<dd>Get the URL that was requested when the error occurred.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getResponse">getResponse()</a>
+    <span>
+                                &nbsp;: <abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null    </span>
+</dt>
+<dd>Get the HTTP response associated with this exception.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportContext">getSupportContext()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Get all support ticket context as an associative array.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportInfo">getSupportInfo()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Get a pre-formatted string with all information needed for a support ticket.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getTimestamp">getTimestamp()</a>
+    <span>
+                                &nbsp;: <abbr title="\DateTimeImmutable">DateTimeImmutable</abbr>    </span>
+</dt>
+<dd>Get the timestamp when the exception occurred.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_extractRequestId">extractRequestId()</a>
+    <span>
+                                &nbsp;: string|null    </span>
+</dt>
+<dd>Extract the request ID (cf-ray header) from the response.</dd>
 
     </dl>
 
@@ -224,38 +298,156 @@ and adds functionality to store and retrieve the API response.</p>
         class="
             phpdocumentor-element
             -property
-            -private
-                                                        "
+            -protected
+                                                                    "
 >
-    <h4 class="phpdocumentor-element__name" id="property_response">
-        $response
-        <a href="classes/MarketDataApp-Exceptions-ApiException.html#property_response" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="property_requestId">
+        $requestId
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestId" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">17</span>
+    <span class="phpdocumentor-element-found-in__line">24</span>
 
     </aside>
 
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">private</span>
-        <span class="phpdocumentor-signature__type">mixed</span>
-    <span class="phpdocumentor-signature__name">$response</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$requestId</span>
     </code>
 
     
-        <section class="phpdocumentor-description"><p>The API response associated with this exception.</p>
+        <section class="phpdocumentor-description"><p>The Cloudflare request ID (cf-ray header) for support tickets.</p>
 </section>
 
     
 
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_requestUrl">
+        $requestUrl
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestUrl" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">29</span>
+
+    </aside>
+
     
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$requestUrl</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>The URL that was requested when the error occurred.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_response">
+        $response
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_response" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">19</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null</span>
+    <span class="phpdocumentor-signature__name">$response</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>The HTTP response associated with this exception.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_timestamp">
+        $timestamp
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_timestamp" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">34</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\DateTimeImmutable">DateTimeImmutable</abbr></span>
+    <span class="phpdocumentor-signature__name">$timestamp</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>The timestamp when the exception occurred (stored in UTC).</p>
+</section>
+
+    
+
+        
+        
 
 </article>
             </section>
@@ -280,7 +472,7 @@ and adds functionality to store and retrieve the API response.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">27</span>
+    <span class="phpdocumentor-element-found-in__line">28</span>
 
     </aside>
 
@@ -288,7 +480,7 @@ and adds functionality to store and retrieve the API response.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$message</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$code</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type"><abbr title="\Exception">Exception</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$previous</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">mixed&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$message</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$code</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><abbr title="\Throwable">Throwable</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$previous</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requestUrl</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -297,8 +489,8 @@ and adds functionality to store and retrieve the API response.</p>
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$message</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$message</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The exception message.</p>
@@ -306,29 +498,38 @@ and adds functionality to store and retrieve the API response.</p>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$code</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$code</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The exception code.</p>
 </section>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$previous</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\Exception">Exception</abbr>|null</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$previous</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Throwable">Throwable</abbr>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The previous exception used for exception chaining.</p>
 </section>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$response</span>
-                : <span class="phpdocumentor-signature__argument__return-type">mixed</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>The API response associated with this exception.</p>
+                    <section class="phpdocumentor-description"><p>The HTTP response associated with this exception.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$requestUrl</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The URL that was requested when the error occurred.</p>
 </section>
 
             </dd>
@@ -336,9 +537,140 @@ and adds functionality to store and retrieve the API response.</p>
 
     
 
+        
     
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method___toString">
+        __toString()
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method___toString" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">202</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get string representation of the exception.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">__toString</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Includes the standard exception information plus request context
+(timestamp, request ID, and URL) when available.</p>
+</section>
 
     
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getRequestId">
+        getRequestId()
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestId" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">94</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the Cloudflare request ID for support tickets.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getRequestId</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string|null</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This ID can be provided to Market Data support to help identify
+the specific request that failed.</p>
+</section>
+
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string|null</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The request ID, or null if not available.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getRequestUrl">
+        getRequestUrl()
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestUrl" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">104</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the URL that was requested when the error occurred.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getRequestUrl</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string|null</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string|null</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The request URL, or null if not available.</p>
+</section>
+
+            </section>
+
 </article>
                     <article
         class="phpdocumentor-element
@@ -348,21 +680,21 @@ and adds functionality to store and retrieve the API response.</p>
 >
     <h4 class="phpdocumentor-element__name" id="method_getResponse">
         getResponse()
-        <a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getResponse" class="headerlink"><i class="fas fa-link"></i></a>
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getResponse" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h4>
     <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">38</span>
+    <span class="phpdocumentor-element-found-in__line">81</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Get the API response associated with this exception.</p>
+        <p class="phpdocumentor-summary">Get the HTTP response associated with this exception.</p>
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">getResponse</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">getResponse</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -371,13 +703,197 @@ and adds functionality to store and retrieve the API response.</p>
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type">mixed</span>
+        <span class="phpdocumentor-signature__response_type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>The API response.</p>
+                <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getSupportContext">
+        getSupportContext()
+        <a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportContext" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">0</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get all support ticket context as an associative array.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getSupportContext</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Get support context as an associative array.</p>
+</section>
+
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getSupportInfo">
+        getSupportInfo()
+        <a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportInfo" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/ApiException.php"><a href="files/src-exceptions-apiexception.html"><abbr title="src/Exceptions/ApiException.php">ApiException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">0</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get a pre-formatted string with all information needed for a support ticket.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getSupportInfo</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Get pre-formatted support ticket information.</p>
+</section>
+
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getTimestamp">
+        getTimestamp()
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getTimestamp" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">119</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the timestamp when the exception occurred.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getTimestamp</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\DateTimeImmutable">DateTimeImmutable</abbr></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>The timestamp is stored in UTC. Convert to your preferred timezone as needed:</p>
+<pre class="prettyprint"><code class="language-php">$localTime = $e-&gt;getTimestamp()-&gt;setTimezone(new \DateTimeZone('America/Los_Angeles'));
+</code></pre>
+</section>
+
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><abbr title="\DateTimeImmutable">DateTimeImmutable</abbr></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The timestamp when the exception was created (UTC).</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_extractRequestId">
+        extractRequestId()
+        <a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_extractRequestId" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Exceptions/MarketDataException.php"><a href="files/src-exceptions-marketdataexception.html"><abbr title="src/Exceptions/MarketDataException.php">MarketDataException.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">66</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Extract the request ID (cf-ray header) from the response.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">extractRequestId</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string|null</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Psr\Http\Message\ResponseInterface">ResponseInterface</abbr>|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The HTTP response.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string|null</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The request ID, or null if not available.</p>
 </section>
 
             </section>
@@ -421,6 +937,8 @@ and adds functionality to store and retrieve the API response.</p>
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -496,7 +1014,10 @@ and adds functionality to store and retrieve the API response.</p>
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
-                                                    <li class=""><a href="classes/MarketDataApp-Exceptions-ApiException.html#property_response">$response</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestId">$requestId</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestUrl">$requestUrl</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_response">$response</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#property_timestamp">$timestamp</a></li>
                                             </ul>
                 </li>
             
@@ -504,7 +1025,14 @@ and adds functionality to store and retrieve the API response.</p>
             <li>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Exceptions-ApiException.html#method___construct">__construct()</a></li>
-                                            <li class=""><a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getResponse">getResponse()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method___toString">__toString()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestId">getRequestId()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestUrl">getRequestUrl()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getResponse">getResponse()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportContext">getSupportContext()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-ApiException.html#method_getSupportInfo">getSupportInfo()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_getTimestamp">getTimestamp()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Exceptions-MarketDataException.html#method_extractRequestId">extractRequestId()</a></li>
                                     </ul>
             </li>
                     </ul>

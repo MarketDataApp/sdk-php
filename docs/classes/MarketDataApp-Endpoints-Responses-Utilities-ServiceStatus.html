@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -131,6 +139,9 @@
         </div>
     
     
+            <span class="phpdocumentor-element__extends">
+            uses
+                            <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html"><abbr title="\MarketDataApp\Traits\FormatsForDisplay">FormatsForDisplay</abbr></a>                    </span>
     </h2>
 
 <div class="phpdocumentor-label-line">
@@ -141,7 +152,7 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">10</span>
+    <span class="phpdocumentor-element-found-in__line">11</span>
 
     </aside>
 
@@ -151,10 +162,8 @@
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -175,6 +184,12 @@
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_online">$online</a>
+    <span>
+                        &nbsp;: bool            </span>
+</dt>
+
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_service">$service</a>
     <span>
@@ -220,6 +235,76 @@
 </dt>
 <dd>ServiceStatus constructor.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___toString">__toString()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Returns a string representation of the service status.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatChange">formatChange()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a change value with sign and currency (e.g., &quot;+$1.25&quot; or &quot;-$0.50&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatCurrency">formatCurrency()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a float as currency (e.g., &quot;$150.25&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDate">formatDate()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a Carbon date without time (e.g., &quot;Jan 24, 2026&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDateTime">formatDateTime()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a Carbon date with time (e.g., &quot;Jan 24, 2026 3:45 PM&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatGreek">formatGreek()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a Greek value (4 decimal places, e.g., &quot;0.4520&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatNumber">formatNumber()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a number with commas (e.g., &quot;15,234&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercent">formatPercent()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a percentage with sign (e.g., &quot;+3.25%&quot; or &quot;-1.50%&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercentRaw">formatPercentRaw()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format a percentage that is already in percent form (e.g., &quot;32.50%&quot;).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatVolume">formatVolume()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Format volume with K/M/B suffixes (e.g., &quot;54.9M&quot;, &quot;12.3K&quot;).</dd>
+
     </dl>
 
 
@@ -238,158 +323,51 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_online">
+        $online
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_online" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">28</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">bool</span>
+    <span class="phpdocumentor-signature__name">$online</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_service">
         $service
         <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_service" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">23</span>
-
-    </aside>
-
-    
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">string</span>
-    <span class="phpdocumentor-signature__name">$service</span>
-    </code>
-
-    
-    
-    
-
-    
-
-</article>
-                    <article
-        class="
-            phpdocumentor-element
-            -property
-            -public
-                                                        "
->
-    <h4 class="phpdocumentor-element__name" id="property_status">
-        $status
-        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_status" class="headerlink"><i class="fas fa-link"></i></a>
-
-        <span class="phpdocumentor-element__modifiers">
-                                </span>
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">24</span>
-
-    </aside>
-
-    
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">string</span>
-    <span class="phpdocumentor-signature__name">$status</span>
-    </code>
-
-    
-    
-    
-
-    
-
-</article>
-                    <article
-        class="
-            phpdocumentor-element
-            -property
-            -public
-                                                        "
->
-    <h4 class="phpdocumentor-element__name" id="property_updated">
-        $updated
-        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_updated" class="headerlink"><i class="fas fa-link"></i></a>
-
-        <span class="phpdocumentor-element__modifiers">
-                                </span>
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">27</span>
-
-    </aside>
-
-    
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
-    <span class="phpdocumentor-signature__name">$updated</span>
-    </code>
-
-    
-    
-    
-
-    
-
-</article>
-                    <article
-        class="
-            phpdocumentor-element
-            -property
-            -public
-                                                        "
->
-    <h4 class="phpdocumentor-element__name" id="property_uptime_percentage_30d">
-        $uptime_percentage_30d
-        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_uptime_percentage_30d" class="headerlink"><i class="fas fa-link"></i></a>
-
-        <span class="phpdocumentor-element__modifiers">
-                                </span>
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">25</span>
-
-    </aside>
-
-    
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">float</span>
-    <span class="phpdocumentor-signature__name">$uptime_percentage_30d</span>
-    </code>
-
-    
-    
-    
-
-    
-
-</article>
-                    <article
-        class="
-            phpdocumentor-element
-            -property
-            -public
-                                                        "
->
-    <h4 class="phpdocumentor-element__name" id="property_uptime_percentage_90d">
-        $uptime_percentage_90d
-        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_uptime_percentage_90d" class="headerlink"><i class="fas fa-link"></i></a>
-
-        <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
@@ -401,8 +379,156 @@
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">float</span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">$service</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_status">
+        $status
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_status" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">27</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">$status</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_updated">
+        $updated
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_updated" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">31</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
+    <span class="phpdocumentor-signature__name">$updated</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_uptime_percentage_30d">
+        $uptime_percentage_30d
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_uptime_percentage_30d" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">29</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">float</span>
+    <span class="phpdocumentor-signature__name">$uptime_percentage_30d</span>
+    </code>
+
+    
+    
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_uptime_percentage_90d">
+        $uptime_percentage_90d
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_uptime_percentage_90d" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">30</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">float</span>
     <span class="phpdocumentor-signature__name">$uptime_percentage_90d</span>
     </code>
 
@@ -410,7 +536,8 @@
     
     
 
-    
+        
+        
 
 </article>
             </section>
@@ -435,7 +562,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">22</span>
+    <span class="phpdocumentor-element-found-in__line">25</span>
 
     </aside>
 
@@ -443,7 +570,7 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$service</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$status</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$uptime_percentage_30d</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$uptime_percentage_90d</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type"><abbr title="\Carbon\Carbon">Carbon</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$updated</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$service</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$status</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$online</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$uptime_percentage_30d</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$uptime_percentage_90d</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$updated</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -452,8 +579,8 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$service</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$service</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The service being monitored.</p>
@@ -461,8 +588,8 @@
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$status</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$status</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The current status of each service (online or offline).</p>
@@ -470,8 +597,17 @@
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$uptime_percentage_30d</span>
-                : <span class="phpdocumentor-signature__argument__return-type">float</span>
+                <span class="phpdocumentor-argument-list__argument__name">$online</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The boolean online status of the service.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$uptime_percentage_30d</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The uptime percentage of each service over the last 30 days.</p>
@@ -479,8 +615,8 @@
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$uptime_percentage_90d</span>
-                : <span class="phpdocumentor-signature__argument__return-type">float</span>
+                <span class="phpdocumentor-argument-list__argument__name">$uptime_percentage_90d</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The uptime percentage of each service over the last 90 days.</p>
@@ -488,8 +624,8 @@
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$updated</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
+                <span class="phpdocumentor-argument-list__argument__name">$updated</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The timestamp of the last update for each service's status.</p>
@@ -500,9 +636,551 @@
 
     
 
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method___toString">
+        __toString()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___toString" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Utilities/ServiceStatus.php"><a href="files/src-endpoints-responses-utilities-servicestatus.html"><abbr title="src/Endpoints/Responses/Utilities/ServiceStatus.php">ServiceStatus.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">40</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Returns a string representation of the service status.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">__toString</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
     
 
+        
     
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Human-readable service status.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatChange">
+        formatChange()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatChange" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">167</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a change value with sign and currency (e.g., &quot;+$1.25&quot; or &quot;-$0.50&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatChange</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The change value to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted change string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatCurrency">
+        formatCurrency()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatCurrency" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">22</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a float as currency (e.g., &quot;$150.25&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatCurrency</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The value to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted currency string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatDate">
+        formatDate()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDate" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">119</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a Carbon date without time (e.g., &quot;Jan 24, 2026&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatDate</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$date</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$date</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The date to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted date string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatDateTime">
+        formatDateTime()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDateTime" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">103</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a Carbon date with time (e.g., &quot;Jan 24, 2026 3:45 PM&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatDateTime</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$date</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$date</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The date to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted date string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatGreek">
+        formatGreek()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatGreek" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">135</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a Greek value (4 decimal places, e.g., &quot;0.4520&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatGreek</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The Greek value to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted Greek string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatNumber">
+        formatNumber()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatNumber" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">151</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a number with commas (e.g., &quot;15,234&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatNumber</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">int|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The number to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted number string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatPercent">
+        formatPercent()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercent" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">39</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a percentage with sign (e.g., &quot;+3.25%&quot; or &quot;-1.50%&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatPercent</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Assumes input is a decimal (0.30 = 30%).</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The decimal value to format as percentage.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted percentage string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatPercentRaw">
+        formatPercentRaw()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercentRaw" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">59</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format a percentage that is already in percent form (e.g., &quot;32.50%&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatPercentRaw</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Use this for values like implied volatility that are already percentages.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The percentage value to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted percentage string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_formatVolume">
+        formatVolume()
+        <a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatVolume" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/FormatsForDisplay.php"><a href="files/src-traits-formatsfordisplay.html"><abbr title="src/Traits/FormatsForDisplay.php">FormatsForDisplay.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">75</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Format volume with K/M/B suffixes (e.g., &quot;54.9M&quot;, &quot;12.3K&quot;).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">formatVolume</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">int|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$value</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$value</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The volume to format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Formatted volume string or &quot;N/A&quot; if null.</p>
+</section>
+
+            </section>
+
 </article>
             </section>
 
@@ -542,6 +1220,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -617,6 +1297,7 @@
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_online">$online</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_service">$service</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_status">$status</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_updated">$updated</a></li>
@@ -629,6 +1310,16 @@
             <li>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___construct">__construct()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___toString">__toString()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatChange">formatChange()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatCurrency">formatCurrency()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDate">formatDate()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDateTime">formatDateTime()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatGreek">formatGreek()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatNumber">formatNumber()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercent">formatPercent()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercentRaw">formatPercentRaw()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatVolume">formatVolume()</a></li>
                                     </ul>
             </li>
                     </ul>

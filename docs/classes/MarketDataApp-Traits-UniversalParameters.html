@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -124,7 +132,7 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/UniversalParameters.php"><a href="files/src-traits-universalparameters.html"><abbr title="src/Traits/UniversalParameters.php">UniversalParameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">13</span>
+    <span class="phpdocumentor-element-found-in__line">15</span>
 
     </aside>
 
@@ -137,10 +145,8 @@ It can be used to add common functionality across different endpoint classes.</p
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Traits-UniversalParameters.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -176,6 +182,13 @@ It can be used to add common functionality across different endpoint classes.</p
 </dt>
 <dd>Execute multiple API requests in parallel with universal parameters.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a class="" href="classes/MarketDataApp-Traits-UniversalParameters.html#method_mergeParameters">mergeParameters()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>    </span>
+</dt>
+<dd>Merge method-level parameters with client default parameters.</dd>
+
     </dl>
 
 
@@ -205,7 +218,7 @@ It can be used to add common functionality across different endpoint classes.</p
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/UniversalParameters.php"><a href="files/src-traits-universalparameters.html"><abbr title="src/Traits/UniversalParameters.php">UniversalParameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">25</span>
+    <span class="phpdocumentor-element-found-in__line">128</span>
 
     </aside>
 
@@ -213,7 +226,7 @@ It can be used to add common functionality across different endpoint classes.</p
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">protected</span>
-                    <span class="phpdocumentor-signature__name">execute</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$parameters</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
+                    <span class="phpdocumentor-signature__name">execute</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$method</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$arguments</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$parameters</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -222,8 +235,8 @@ It can be used to add common functionality across different endpoint classes.</p
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$method</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                <span class="phpdocumentor-argument-list__argument__name">$method</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The API method to call.</p>
@@ -231,8 +244,8 @@ It can be used to add common functionality across different endpoint classes.</p
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$arguments</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                <span class="phpdocumentor-argument-list__argument__name">$arguments</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The arguments for the API call.</p>
@@ -240,8 +253,8 @@ It can be used to add common functionality across different endpoint classes.</p
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$parameters</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null</span>
+                <span class="phpdocumentor-argument-list__argument__name">$parameters</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Optional Parameters object for additional settings.</p>
@@ -252,8 +265,8 @@ It can be used to add common functionality across different endpoint classes.</p
 
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">object</span>
@@ -278,7 +291,7 @@ It can be used to add common functionality across different endpoint classes.</p
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/UniversalParameters.php"><a href="files/src-traits-universalparameters.html"><abbr title="src/Traits/UniversalParameters.php">UniversalParameters.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">47</span>
+    <span class="phpdocumentor-element-found-in__line">185</span>
 
     </aside>
 
@@ -286,7 +299,7 @@ It can be used to add common functionality across different endpoint classes.</p
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">protected</span>
-                    <span class="phpdocumentor-signature__name">execute_in_parallel</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$calls</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$parameters</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">execute_in_parallel</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$calls</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$parameters</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__type">array&lt;string|int, mixed&gt;|null&nbsp;</span><span class="phpdocumentor-signature__argument__reference-operator">&amp;</span><span class="phpdocumentor-signature__argument__name">$failedRequests</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -295,8 +308,8 @@ It can be used to add common functionality across different endpoint classes.</p
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$calls</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                <span class="phpdocumentor-argument-list__argument__name">$calls</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>An array of method calls, each containing the method name and arguments.</p>
@@ -304,11 +317,21 @@ It can be used to add common functionality across different endpoint classes.</p
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$parameters</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
+                <span class="phpdocumentor-argument-list__argument__name">$parameters</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Optional Parameters object for additional settings.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$failedRequests</span>
+                : <span class="phpdocumentor-argument-list__argument__type">array&lt;string|int, mixed&gt;|null</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Optional by-reference array to collect failed requests instead of throwing.
+When provided, exceptions are stored here keyed by their call index.</p>
 </section>
 
             </dd>
@@ -327,17 +350,81 @@ It can be used to add common functionality across different endpoint classes.</p
                 <dd class="phpdocumentor-tag-list__definition">
                                                                 <span class="phpdocumentor-tag-link"><abbr title="\Throwable">Throwable</abbr></span>
                                                             
-                                             
+                                                 <section class="phpdocumentor-description"><p>When $failedRequests is not provided and any request fails.</p>
+</section>
+
                                     </dd>
                                             </dl>
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>An array of API responses.</p>
+                <section class="phpdocumentor-description"><p>An array of API responses. When $failedRequests is provided, results are keyed by original call index.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_mergeParameters">
+        mergeParameters()
+        <a href="classes/MarketDataApp-Traits-UniversalParameters.html#method_mergeParameters" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Traits/UniversalParameters.php"><a href="files/src-traits-universalparameters.html"><abbr title="src/Traits/UniversalParameters.php">UniversalParameters.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">30</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Merge method-level parameters with client default parameters.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                    <span class="phpdocumentor-signature__name">mergeParameters</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$methodParams</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Priority order (highest to lowest):</p>
+<ol>
+<li>Method-level parameters (if provided)</li>
+<li>Client default parameters ($this-&gt;client-&gt;default_params)</li>
+<li>Default Parameters() values</li>
+</ol>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$methodParams</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a>|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Method-level parameters, or null to use only client defaults.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Requests-Parameters.html"><abbr title="\MarketDataApp\Endpoints\Requests\Parameters">Parameters</abbr></a></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Merged parameters instance.</p>
 </section>
 
             </section>
@@ -381,6 +468,8 @@ It can be used to add common functionality across different endpoint classes.</p
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -456,6 +545,7 @@ It can be used to add common functionality across different endpoint classes.</p
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Traits-UniversalParameters.html#method_execute">execute()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Traits-UniversalParameters.html#method_execute_in_parallel">execute_in_parallel()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Traits-UniversalParameters.html#method_mergeParameters">mergeParameters()</a></li>
                                     </ul>
             </li>
                     </ul>

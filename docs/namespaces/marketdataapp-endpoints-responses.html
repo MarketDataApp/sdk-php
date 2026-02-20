@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -133,7 +141,6 @@
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
-            <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-endpoints-responses-indices.html"><abbr title="\MarketDataApp\Endpoints\Responses\Indices">Indices</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-endpoints-responses-markets.html"><abbr title="\MarketDataApp\Endpoints\Responses\Markets">Markets</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-endpoints-responses-mutualfunds.html"><abbr title="\MarketDataApp\Endpoints\Responses\MutualFunds">MutualFunds</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-endpoints-responses-options.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options">Options</abbr></a></dt>
@@ -196,6 +203,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

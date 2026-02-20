@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -134,6 +142,8 @@
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-endpoints.html"><abbr title="\MarketDataApp\Endpoints">Endpoints</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-enums.html"><abbr title="\MarketDataApp\Enums">Enums</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-exceptions.html"><abbr title="\MarketDataApp\Exceptions">Exceptions</abbr></a></dt>
+            <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-logging.html"><abbr title="\MarketDataApp\Logging">Logging</abbr></a></dt>
+            <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-retry.html"><abbr title="\MarketDataApp\Retry">Retry</abbr></a></dt>
             <dt class="phpdocumentor-table-of-contents__entry -namespace"><a href="namespaces/marketdataapp-traits.html"><abbr title="\MarketDataApp\Traits">Traits</abbr></a></dt>
     </dl>
 
@@ -144,7 +154,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></dt><dd>Client class for the Market Data API.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-ClientBase.html"><abbr title="\MarketDataApp\ClientBase">ClientBase</abbr></a></dt><dd>Abstract base class for Market Data API client.</dd>    </dl>
+                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></dt><dd>Client class for the Market Data API.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-ClientBase.html"><abbr title="\MarketDataApp\ClientBase">ClientBase</abbr></a></dt><dd>Abstract base class for Market Data API client.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-RateLimits.html"><abbr title="\MarketDataApp\RateLimits">RateLimits</abbr></a></dt><dd>Represents rate limit information from API responses.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Settings.html"><abbr title="\MarketDataApp\Settings">Settings</abbr></a></dt><dd>Settings class for MarketDataApp SDK.</dd>    </dl>
 
 
 
@@ -192,6 +202,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -154,10 +162,8 @@
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -179,23 +185,29 @@
 </h4>
 <dl class="phpdocumentor-table-of-contents">
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a>
+    <span>
+                        &nbsp;: string|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_next_time">$next_time</a>
     <span>
-                        &nbsp;: <abbr title="\Carbon\Carbon">Carbon</abbr>            </span>
+                        &nbsp;: <abbr title="\Carbon\Carbon">Carbon</abbr>|null            </span>
 </dt>
 <dd>Time of the next quote if there is no data in the requested period, but there is data in a subsequent period.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_option_chains">$option_chains</a>
     <span>
-                        &nbsp;: array&lt;string, array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionChainStrike">OptionChainStrike</abbr></a>&gt;&gt;            </span>
+                        &nbsp;: array&lt;string, array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;&gt;            </span>
 </dt>
-<dd>Multidimensional array of OptionChainStrike objects organized by date.</dd>
+<dd>Multidimensional array of OptionQuote objects organized by date.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_prev_time">$prev_time</a>
     <span>
-                        &nbsp;: <abbr title="\Carbon\Carbon">Carbon</abbr>            </span>
+                        &nbsp;: <abbr title="\Carbon\Carbon">Carbon</abbr>|null            </span>
 </dt>
 <dd>Time of the previous quote if there is no data in the requested period, but there is data in a previous period.</dd>
 
@@ -234,6 +246,41 @@
 <dd>Constructs a new OptionChains instance from the given response object.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___toString">__toString()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Returns a string representation of the option chains collection.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_count">count()</a>
+    <span>
+                                &nbsp;: int    </span>
+</dt>
+<dd>Get the total count of option quotes across all expirations.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getAllQuotes">getAllQuotes()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;    </span>
+</dt>
+<dd>Get all option quotes as a flat array.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getByStrike">getByStrike()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;    </span>
+</dt>
+<dd>Get option quotes for a specific strike price.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getCalls">getCalls()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;    </span>
+</dt>
+<dd>Get only call options from the chain.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv">getCsv()</a>
     <span>
                                 &nbsp;: string    </span>
@@ -241,11 +288,39 @@
 <dd>Get the CSV content of the response.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getExpirationDates">getExpirationDates()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, string&gt;    </span>
+</dt>
+<dd>Get all expiration dates in the chain.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml">getHtml()</a>
     <span>
                                 &nbsp;: string    </span>
 </dt>
 <dd>Get the HTML content of the response.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getPuts">getPuts()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;    </span>
+</dt>
+<dd>Get only put options from the chain.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getQuotesByExpiration">getQuotesByExpiration()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;    </span>
+</dt>
+<dd>Get option quotes for a specific expiration date.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getStrikes">getStrikes()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, float&gt;    </span>
+</dt>
+<dd>Get all unique strike prices in the chain, sorted ascending.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv">isCsv()</a>
@@ -268,6 +343,20 @@
 </dt>
 <dd>Check if the response is in JSON format.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Save CSV/HTML content to a file.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_toQuotes">toQuotes()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quotes">Quotes</abbr></a>    </span>
+</dt>
+<dd>Convert the option chains to a flat Quotes object.</dd>
+
     </dl>
 
 
@@ -286,14 +375,53 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property__saved_filename">
+        $_saved_filename
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">20</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$_saved_filename</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+        <section class="phpdocumentor-description"><p>The filename where the response was saved (if filename parameter was used).</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_next_time">
         $next_time
         <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_next_time" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
@@ -306,16 +434,17 @@
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null</span>
     <span class="phpdocumentor-signature__name">$next_time</span>
-    </code>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
 
     
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -323,14 +452,14 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_option_chains">
         $option_chains
         <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_option_chains" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
@@ -339,12 +468,12 @@
 
     </aside>
 
-        <p class="phpdocumentor-summary">Multidimensional array of OptionChainStrike objects organized by date.</p>
+        <p class="phpdocumentor-summary">Multidimensional array of OptionQuote objects organized by date.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">array&lt;string, array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionChainStrike">OptionChainStrike</abbr></a>&gt;&gt;</span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">array&lt;string, array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;&gt;</span>
     <span class="phpdocumentor-signature__name">$option_chains</span>
      = <span class="phpdocumentor-signature__default-value">[]</span></code>
 
@@ -352,7 +481,8 @@
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -360,14 +490,14 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_prev_time">
         $prev_time
         <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_prev_time" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
@@ -380,16 +510,17 @@
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr></span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type"><abbr title="\Carbon\Carbon">Carbon</abbr>|null</span>
     <span class="phpdocumentor-signature__name">$prev_time</span>
-    </code>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
 
     
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -397,14 +528,14 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_status">
         $status
         <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_status" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
@@ -417,16 +548,17 @@
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$status</span>
-    </code>
+     = <span class="phpdocumentor-signature__default-value">&#039;no_data&#039;</span></code>
 
     
     
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -434,14 +566,14 @@
             phpdocumentor-element
             -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_csv">
         $csv
         <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
@@ -453,8 +585,8 @@
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$csv</span>
     </code>
 
@@ -464,7 +596,8 @@
 
     
 
-    
+        
+        
 
 </article>
                     <article
@@ -472,14 +605,14 @@
             phpdocumentor-element
             -property
             -protected
-                                                        "
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_html">
         $html
         <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
@@ -491,8 +624,8 @@
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">protected</span>
-        <span class="phpdocumentor-signature__type">string</span>
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
     <span class="phpdocumentor-signature__name">$html</span>
     </code>
 
@@ -502,7 +635,8 @@
 
     
 
-    
+        
+        
 
 </article>
             </section>
@@ -535,7 +669,7 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -544,8 +678,8 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$response</span>
-                : <span class="phpdocumentor-signature__argument__return-type">object</span>
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type">object</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The response object containing option chains data.</p>
@@ -556,9 +690,236 @@
 
     
 
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method___toString">
+        __toString()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___toString" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">312</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Returns a string representation of the option chains collection.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">__toString</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
     
 
+        
     
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Human-readable option chains summary.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_count">
+        count()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_count" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">252</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the total count of option quotes across all expirations.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">count</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">int</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">int</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The total number of option quotes.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getAllQuotes">
+        getAllQuotes()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getAllQuotes" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">215</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get all option quotes as a flat array.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getAllQuotes</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>All option quotes from all expiration dates.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getByStrike">
+        getByStrike()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getByStrike" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">289</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get option quotes for a specific strike price.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getByStrike</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">float&nbsp;</span><span class="phpdocumentor-signature__argument__name">$strike</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$strike</span>
+                : <span class="phpdocumentor-argument-list__argument__type">float</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The strike price to filter by.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of option quotes with the given strike price.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getCalls">
+        getCalls()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getCalls" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">267</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get only call options from the chain.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getCalls</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of call option quotes.</p>
+</section>
+
+            </section>
+
 </article>
                     <article
         class="phpdocumentor-element
@@ -574,7 +935,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">40</span>
+    <span class="phpdocumentor-element-found-in__line">49</span>
 
     </aside>
 
@@ -590,14 +951,74 @@
     
     
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in CSV format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">string</span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>The CSV content.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getExpirationDates">
+        getExpirationDates()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getExpirationDates" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">230</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get all expiration dates in the chain.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getExpirationDates</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, string&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, string&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of expiration date strings (YYYY-MM-DD format).</p>
 </section>
 
             </section>
@@ -617,7 +1038,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">50</span>
+    <span class="phpdocumentor-element-found-in__line">66</span>
 
     </aside>
 
@@ -633,14 +1054,172 @@
     
     
     
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in HTML format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">string</span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>The HTML content.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getPuts">
+        getPuts()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getPuts" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">277</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get only put options from the chain.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getPuts</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of put option quotes.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getQuotesByExpiration">
+        getQuotesByExpiration()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getQuotesByExpiration" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">242</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get option quotes for a specific expiration date.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getQuotesByExpiration</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$date</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$date</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The expiration date in YYYY-MM-DD format.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a>&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of option quotes for the given date, or empty array if not found.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getStrikes">
+        getStrikes()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getStrikes" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">299</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get all unique strike prices in the chain, sorted ascending.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getStrikes</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, float&gt;</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, float&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Array of unique strike prices.</p>
 </section>
 
             </section>
@@ -660,7 +1239,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">80</span>
+    <span class="phpdocumentor-element-found-in__line">104</span>
 
     </aside>
 
@@ -677,8 +1256,8 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
@@ -703,7 +1282,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">70</span>
+    <span class="phpdocumentor-element-found-in__line">94</span>
 
     </aside>
 
@@ -720,8 +1299,8 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
@@ -746,7 +1325,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">60</span>
+    <span class="phpdocumentor-element-found-in__line">82</span>
 
     </aside>
 
@@ -763,13 +1342,142 @@
     
     
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>True if the response is in JSON format, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_saveToFile">
+        saveToFile()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">117</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Save CSV/HTML content to a file.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">saveToFile</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$filename</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$filename</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The file path to save to.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If filename is invalid (wrong extension, etc.).</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\RuntimeException">RuntimeException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If file writing fails.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The absolute path of the saved file.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_toQuotes">
+        toQuotes()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_toQuotes" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Options/OptionChains.php"><a href="files/src-endpoints-responses-options-optionchains.html"><abbr title="src/Endpoints/Responses/Options/OptionChains.php">OptionChains.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">200</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Convert the option chains to a flat Quotes object.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">toQuotes</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quotes">Quotes</abbr></a></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This flattens all option quotes from all expiration dates into a single
+Quotes container, useful when you want to treat a chain as a simple
+collection of quotes.</p>
+</section>
+
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quotes">Quotes</abbr></a></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>A Quotes object containing all option quotes from this chain.</p>
 </section>
 
             </section>
@@ -813,6 +1521,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -888,6 +1598,7 @@
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_next_time">$next_time</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_option_chains">$option_chains</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_prev_time">$prev_time</a></li>
@@ -901,11 +1612,22 @@
             <li>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___construct">__construct()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___toString">__toString()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_count">count()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getAllQuotes">getAllQuotes()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getByStrike">getByStrike()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getCalls">getCalls()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv">getCsv()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getExpirationDates">getExpirationDates()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml">getHtml()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getPuts">getPuts()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getQuotesByExpiration">getQuotesByExpiration()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getStrikes">getStrikes()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv">isCsv()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isHtml">isHtml()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isJson">isJson()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_toQuotes">toQuotes()</a></li>
                                     </ul>
             </li>
                     </ul>

@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -136,7 +144,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Expirations.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Expirations">Expirations</abbr></a></dt><dd>Represents a collection of option expirations dates and related data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Lookup.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Lookup">Lookup</abbr></a></dt><dd>Represents a lookup response for generating OCC option symbols.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionChains">OptionChains</abbr></a></dt><dd>Represents a collection of option chains with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionChainStrike">OptionChainStrike</abbr></a></dt><dd>Represents a single option chain strike with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Quote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quote">Quote</abbr></a></dt><dd>Represents a single option quote with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quotes">Quotes</abbr></a></dt><dd>Represents a collection of option quotes with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Strikes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Strikes">Strikes</abbr></a></dt><dd>Represents a collection of option strikes with associated data.</dd>    </dl>
+                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Expirations.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Expirations">Expirations</abbr></a></dt><dd>Represents a collection of option expirations dates and related data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Lookup.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Lookup">Lookup</abbr></a></dt><dd>Represents a lookup response for generating OCC option symbols.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionChains">OptionChains</abbr></a></dt><dd>Represents a collection of option chains with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\OptionQuote">OptionQuote</abbr></a></dt><dd>Represents a single option quote with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Quotes">Quotes</abbr></a></dt><dd>Represents a collection of option quotes with associated data.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Responses-Options-Strikes.html"><abbr title="\MarketDataApp\Endpoints\Responses\Options\Strikes">Strikes</abbr></a></dt><dd>Represents a collection of option strikes with associated data.</dd>    </dl>
 
 
 
@@ -184,6 +192,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

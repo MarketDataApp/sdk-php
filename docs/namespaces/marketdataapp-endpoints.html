@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -143,7 +151,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Indices.html"><abbr title="\MarketDataApp\Endpoints\Indices">Indices</abbr></a></dt><dd>Indices class for handling index-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Markets.html"><abbr title="\MarketDataApp\Endpoints\Markets">Markets</abbr></a></dt><dd>Markets class for handling market-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-MutualFunds.html"><abbr title="\MarketDataApp\Endpoints\MutualFunds">MutualFunds</abbr></a></dt><dd>MutualFunds class for handling mutual fund-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Options.html"><abbr title="\MarketDataApp\Endpoints\Options">Options</abbr></a></dt><dd>Class Options</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Stocks.html"><abbr title="\MarketDataApp\Endpoints\Stocks">Stocks</abbr></a></dt><dd>Stocks class for handling stock-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Utilities.html"><abbr title="\MarketDataApp\Endpoints\Utilities">Utilities</abbr></a></dt><dd>Utilities class for Market Data API.</dd>    </dl>
+                    <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Markets.html"><abbr title="\MarketDataApp\Endpoints\Markets">Markets</abbr></a></dt><dd>Markets class for handling market-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-MutualFunds.html"><abbr title="\MarketDataApp\Endpoints\MutualFunds">MutualFunds</abbr></a></dt><dd>MutualFunds class for handling mutual fund-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Options.html"><abbr title="\MarketDataApp\Endpoints\Options">Options</abbr></a></dt><dd>Class Options</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Stocks.html"><abbr title="\MarketDataApp\Endpoints\Stocks">Stocks</abbr></a></dt><dd>Stocks class for handling stock-related API endpoints.</dd>            <dt class="phpdocumentor-table-of-contents__entry -class"><a href="classes/MarketDataApp-Endpoints-Utilities.html"><abbr title="\MarketDataApp\Endpoints\Utilities">Utilities</abbr></a></dt><dd>Utilities class for Market Data API.</dd>    </dl>
 
 
 
@@ -191,6 +199,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

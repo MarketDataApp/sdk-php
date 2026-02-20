@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -139,7 +147,7 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">16</span>
+    <span class="phpdocumentor-element-found-in__line">21</span>
 
     </aside>
 
@@ -151,10 +159,8 @@
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Utilities.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -175,6 +181,12 @@
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
+            <dt class="phpdocumentor-table-of-contents__entry -property -private">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#property_apiStatusData">$apiStatusData</a>
+    <span>
+                        &nbsp;: <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a>            </span>
+</dt>
+
             <dt class="phpdocumentor-table-of-contents__entry -property -private">
     <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#property_client">$client</a>
     <span>
@@ -204,11 +216,46 @@
 <dd>Check the current status of Market Data services.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_clearApiStatusCache">clearApiStatusCache()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Clear the API status cache (useful for testing).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_getApiStatusData">getApiStatusData()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a>    </span>
+</dt>
+<dd>Get the singleton ApiStatusData instance.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_getServiceStatus">getServiceStatus()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-Enums-ApiStatusResult.html"><abbr title="\MarketDataApp\Enums\ApiStatusResult">ApiStatusResult</abbr></a>    </span>
+</dt>
+<dd>Get the status of a specific service.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_headers">headers()</a>
     <span>
                                 &nbsp;: <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\Headers">Headers</abbr></a>    </span>
 </dt>
 <dd>Retrieve the headers sent by the application.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_refreshApiStatus">refreshApiStatus()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Manually refresh the API status cache.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Utilities.html#method_user">user()</a>
+    <span>
+                                &nbsp;: <a href="classes/MarketDataApp-Endpoints-Responses-Utilities-User.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\User">User</abbr></a>    </span>
+</dt>
+<dd>Retrieve rate limit information for the current user.</dd>
 
     </dl>
 
@@ -228,27 +275,66 @@
             phpdocumentor-element
             -property
             -private
-                                                        "
+            -static                                                        "
 >
-    <h4 class="phpdocumentor-element__name" id="property_client">
-        $client
-        <a href="classes/MarketDataApp-Endpoints-Utilities.html#property_client" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="property_apiStatusData">
+        $apiStatusData
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#property_apiStatusData" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">20</span>
+    <span class="phpdocumentor-element-found-in__line">28</span>
 
     </aside>
 
     
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">private</span>
-        <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></span>
+        <span class="phpdocumentor-signature__visibility">private</span>
+        <span class="phpdocumentor-signature__static">static</span>    <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a></span>
+    <span class="phpdocumentor-signature__name">$apiStatusData</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+        <section class="phpdocumentor-description"><p>Static singleton instance for API status caching.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -private
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_client">
+        $client
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#property_client" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">25</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">private</span>
+            <span class="phpdocumentor-signature__type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></span>
     <span class="phpdocumentor-signature__name">$client</span>
     </code>
 
@@ -258,7 +344,8 @@
 
     
 
-    
+        
+        
 
 </article>
             </section>
@@ -283,7 +370,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">27</span>
+    <span class="phpdocumentor-element-found-in__line">35</span>
 
     </aside>
 
@@ -291,7 +378,7 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$client</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$client</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -300,8 +387,8 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$client</span>
-                : <span class="phpdocumentor-signature__argument__return-type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></span>
+                <span class="phpdocumentor-argument-list__argument__name">$client</span>
+                : <span class="phpdocumentor-argument-list__argument__type"><a href="classes/MarketDataApp-Client.html"><abbr title="\MarketDataApp\Client">Client</abbr></a></span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>The Market Data API client instance.</p>
@@ -312,8 +399,8 @@
 
     
 
+        
     
-
     
 </article>
                     <article
@@ -330,7 +417,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">44</span>
+    <span class="phpdocumentor-element-found-in__line">88</span>
 
     </aside>
 
@@ -341,12 +428,20 @@
                     <span class="phpdocumentor-signature__name">api_status</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatus">ApiStatus</abbr></a></span></code>
 
     <div class="phpdocumentor-label-line">
+            <div class="phpdocumentor-label phpdocumentor-label--success"><span>API</span><span>Yes</span></div>
+
         </div>
     
         <section class="phpdocumentor-description"><p>Check the current status of Market Data services and historical uptime. The status of the Market Data API is
 updated every 5 minutes. Historical uptime is available for the last 30 and 90 days.</p>
 <p>TIP: This endpoint will continue to respond with the current status of the Market Data API, even if the API is
 offline. This endpoint is public and does not require a token.</p>
+<p>Uses smart caching:</p>
+<ul>
+<li>If cache is fresh (&lt; 4min30sec): Return cached data immediately, no async update</li>
+<li>If cache is in refresh window (4min30sec - 5min): Return cached data immediately AND trigger async refresh</li>
+<li>If cache is stale (&gt; 5min): Block and fetch fresh data</li>
+</ul>
 </section>
 
     
@@ -354,6 +449,185 @@ offline. This endpoint is public and does not require a token.</p>
     <h5 class="phpdocumentor-tag-list__heading" id="tags">
         Tags
         <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_api_status#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">link</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                                        <a class="phpdocumentor-tag-link" href="https://www.marketdata.app/docs/api/utilities/status"> <p>API Documentation</p>
+ </a>
+                    
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">see</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                    <span class="phpdocumentor-tag-link"><abbr title="\MarketDataApp\Endpoints\getServiceStatus()">getServiceStatus()</abbr></span>
+                                        
+                                                 <section class="phpdocumentor-description"><p>Check status of a specific service</p>
+</section>
+
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">example</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"><p>$status = $client-&gt;utilities-&gt;api_status();
+echo &quot;30-day uptime: &quot; . $status-&gt;uptime_30d . &quot;%\n&quot;;</p>
+</section>
+
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\GuzzleHttp\Exception\GuzzleException">GuzzleException</abbr>|<a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatus">ApiStatus</abbr></a></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The current API status and historical uptime information.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_clearApiStatusCache">
+        clearApiStatusCache()
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_clearApiStatusCache" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">58</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Clear the API status cache (useful for testing).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__static">static</span>        <span class="phpdocumentor-signature__name">clearApiStatusCache</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getApiStatusData">
+        getApiStatusData()
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_getApiStatusData" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">45</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the singleton ApiStatusData instance.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__static">static</span>        <span class="phpdocumentor-signature__name">getApiStatusData</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData">ApiStatusData</abbr></a></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The singleton instance</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getServiceStatus">
+        getServiceStatus()
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_getServiceStatus" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">200</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the status of a specific service.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getServiceStatus</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$service</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Enums-ApiStatusResult.html"><abbr title="\MarketDataApp\Enums\ApiStatusResult">ApiStatusResult</abbr></a></span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Checks if a specific service (e.g., &quot;/v1/stocks/quotes/&quot;) is online, offline, or unknown.
+Uses the same smart caching logic as api_status().</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$service</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The service path to check (e.g., &quot;/v1/stocks/quotes/&quot;).</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_getServiceStatus#tags" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h5>
     <dl class="phpdocumentor-tag-list">
@@ -367,13 +641,13 @@ offline. This endpoint is public and does not require a token.</p>
                                     </dd>
                                             </dl>
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\ApiStatus">ApiStatus</abbr></a></span>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Enums-ApiStatusResult.html"><abbr title="\MarketDataApp\Enums\ApiStatusResult">ApiStatusResult</abbr></a></span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>The current API status and historical uptime information.</p>
+                <section class="phpdocumentor-description"><p>The status result (ONLINE, OFFLINE, or UNKNOWN)</p>
 </section>
 
             </section>
@@ -393,7 +667,7 @@ offline. This endpoint is public and does not require a token.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">61</span>
+    <span class="phpdocumentor-element-found-in__line">147</span>
 
     </aside>
 
@@ -404,6 +678,8 @@ offline. This endpoint is public and does not require a token.</p>
                     <span class="phpdocumentor-signature__name">headers</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\Headers">Headers</abbr></a></span></code>
 
     <div class="phpdocumentor-label-line">
+            <div class="phpdocumentor-label phpdocumentor-label--success"><span>API</span><span>Yes</span></div>
+
         </div>
     
         <section class="phpdocumentor-description"><p>This endpoint allows users to retrieve a JSON response of the headers their application is sending, aiding in
@@ -421,6 +697,24 @@ purposes.</p>
     </h5>
     <dl class="phpdocumentor-tag-list">
                                     <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">link</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                                        <a class="phpdocumentor-tag-link" href="https://www.marketdata.app/docs/api/utilities/headers"> <p>API Documentation</p>
+ </a>
+                    
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">example</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"><p>$headers = $client-&gt;utilities-&gt;headers();
+print_r($headers-&gt;headers);</p>
+</section>
+
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
                     <span class="phpdocumentor-tag__name">throws</span>
                 </dt>
                 <dd class="phpdocumentor-tag-list__definition">
@@ -430,13 +724,163 @@ purposes.</p>
                                     </dd>
                                             </dl>
 
+        
     
-
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\Headers">Headers</abbr></a></span>
                     &mdash;
                 <section class="phpdocumentor-description"><p>The headers sent in the request.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_refreshApiStatus">
+        refreshApiStatus()
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_refreshApiStatus" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">214</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Manually refresh the API status cache.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">refreshApiStatus</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$blocking</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">false</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$blocking</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool</span>
+                 = <span class="phpdocumentor-argument-list__argument__default-value">false</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Whether to wait for response (true) or trigger async refresh (false).</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_refreshApiStatus#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\GuzzleHttp\Exception\GuzzleException">GuzzleException</abbr>|<a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True on success, false on failure (only meaningful for blocking mode)</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_user">
+        user()
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_user" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Utilities.php"><a href="files/src-endpoints-utilities.html"><abbr title="src/Endpoints/Utilities.php">Utilities.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">173</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Retrieve rate limit information for the current user.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">user</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-User.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\User">User</abbr></a></span></code>
+
+    <div class="phpdocumentor-label-line">
+            <div class="phpdocumentor-label phpdocumentor-label--success"><span>API</span><span>Yes</span></div>
+
+        </div>
+    
+        <section class="phpdocumentor-description"><p>This endpoint returns rate limit information from response headers, including:</p>
+<ul>
+<li>The maximum number of credits permitted (per day for Free/Starter/Trader plans or per minute for Prime users)</li>
+<li>The number of credits remaining in the current rate period</li>
+<li>The quantity of credits consumed in the current request (not cumulative)</li>
+<li>When the current rate limit window resets (UTC epoch seconds)</li>
+</ul>
+<p>Note: Rate limits track credits, not requests. Most requests consume 1 credit,
+but bulk requests or options requests may consume multiple credits.</p>
+</section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Utilities.html#method_user#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">example</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"><p>$user = $client-&gt;utilities-&gt;user();
+echo &quot;Remaining: &quot; . $user-&gt;remaining . &quot; / &quot; . $user-&gt;limit . &quot; credits\n&quot;;</p>
+</section>
+
+                                    </dd>
+                                                <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\GuzzleHttp\Exception\GuzzleException">GuzzleException</abbr>|<a href="classes/MarketDataApp-Exceptions-ApiException.html"><abbr title="\MarketDataApp\Exceptions\ApiException">ApiException</abbr></a></span>
+                                                            
+                                             
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type"><a href="classes/MarketDataApp-Endpoints-Responses-Utilities-User.html"><abbr title="\MarketDataApp\Endpoints\Responses\Utilities\User">User</abbr></a></span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The user/rate limit information.</p>
 </section>
 
             </section>
@@ -480,6 +924,8 @@ purposes.</p>
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -555,6 +1001,7 @@ purposes.</p>
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#property_apiStatusData">$apiStatusData</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#property_client">$client</a></li>
                                             </ul>
                 </li>
@@ -564,7 +1011,12 @@ purposes.</p>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method___construct">__construct()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_api_status">api_status()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_clearApiStatusCache">clearApiStatusCache()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_getApiStatusData">getApiStatusData()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_getServiceStatus">getServiceStatus()</a></li>
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_headers">headers()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_refreshApiStatus">refreshApiStatus()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Utilities.html#method_user">user()</a></li>
                                     </ul>
             </li>
                     </ul>

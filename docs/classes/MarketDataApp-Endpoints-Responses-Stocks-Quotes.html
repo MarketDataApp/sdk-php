@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -122,6 +130,9 @@
         <h2 class="phpdocumentor-content__title">
     Quotes
 
+        <span class="phpdocumentor-element__extends">
+        extends <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html"><abbr title="\MarketDataApp\Endpoints\Responses\ResponseBase">ResponseBase</abbr></a>
+    </span>
     
             <div class="phpdocumentor-element__package">
             in package
@@ -141,7 +152,7 @@
         <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Stocks/Quotes.php"><a href="files/src-endpoints-responses-stocks-quotes.html"><abbr title="src/Endpoints/Responses/Stocks/Quotes.php">Quotes.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">8</span>
+    <span class="phpdocumentor-element-found-in__line">10</span>
 
     </aside>
 
@@ -151,10 +162,8 @@
 
 
 
-
-
-
-
+    
+    
 <h3 id="toc">
     Table of Contents
     <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
@@ -176,11 +185,29 @@
 </h4>
 <dl class="phpdocumentor-table-of-contents">
             <dt class="phpdocumentor-table-of-contents__entry -property -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a>
+    <span>
+                        &nbsp;: string|null            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -public">
     <a class="" href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#property_quotes">$quotes</a>
     <span>
                         &nbsp;: array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Stocks\Quote">Quote</abbr></a>&gt;            </span>
 </dt>
 <dd>Array of Quote objects.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv">$csv</a>
+    <span>
+                        &nbsp;: string            </span>
+</dt>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html">$html</a>
+    <span>
+                        &nbsp;: string            </span>
+</dt>
 
     </dl>
 
@@ -196,6 +223,62 @@
                                 &nbsp;: mixed    </span>
 </dt>
 <dd>Quotes constructor.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___toString">__toString()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Returns a string representation of the quotes collection.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv">getCsv()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Get the CSV content of the response.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml">getHtml()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Get the HTML content of the response.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv">isCsv()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Check if the response is in CSV format.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isHtml">isHtml()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Check if the response is in HTML format.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isJson">isJson()</a>
+    <span>
+                                &nbsp;: bool    </span>
+</dt>
+<dd>Check if the response is in JSON format.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Save CSV/HTML content to a file.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -private">
+    <a class="" href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method_extractQuoteAtIndex">extractQuoteAtIndex()</a>
+    <span>
+                                &nbsp;: object    </span>
+</dt>
+<dd>Extract quote data at a specific index from the multi-symbol response.</dd>
 
     </dl>
 
@@ -215,19 +298,58 @@
             phpdocumentor-element
             -property
             -public
-                                                        "
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property__saved_filename">
+        $_saved_filename
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">20</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">string|null</span>
+    <span class="phpdocumentor-signature__name">$_saved_filename</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+    
+        <section class="phpdocumentor-description"><p>The filename where the response was saved (if filename parameter was used).</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -public
+                                                                    "
 >
     <h4 class="phpdocumentor-element__name" id="property_quotes">
         $quotes
         <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#property_quotes" class="headerlink"><i class="fas fa-link"></i></a>
 
         <span class="phpdocumentor-element__modifiers">
-                                </span>
+                                            </span>
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Stocks/Quotes.php"><a href="files/src-endpoints-responses-stocks-quotes.html"><abbr title="src/Endpoints/Responses/Stocks/Quotes.php">Quotes.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">16</span>
+    <span class="phpdocumentor-element-found-in__line">18</span>
 
     </aside>
 
@@ -235,8 +357,8 @@
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility">public</span>
-        <span class="phpdocumentor-signature__type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Stocks\Quote">Quote</abbr></a>&gt;</span>
+        <span class="phpdocumentor-signature__visibility">public</span>
+            <span class="phpdocumentor-signature__type">array&lt;string|int, <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quote.html"><abbr title="\MarketDataApp\Endpoints\Responses\Stocks\Quote">Quote</abbr></a>&gt;</span>
     <span class="phpdocumentor-signature__name">$quotes</span>
     </code>
 
@@ -244,7 +366,86 @@
     
     
 
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_csv">
+        $csv
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">14</span>
+
+    </aside>
+
     
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">$csv</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>The CSV content of the response.</p>
+</section>
+
+    
+
+        
+        
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                                    "
+>
+    <h4 class="phpdocumentor-element__name" id="property_html">
+        $html
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html" class="headerlink"><i class="fas fa-link"></i></a>
+
+        <span class="phpdocumentor-element__modifiers">
+                                            </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">17</span>
+
+    </aside>
+
+    
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+        <span class="phpdocumentor-signature__visibility">protected</span>
+            <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">$html</span>
+    </code>
+
+    
+        <section class="phpdocumentor-description"><p>The HTML content of the response.</p>
+</section>
+
+    
+
+        
+        
 
 </article>
             </section>
@@ -269,7 +470,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Stocks/Quotes.php"><a href="files/src-endpoints-responses-stocks-quotes.html"><abbr title="src/Endpoints/Responses/Stocks/Quotes.php">Quotes.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">23</span>
+    <span class="phpdocumentor-element-found-in__line">28</span>
 
     </aside>
 
@@ -277,7 +478,349 @@
 
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility">public</span>
-                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$quotes</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+                    <span class="phpdocumentor-signature__name">__construct</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Parses a multi-symbol quote response where each field contains an array of values,
+one per symbol. Creates individual Quote objects for each symbol.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type">object</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The raw API response object containing arrays for each field.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+        
+    
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method___toString">
+        __toString()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___toString" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Stocks/Quotes.php"><a href="files/src-endpoints-responses-stocks-quotes.html"><abbr title="src/Endpoints/Responses/Stocks/Quotes.php">Quotes.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">116</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Returns a string representation of the quotes collection.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">__toString</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Human-readable quotes summary.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getCsv">
+        getCsv()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">49</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the CSV content of the response.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getCsv</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in CSV format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The CSV content.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getHtml">
+        getHtml()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">66</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Get the HTML content of the response.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">getHtml</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If the response is not in HTML format.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The HTML content.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_isCsv">
+        isCsv()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">104</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Check if the response is in CSV format.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">isCsv</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True if the response is in CSV format, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_isHtml">
+        isHtml()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isHtml" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">94</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Check if the response is in HTML format.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">isHtml</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True if the response is in HTML format, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_isJson">
+        isJson()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isJson" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">82</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Check if the response is in JSON format.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">isJson</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+    
+    
+    
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>True if the response is in JSON format, false otherwise.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_saveToFile">
+        saveToFile()
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/ResponseBase.php"><a href="files/src-endpoints-responses-responsebase.html"><abbr title="src/Endpoints/Responses/ResponseBase.php">ResponseBase.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">117</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Save CSV/HTML content to a file.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                    <span class="phpdocumentor-signature__name">saveToFile</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$filename</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
 
     <div class="phpdocumentor-label-line">
         </div>
@@ -286,11 +829,114 @@
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$quotes</span>
-                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                <span class="phpdocumentor-argument-list__argument__name">$filename</span>
+                : <span class="phpdocumentor-argument-list__argument__type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Array of raw quote data.</p>
+                    <section class="phpdocumentor-description"><p>The file path to save to.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile#tags" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\InvalidArgumentException">InvalidArgumentException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If filename is invalid (wrong extension, etc.).</p>
+</section>
+
+                                    </dd>
+                            <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">throws</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                <span class="phpdocumentor-tag-link"><abbr title="\RuntimeException">RuntimeException</abbr></span>
+                                                            
+                                                 <section class="phpdocumentor-description"><p>If file writing fails.</p>
+</section>
+
+                                    </dd>
+                                            </dl>
+
+        
+    
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>The absolute path of the saved file.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -private
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_extractQuoteAtIndex">
+        extractQuoteAtIndex()
+        <a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method_extractQuoteAtIndex" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/Endpoints/Responses/Stocks/Quotes.php"><a href="files/src-endpoints-responses-stocks-quotes.html"><abbr title="src/Endpoints/Responses/Stocks/Quotes.php">Quotes.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">69</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Extract quote data at a specific index from the multi-symbol response.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+                    <span class="phpdocumentor-signature__name">extractQuoteAtIndex</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__type">object&nbsp;</span><span class="phpdocumentor-signature__argument__name">$response</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$index</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$isHumanReadable</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">object</span></code>
+
+    <div class="phpdocumentor-label-line">
+        </div>
+    
+        <section class="phpdocumentor-description"><p>Creates a response object that looks like a single-symbol response
+by extracting values at the given index from each array field.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$response</span>
+                : <span class="phpdocumentor-argument-list__argument__type">object</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The full multi-symbol response.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$index</span>
+                : <span class="phpdocumentor-argument-list__argument__type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>The index of the symbol to extract.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-argument-list__argument__name">$isHumanReadable</span>
+                : <span class="phpdocumentor-argument-list__argument__type">bool</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Whether the response uses human-readable keys.</p>
 </section>
 
             </dd>
@@ -298,9 +944,17 @@
 
     
 
+        
     
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">object</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>A response object formatted for a single symbol.</p>
+</section>
 
-    
+            </section>
+
 </article>
             </section>
 
@@ -340,6 +994,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
@@ -415,7 +1071,10 @@
                             <li class="phpdocumentor-on-this-page-section__title">Properties</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename">$_saved_filename</a></li>
                                                     <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#property_quotes">$quotes</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_csv">$csv</a></li>
+                                                    <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html">$html</a></li>
                                             </ul>
                 </li>
             
@@ -423,6 +1082,14 @@
             <li>
                 <ul class="phpdocumentor-list -clean">
                                             <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___construct">__construct()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___toString">__toString()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getCsv">getCsv()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_getHtml">getHtml()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv">isCsv()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isHtml">isHtml()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isJson">isJson()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile">saveToFile()</a></li>
+                                            <li class=""><a href="classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method_extractQuoteAtIndex">extractQuoteAtIndex()</a></li>
                                     </ul>
             </li>
                     </ul>

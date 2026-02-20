@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="-active">Traits</a>
                 
             </li>
@@ -135,7 +143,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-            <dt class="phpdocumentor-table-of-contents__entry -trait"><a href="classes/MarketDataApp-Traits-UniversalParameters.html"><abbr title="\MarketDataApp\Traits\UniversalParameters">UniversalParameters</abbr></a></dt><dd>Trait UniversalParameters</dd>    </dl>
+            <dt class="phpdocumentor-table-of-contents__entry -trait"><a href="classes/MarketDataApp-Traits-FormatsForDisplay.html"><abbr title="\MarketDataApp\Traits\FormatsForDisplay">FormatsForDisplay</abbr></a></dt><dd>Trait for formatting values in __toString() methods.</dd>        <dt class="phpdocumentor-table-of-contents__entry -trait"><a href="classes/MarketDataApp-Traits-UniversalParameters.html"><abbr title="\MarketDataApp\Traits\UniversalParameters">UniversalParameters</abbr></a></dt><dd>Trait UniversalParameters</dd>        <dt class="phpdocumentor-table-of-contents__entry -trait"><a href="classes/MarketDataApp-Traits-ValidatesInputs.html"><abbr title="\MarketDataApp\Traits\ValidatesInputs">ValidatesInputs</abbr></a></dt><dd>Trait for input validation methods.</dd>    </dl>
 
 
 
@@ -182,6 +190,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 

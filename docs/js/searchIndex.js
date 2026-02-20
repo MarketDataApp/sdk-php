@@ -11,10 +11,10 @@ Search.appendIndex(
             "summary": "Constructor\u0020for\u0020the\u0020Client\u0020class.",
             "url": "classes/MarketDataApp-Client.html#method___construct"
         },                {
-            "fqsen": "\\MarketDataApp\\Client\u003A\u003A\u0024indices",
-            "name": "indices",
-            "summary": "The\u0020index\u0020endpoints\u0020provided\u0020by\u0020the\u0020Market\u0020Data\u0020API\u0020offer\u0020access\u0020to\u0020both\u0020real\u002Dtime\u0020and\u0020historical\u0020data\u0020related\u0020to\nfinancial\u0020indices.\u0020These\u0020endpoints\u0020are\u0020designed\u0020to\u0020cater\u0020to\u0020a\u0020wide\u0020range\u0020of\u0020financial\u0020data\u0020needs.",
-            "url": "classes/MarketDataApp-Client.html#property_indices"
+            "fqsen": "\\MarketDataApp\\Client\u003A\u003AobfuscateToken\u0028\u0029",
+            "name": "obfuscateToken",
+            "summary": "Obfuscate\u0020token\u0020for\u0020logging\u0020\u002D\u0020show\u0020full\u0020length\u0020with\u0020asterisks,\u0020last\u00204\u0020chars\u0020visible.",
+            "url": "classes/MarketDataApp-Client.html#method_obfuscateToken"
         },                {
             "fqsen": "\\MarketDataApp\\Client\u003A\u003A\u0024stocks",
             "name": "stocks",
@@ -56,25 +56,100 @@ Search.appendIndex(
             "summary": "Set\u0020a\u0020custom\u0020Guzzle\u0020client.",
             "url": "classes/MarketDataApp-ClientBase.html#method_setGuzzle"
         },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003A_setup_rate_limits\u0028\u0029",
+            "name": "_setup_rate_limits",
+            "summary": "Set\u0020up\u0020initial\u0020rate\u0020limits\u0020by\u0020fetching\u0020from\u0020the\u0020\/user\/\u0020endpoint.",
+            "url": "classes/MarketDataApp-ClientBase.html#method__setup_rate_limits"
+        },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003Aexecute_in_parallel\u0028\u0029",
             "name": "execute_in_parallel",
-            "summary": "Execute\u0020multiple\u0020API\u0020calls\u0020in\u0020parallel.",
+            "summary": "Execute\u0020multiple\u0020API\u0020calls\u0020in\u0020parallel\u0020with\u0020concurrency\u0020limiting.",
             "url": "classes/MarketDataApp-ClientBase.html#method_execute_in_parallel"
         },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003Aasync\u0028\u0029",
             "name": "async",
-            "summary": "Perform\u0020an\u0020asynchronous\u0020API\u0020request.",
+            "summary": "Perform\u0020an\u0020asynchronous\u0020API\u0020request\u0020with\u0020retry\u0020logic.",
             "url": "classes/MarketDataApp-ClientBase.html#method_async"
         },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003Aexecute\u0028\u0029",
             "name": "execute",
-            "summary": "Execute\u0020a\u0020single\u0020API\u0020request.",
+            "summary": "Execute\u0020a\u0020single\u0020API\u0020request\u0020with\u0020retry\u0020logic.",
             "url": "classes/MarketDataApp-ClientBase.html#method_execute"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AprocessResponse\u0028\u0029",
+            "name": "processResponse",
+            "summary": "Process\u0020the\u0020response\u0020and\u0020return\u0020the\u0020appropriate\u0020object.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_processResponse"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AvalidateResponseStatusCode\u0028\u0029",
+            "name": "validateResponseStatusCode",
+            "summary": "Validate\u0020response\u0020status\u0020code\u0020and\u0020raise\u0020appropriate\u0020exceptions.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_validateResponseStatusCode"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AgetErrorMessage\u0028\u0029",
+            "name": "getErrorMessage",
+            "summary": "Get\u0020error\u0020message\u0020from\u0020response.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_getErrorMessage"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AextractRateLimitsFromResponse\u0028\u0029",
+            "name": "extractRateLimitsFromResponse",
+            "summary": "Extract\u0020rate\u0020limit\u0020information\u0020from\u0020response\u0020headers.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_extractRateLimitsFromResponse"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AlogRequest\u0028\u0029",
+            "name": "logRequest",
+            "summary": "Log\u0020a\u0020completed\u0020HTTP\u0020request.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_logRequest"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AisInternalRequest\u0028\u0029",
+            "name": "isInternalRequest",
+            "summary": "Check\u0020if\u0020a\u0020URL\u0020is\u0020for\u0020an\u0020internal\u0020request.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_isInternalRequest"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AcalculateBackoffDelay\u0028\u0029",
+            "name": "calculateBackoffDelay",
+            "summary": "Calculate\u0020exponential\u0020backoff\u0020delay.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_calculateBackoffDelay"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AcreateDelayedPromise\u0028\u0029",
+            "name": "createDelayedPromise",
+            "summary": "Create\u0020a\u0020promise\u0020that\u0020resolves\u0020after\u0020a\u0020delay.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_createDelayedPromise"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AwaitForRetry\u0028\u0029",
+            "name": "waitForRetry",
+            "summary": "Wait\u0020for\u0020retry\u0020with\u0020exponential\u0020backoff.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_waitForRetry"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AgetServicePath\u0028\u0029",
+            "name": "getServicePath",
+            "summary": "Get\u0020service\u0020path\u0020from\u0020method\u0020path\u0020using\u0020hardcoded\u0020mapping.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_getServicePath"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AshouldSkipRetryDueToOfflineService\u0028\u0029",
+            "name": "shouldSkipRetryDueToOfflineService",
+            "summary": "Check\u0020if\u0020service\u0020is\u0020offline\u0020and\u0020should\u0020skip\u0020retries.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_shouldSkipRetryDueToOfflineService"
         },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003Aheaders\u0028\u0029",
             "name": "headers",
             "summary": "Generate\u0020headers\u0020for\u0020API\u0020requests.",
             "url": "classes/MarketDataApp-ClientBase.html#method_headers"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AgetVersion\u0028\u0029",
+            "name": "getVersion",
+            "summary": "Resolve\u0020SDK\u0020version\u0020from\u0020Composer\u0020metadata\u0020when\u0020available.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_getVersion"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AgetUserAgent\u0028\u0029",
+            "name": "getUserAgent",
+            "summary": "Build\u0020SDK\u0020User\u002DAgent\u0020value.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_getUserAgent"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AmakeRawRequest\u0028\u0029",
+            "name": "makeRawRequest",
+            "summary": "Make\u0020a\u0020raw\u0020API\u0020request\u0020and\u0020return\u0020the\u0020response\u0020object.",
+            "url": "classes/MarketDataApp-ClientBase.html#method_makeRawRequest"
         },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AAPI_URL",
             "name": "API_URL",
@@ -86,6 +161,16 @@ Search.appendIndex(
             "summary": "The\u0020host\u0020for\u0020the\u0020Market\u0020Data\u0020API.",
             "url": "classes/MarketDataApp-ClientBase.html#constant_API_HOST"
         },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003APACKAGE_NAME",
+            "name": "PACKAGE_NAME",
+            "summary": "Composer\u0020package\u0020name\u0020for\u0020this\u0020SDK.",
+            "url": "classes/MarketDataApp-ClientBase.html#constant_PACKAGE_NAME"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003AVERSION",
+            "name": "VERSION",
+            "summary": "Fallback\u0020SDK\u0020version\u0020for\u0020User\u002DAgent\u0020header.",
+            "url": "classes/MarketDataApp-ClientBase.html#constant_VERSION"
+        },                {
             "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003A\u0024guzzle",
             "name": "guzzle",
             "summary": "",
@@ -96,40 +181,20 @@ Search.appendIndex(
             "summary": "",
             "url": "classes/MarketDataApp-ClientBase.html#property_token"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices",
-            "name": "Indices",
-            "summary": "Indices\u0020class\u0020for\u0020handling\u0020index\u002Drelated\u0020API\u0020endpoints.",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Indices\u0020constructor.",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003Aquote\u0028\u0029",
-            "name": "quote",
-            "summary": "Get\u0020a\u0020real\u002Dtime\u0020quote\u0020for\u0020an\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#method_quote"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003Aquotes\u0028\u0029",
-            "name": "quotes",
-            "summary": "Get\u0020real\u002Dtime\u0020price\u0020quotes\u0020for\u0020multiple\u0020indices\u0020by\u0020doing\u0020parallel\u0020requests.",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#method_quotes"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003Acandles\u0028\u0029",
-            "name": "candles",
-            "summary": "Get\u0020historical\u0020price\u0020candles\u0020for\u0020an\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#method_candles"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003ABASE_URL",
-            "name": "BASE_URL",
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003A\u0024rate_limits",
+            "name": "rate_limits",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#constant_BASE_URL"
+            "url": "classes/MarketDataApp-ClientBase.html#property_rate_limits"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Indices\u003A\u003A\u0024client",
-            "name": "client",
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003A\u0024default_params",
+            "name": "default_params",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Indices.html#property_client"
+            "url": "classes/MarketDataApp-ClientBase.html#property_default_params"
+        },                {
+            "fqsen": "\\MarketDataApp\\ClientBase\u003A\u003A\u0024logger",
+            "name": "logger",
+            "summary": "",
+            "url": "classes/MarketDataApp-ClientBase.html#property_logger"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Markets",
             "name": "Markets",
@@ -203,7 +268,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003Astrikes\u0028\u0029",
             "name": "strikes",
-            "summary": "Get\u0020a\u0020list\u0020of\u0020current\u0020or\u0020historical\u0020options\u0020strikes\u0020for\u0020an\u0020underlying\u0020symbol.\u0020If\u0020no\u0020optional\u0020parameters\u0020are\nused,\nthe\u0020endpoint\u0020returns\u0020the\u0020strikes\u0020for\u0020every\u0020expiration\u0020in\u0020the\u0020chain.",
+            "summary": "Get\u0020a\u0020list\u0020of\u0020current\u0020or\u0020historical\u0020options\u0020strikes\u0020for\u0020an\u0020underlying\u0020symbol.\u0020If\u0020no\u0020optional\u0020parameters\u0020are\nused,\u0020the\u0020endpoint\u0020returns\u0020the\u0020strikes\u0020for\u0020every\u0020expiration\u0020in\u0020the\u0020chain.",
             "url": "classes/MarketDataApp-Endpoints-Options.html#method_strikes"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003Aoption_chain\u0028\u0029",
@@ -213,8 +278,23 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003Aquotes\u0028\u0029",
             "name": "quotes",
-            "summary": "Get\u0020a\u0020current\u0020or\u0020historical\u0020end\u0020of\u0020day\u0020quote\u0020for\u0020a\u0020single\u0020options\u0020contract.",
+            "summary": "Get\u0020current\u0020or\u0020historical\u0020end\u0020of\u0020day\u0020quotes\u0020for\u0020one\u0020or\u0020more\u0020options\u0020contracts.",
             "url": "classes/MarketDataApp-Endpoints-Options.html#method_quotes"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003AquotesMultiple\u0028\u0029",
+            "name": "quotesMultiple",
+            "summary": "Get\u0020quotes\u0020for\u0020multiple\u0020option\u0020symbols\u0020concurrently.",
+            "url": "classes/MarketDataApp-Endpoints-Options.html#method_quotesMultiple"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003AquotesMultipleCsv\u0028\u0029",
+            "name": "quotesMultipleCsv",
+            "summary": "Handle\u0020CSV\u0020format\u0020for\u0020multiple\u0020option\u0020symbols.",
+            "url": "classes/MarketDataApp-Endpoints-Options.html#method_quotesMultipleCsv"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003AmergeQuotesResponses\u0028\u0029",
+            "name": "mergeQuotesResponses",
+            "summary": "Merge\u0020multiple\u0020quotes\u0020responses\u0020into\u0020a\u0020single\u0020Quotes\u0020object.",
+            "url": "classes/MarketDataApp-Endpoints-Options.html#method_mergeQuotesResponses"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Options\u003A\u003ABASE_URL",
             "name": "BASE_URL",
@@ -228,7 +308,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters",
             "name": "Parameters",
-            "summary": "Represents\u0020parameters\u0020for\u0020API\u0020requests.",
+            "summary": "Represents\u0020universal\u0020parameters\u0020for\u0020API\u0020requests.",
             "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A__construct\u0028\u0029",
@@ -236,140 +316,50 @@ Search.appendIndex(
             "summary": "Parameters\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020parameters.",
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024maxage",
+            "name": "maxage",
+            "summary": "Maximum\u0020acceptable\u0020age\u0020for\u0020cached\u0020data\u0020in\u0020seconds.",
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_maxage"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024format",
             "name": "format",
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_format"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle",
-            "name": "Candle",
-            "summary": "Represents\u0020a\u0020financial\u0020candle\u0020with\u0020open,\u0020high,\u0020low,\u0020and\u0020close\u0020prices\u0020for\u0020a\u0020specific\u0020timestamp.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020Candle\u0020instance.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A\u0024open",
-            "name": "open",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024use_human_readable",
+            "name": "use_human_readable",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#property_open"
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_use_human_readable"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A\u0024high",
-            "name": "high",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024mode",
+            "name": "mode",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#property_high"
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_mode"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A\u0024low",
-            "name": "low",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024date_format",
+            "name": "date_format",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#property_low"
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_date_format"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A\u0024close",
-            "name": "close",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024columns",
+            "name": "columns",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#property_close"
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_columns"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candle\u003A\u003A\u0024timestamp",
-            "name": "timestamp",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024add_headers",
+            "name": "add_headers",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candle.html#property_timestamp"
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_add_headers"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles",
-            "name": "Candles",
-            "summary": "Represents\u0020a\u0020collection\u0020of\u0020financial\u0020candles\u0020with\u0020additional\u0020metadata.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020Candles\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles\u003A\u003A\u0024status",
-            "name": "status",
-            "summary": "Status\u0020of\u0020the\u0020candles\u0020request.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html#property_status"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles\u003A\u003A\u0024candles",
-            "name": "candles",
-            "summary": "Array\u0020of\u0020Candle\u0020objects\u0020representing\u0020financial\u0020data.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html#property_candles"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles\u003A\u003A\u0024next_time",
-            "name": "next_time",
-            "summary": "Unix\u0020time\u0020of\u0020the\u0020next\u0020quote\u0020if\u0020there\u0020is\u0020no\u0020data\u0020in\u0020the\u0020requested\u0020period,\u0020but\u0020there\u0020is\u0020data\u0020in\u0020a\u0020subsequent\nperiod.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html#property_next_time"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Candles\u003A\u003A\u0024prev_time",
-            "name": "prev_time",
-            "summary": "Time\u0020of\u0020the\u0020previous\u0020quote\u0020if\u0020there\u0020is\u0020no\u0020data\u0020in\u0020the\u0020requested\u0020period,\u0020but\u0020there\u0020is\u0020data\u0020in\u0020a\u0020previous\u0020period.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Candles.html#property_prev_time"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote",
-            "name": "Quote",
-            "summary": "Represents\u0020a\u0020financial\u0020quote\u0020for\u0020an\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020Quote\u0020instance.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024status",
-            "name": "status",
-            "summary": "Status\u0020of\u0020the\u0020quote\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020symbol\u0020requested.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_status"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024symbol",
-            "name": "symbol",
-            "summary": "The\u0020symbol\u0020of\u0020the\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_symbol"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024last",
-            "name": "last",
-            "summary": "The\u0020last\u0020price\u0020of\u0020the\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_last"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024change",
-            "name": "change",
-            "summary": "The\u0020difference\u0020in\u0020price\u0020in\u0020dollars\u0020\u0028or\u0020the\u0020index\u0027s\u0020native\u0020currency\u0020if\u0020different\u0020from\u0020dollars\u0029\u0020compared\u0020to\u0020the\nclosing\u0020price\u0020of\u0020the\u0020previous\u0020day.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_change"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024change_percent",
-            "name": "change_percent",
-            "summary": "The\u0020difference\u0020in\u0020price\u0020in\u0020percent\u0020compared\u0020to\u0020the\u0020closing\u0020price\u0020of\u0020the\u0020previous\u0020day.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_change_percent"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024fifty_two_week_high",
-            "name": "fifty_two_week_high",
-            "summary": "The\u002052\u002Dweek\u0020high\u0020for\u0020the\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_fifty_two_week_high"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024fifty_two_week_low",
-            "name": "fifty_two_week_low",
-            "summary": "The\u002052\u002Dweek\u0020low\u0020for\u0020the\u0020index.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_fifty_two_week_low"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quote\u003A\u003A\u0024updated",
-            "name": "updated",
-            "summary": "The\u0020date\/time\u0020of\u0020the\u0020quote.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quote.html#property_updated"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quotes",
-            "name": "Quotes",
-            "summary": "Represents\u0020a\u0020collection\u0020of\u0020Quote\u0020objects.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quotes.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quotes\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020Quotes\u0020instance\u0020from\u0020an\u0020array\u0020of\u0020quote\u0020data.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quotes.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices\\Quotes\u003A\u003A\u0024quotes",
-            "name": "quotes",
-            "summary": "Array\u0020of\u0020Quote\u0020objects.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Indices-Quotes.html#property_quotes"
+            "fqsen": "\\MarketDataApp\\Endpoints\\Requests\\Parameters\u003A\u003A\u0024filename",
+            "name": "filename",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Requests-Parameters.html#property_filename"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets\\Status",
             "name": "Status",
@@ -380,6 +370,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Status\u0020instance.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Markets-Status.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets\\Status\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020market\u0020status.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Markets-Status.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets\\Status\u003A\u003A\u0024date",
             "name": "date",
@@ -401,6 +396,11 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020Statuses\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Markets-Statuses.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets\\Statuses\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020market\u0020statuses\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Markets-Statuses.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets\\Statuses\u003A\u003A\u0024status",
             "name": "status",
             "summary": "The\u0020status\u0020of\u0020the\u0020response.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020dates\u0020requested.",
@@ -420,6 +420,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Candle\u0020instance.",
             "url": "classes/MarketDataApp-Endpoints-Responses-MutualFunds-Candle.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\MutualFunds\\Candle\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020mutual\u0020fund\u0020candle.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-MutualFunds-Candle.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\MutualFunds\\Candle\u003A\u003A\u0024open",
             "name": "open",
@@ -456,6 +461,11 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020Candles\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-MutualFunds-Candles.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\MutualFunds\\Candles\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020mutual\u0020funds\u0020candles\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-MutualFunds-Candles.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\MutualFunds\\Candles\u003A\u003A\u0024status",
             "name": "status",
             "summary": "Status\u0020of\u0020the\u0020candles\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020candles\u0020requested.",
@@ -480,6 +490,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Expirations\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Expirations.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Expirations\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020expirations\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Expirations.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Expirations\u003A\u003A\u0024status",
             "name": "status",
@@ -516,6 +531,11 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020Lookup\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Lookup.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Lookup\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020lookup\u0020result.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Lookup.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Lookup\u003A\u003A\u0024status",
             "name": "status",
             "summary": "Status\u0020of\u0020the\u0020lookup\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020the\u0020OCC\u0020option\u0020symbol\u0020is\u0020successfully\u0020generated.",
@@ -536,6 +556,56 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020OptionChains\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AtoQuotes\u0028\u0029",
+            "name": "toQuotes",
+            "summary": "Convert\u0020the\u0020option\u0020chains\u0020to\u0020a\u0020flat\u0020Quotes\u0020object.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_toQuotes"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetAllQuotes\u0028\u0029",
+            "name": "getAllQuotes",
+            "summary": "Get\u0020all\u0020option\u0020quotes\u0020as\u0020a\u0020flat\u0020array.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getAllQuotes"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetExpirationDates\u0028\u0029",
+            "name": "getExpirationDates",
+            "summary": "Get\u0020all\u0020expiration\u0020dates\u0020in\u0020the\u0020chain.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getExpirationDates"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetQuotesByExpiration\u0028\u0029",
+            "name": "getQuotesByExpiration",
+            "summary": "Get\u0020option\u0020quotes\u0020for\u0020a\u0020specific\u0020expiration\u0020date.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getQuotesByExpiration"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003Acount\u0028\u0029",
+            "name": "count",
+            "summary": "Get\u0020the\u0020total\u0020count\u0020of\u0020option\u0020quotes\u0020across\u0020all\u0020expirations.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_count"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetCalls\u0028\u0029",
+            "name": "getCalls",
+            "summary": "Get\u0020only\u0020call\u0020options\u0020from\u0020the\u0020chain.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getCalls"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetPuts\u0028\u0029",
+            "name": "getPuts",
+            "summary": "Get\u0020only\u0020put\u0020options\u0020from\u0020the\u0020chain.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getPuts"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetByStrike\u0028\u0029",
+            "name": "getByStrike",
+            "summary": "Get\u0020option\u0020quotes\u0020for\u0020a\u0020specific\u0020strike\u0020price.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getByStrike"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003AgetStrikes\u0028\u0029",
+            "name": "getStrikes",
+            "summary": "Get\u0020all\u0020unique\u0020strike\u0020prices\u0020in\u0020the\u0020chain,\u0020sorted\u0020ascending.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method_getStrikes"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020option\u0020chains\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003A\u0024status",
             "name": "status",
             "summary": "Status\u0020of\u0020the\u0020option\u0020chains\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020the\u0020quote\u0020requested.",
@@ -553,268 +623,168 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChains\u003A\u003A\u0024option_chains",
             "name": "option_chains",
-            "summary": "Multidimensional\u0020array\u0020of\u0020OptionChainStrike\u0020objects\u0020organized\u0020by\u0020date.",
+            "summary": "Multidimensional\u0020array\u0020of\u0020OptionQuote\u0020objects\u0020organized\u0020by\u0020date.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChains.html#property_option_chains"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike",
-            "name": "OptionChainStrike",
-            "summary": "Represents\u0020a\u0020single\u0020option\u0020chain\u0020strike\u0020with\u0020associated\u0020data.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html"
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote",
+            "name": "OptionQuote",
+            "summary": "Represents\u0020a\u0020single\u0020option\u0020quote\u0020with\u0020associated\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A__construct\u0028\u0029",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A__construct\u0028\u0029",
             "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020OptionChainStrike\u0020instance.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#method___construct"
+            "summary": "Constructs\u0020a\u0020new\u0020OptionQuote\u0020instance.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#method___construct"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024option_symbol",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020option\u0020quote.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024option_symbol",
             "name": "option_symbol",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_option_symbol"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_option_symbol"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024underlying",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024underlying",
             "name": "underlying",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_underlying"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_underlying"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024expiration",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024expiration",
             "name": "expiration",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_expiration"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_expiration"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024side",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024side",
             "name": "side",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_side"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_side"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024strike",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024strike",
             "name": "strike",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_strike"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_strike"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024first_traded",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024first_traded",
             "name": "first_traded",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_first_traded"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_first_traded"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024dte",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024dte",
             "name": "dte",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_dte"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_dte"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024ask",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024ask",
             "name": "ask",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_ask"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_ask"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024ask_size",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024ask_size",
             "name": "ask_size",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_ask_size"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_ask_size"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024bid",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024bid",
             "name": "bid",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_bid"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_bid"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024bid_size",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024bid_size",
             "name": "bid_size",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_bid_size"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_bid_size"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024mid",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024mid",
             "name": "mid",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_mid"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_mid"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024last",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024last",
             "name": "last",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_last"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_last"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024volume",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024volume",
             "name": "volume",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_volume"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_volume"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024open_interest",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024open_interest",
             "name": "open_interest",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_open_interest"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_open_interest"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024underlying_price",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024underlying_price",
             "name": "underlying_price",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_underlying_price"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_underlying_price"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024in_the_money",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024in_the_money",
             "name": "in_the_money",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_in_the_money"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_in_the_money"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024intrinsic_value",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024intrinsic_value",
             "name": "intrinsic_value",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_intrinsic_value"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_intrinsic_value"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024extrinsic_value",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024extrinsic_value",
             "name": "extrinsic_value",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_extrinsic_value"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_extrinsic_value"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024implied_volatility",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024implied_volatility",
             "name": "implied_volatility",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_implied_volatility"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_implied_volatility"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024delta",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024delta",
             "name": "delta",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_delta"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_delta"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024gamma",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024gamma",
             "name": "gamma",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_gamma"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_gamma"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024theta",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024theta",
             "name": "theta",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_theta"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_theta"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024vega",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024vega",
             "name": "vega",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_vega"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_vega"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024rho",
-            "name": "rho",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_rho"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionChainStrike\u003A\u003A\u0024updated",
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\OptionQuote\u003A\u003A\u0024updated",
             "name": "updated",
             "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionChainStrike.html#property_updated"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote",
-            "name": "Quote",
-            "summary": "Represents\u0020a\u0020single\u0020option\u0020quote\u0020with\u0020associated\u0020data.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020Quote\u0020instance.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024option_symbol",
-            "name": "option_symbol",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_option_symbol"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024ask",
-            "name": "ask",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_ask"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024ask_size",
-            "name": "ask_size",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_ask_size"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024bid",
-            "name": "bid",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_bid"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024bid_size",
-            "name": "bid_size",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_bid_size"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024mid",
-            "name": "mid",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_mid"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024last",
-            "name": "last",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_last"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024volume",
-            "name": "volume",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_volume"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024open_interest",
-            "name": "open_interest",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_open_interest"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024underlying_price",
-            "name": "underlying_price",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_underlying_price"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024in_the_money",
-            "name": "in_the_money",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_in_the_money"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024intrinsic_value",
-            "name": "intrinsic_value",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_intrinsic_value"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024extrinsic_value",
-            "name": "extrinsic_value",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_extrinsic_value"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024implied_volatility",
-            "name": "implied_volatility",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_implied_volatility"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024delta",
-            "name": "delta",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_delta"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024gamma",
-            "name": "gamma",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_gamma"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024theta",
-            "name": "theta",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_theta"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024vega",
-            "name": "vega",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_vega"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024rho",
-            "name": "rho",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_rho"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quote\u003A\u003A\u0024updated",
-            "name": "updated",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quote.html#property_updated"
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-OptionQuote.html#property_updated"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes",
             "name": "Quotes",
             "summary": "Represents\u0020a\u0020collection\u0020of\u0020option\u0020quotes\u0020with\u0020associated\u0020data.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003AcreateMerged\u0028\u0029",
+            "name": "createMerged",
+            "summary": "Create\u0020a\u0020Quotes\u0020object\u0020from\u0020pre\u002Dmerged\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html#method_createMerged"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003A__construct\u0028\u0029",
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Quotes\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020option\u0020quotes\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003A\u0024status",
             "name": "status",
@@ -833,8 +803,13 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003A\u0024quotes",
             "name": "quotes",
-            "summary": "Array\u0020of\u0020Quote\u0020objects.",
+            "summary": "Array\u0020of\u0020OptionQuote\u0020objects.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html#property_quotes"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Quotes\u003A\u003A\u0024errors",
+            "name": "errors",
+            "summary": "Array\u0020of\u0020errors\u0020for\u0020failed\u0020symbol\u0020requests\u0020\u0028multi\u002Dsymbol\u0020requests\u0020only\u0029.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Quotes.html#property_errors"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Strikes",
             "name": "Strikes",
@@ -845,6 +820,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Strikes\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Options-Strikes.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Strikes\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020strikes\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Options-Strikes.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Options\\Strikes\u003A\u003A\u0024status",
             "name": "status",
@@ -906,6 +886,11 @@ Search.appendIndex(
             "summary": "Check\u0020if\u0020the\u0020response\u0020is\u0020in\u0020CSV\u0020format.",
             "url": "classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_isCsv"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\ResponseBase\u003A\u003AsaveToFile\u0028\u0029",
+            "name": "saveToFile",
+            "summary": "Save\u0020CSV\/HTML\u0020content\u0020to\u0020a\u0020file.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#method_saveToFile"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\ResponseBase\u003A\u003A\u0024csv",
             "name": "csv",
             "summary": "",
@@ -915,6 +900,11 @@ Search.appendIndex(
             "name": "html",
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property_html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\ResponseBase\u003A\u003A\u0024_saved_filename",
+            "name": "_saved_filename",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-ResponseBase.html#property__saved_filename"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkCandles",
             "name": "BulkCandles",
@@ -926,6 +916,11 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020BulkCandles\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkCandles.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkCandles\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020bulk\u0020candles\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkCandles.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkCandles\u003A\u003A\u0024status",
             "name": "status",
             "summary": "Status\u0020of\u0020the\u0020bulk\u0020candles\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020candles\u0020requested.",
@@ -936,101 +931,6 @@ Search.appendIndex(
             "summary": "Array\u0020of\u0020Candle\u0020objects\u0020representing\u0020individual\u0020stock\u0020candles.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkCandles.html#property_candles"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote",
-            "name": "BulkQuote",
-            "summary": "Represents\u0020a\u0020bulk\u0020quote\u0020for\u0020a\u0020stock\u0020with\u0020various\u0020price\u0020and\u0020volume\u0020information.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020BulkQuote\u0020instance.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024symbol",
-            "name": "symbol",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_symbol"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024ask",
-            "name": "ask",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_ask"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024ask_size",
-            "name": "ask_size",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_ask_size"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024bid",
-            "name": "bid",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_bid"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024bid_size",
-            "name": "bid_size",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_bid_size"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024mid",
-            "name": "mid",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_mid"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024last",
-            "name": "last",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_last"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024change",
-            "name": "change",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_change"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024change_percent",
-            "name": "change_percent",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_change_percent"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024fifty_two_week_high",
-            "name": "fifty_two_week_high",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_fifty_two_week_high"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024fifty_two_week_low",
-            "name": "fifty_two_week_low",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_fifty_two_week_low"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024volume",
-            "name": "volume",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_volume"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuote\u003A\u003A\u0024updated",
-            "name": "updated",
-            "summary": "",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuote.html#property_updated"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuotes",
-            "name": "BulkQuotes",
-            "summary": "Represents\u0020a\u0020collection\u0020of\u0020bulk\u0020stock\u0020quotes.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuotes.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuotes\u003A\u003A__construct\u0028\u0029",
-            "name": "__construct",
-            "summary": "Constructs\u0020a\u0020new\u0020BulkQuotes\u0020instance\u0020from\u0020the\u0020given\u0020response\u0020object.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuotes.html#method___construct"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuotes\u003A\u003A\u0024status",
-            "name": "status",
-            "summary": "Status\u0020of\u0020the\u0020bulk\u0020quotes\u0020request.\u0020Will\u0020always\u0020be\u0020ok\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020symbol\u0020requested.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuotes.html#property_status"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\BulkQuotes\u003A\u003A\u0024quotes",
-            "name": "quotes",
-            "summary": "Array\u0020of\u0020BulkQuote\u0020objects\u0020representing\u0020individual\u0020stock\u0020quotes.",
-            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-BulkQuotes.html#property_quotes"
-        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candle",
             "name": "Candle",
             "summary": "Represents\u0020a\u0020single\u0020stock\u0020candle\u0020with\u0020open,\u0020high,\u0020low,\u0020close\u0020prices,\u0020volume,\u0020and\u0020timestamp.",
@@ -1040,6 +940,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Candle\u0020instance.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candle.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candle\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020candle.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candle.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candle\u003A\u003A\u0024open",
             "name": "open",
@@ -1071,6 +976,11 @@ Search.appendIndex(
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candle.html#property_timestamp"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candle\u003A\u003A\u0024symbol",
+            "name": "symbol",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candle.html#property_symbol"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candles",
             "name": "Candles",
             "summary": "Class\u0020Candles",
@@ -1080,6 +990,16 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Candles\u0020object\u0020and\u0020parses\u0020the\u0020response\u0020data.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candles.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candles\u003A\u003AcreateMerged\u0028\u0029",
+            "name": "createMerged",
+            "summary": "Create\u0020a\u0020Candles\u0020object\u0020from\u0020pre\u002Dmerged\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candles.html#method_createMerged"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candles\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020candles\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Candles.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Candles\u003A\u003A\u0024status",
             "name": "status",
@@ -1105,6 +1025,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Earning\u0020object\u0020with\u0020detailed\u0020earnings\u0020information.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Earning.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Earning\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020earnings\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Earning.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Earning\u003A\u003A\u0024symbol",
             "name": "symbol",
@@ -1176,6 +1101,11 @@ Search.appendIndex(
             "summary": "Constructs\u0020a\u0020new\u0020Earnings\u0020object\u0020and\u0020parses\u0020the\u0020response\u0020data.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Earnings.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Earnings\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020earnings\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Earnings.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Earnings\u003A\u003A\u0024status",
             "name": "status",
             "summary": "The\u0020status\u0020of\u0020the\u0020response.\u0020Will\u0020always\u0020be\u0020\u0022ok\u0022\u0020when\u0020there\u0020is\u0020data\u0020for\u0020the\u0020symbol\u0020requested.",
@@ -1195,6 +1125,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020News\u0020object\u0020and\u0020parses\u0020the\u0020response\u0020data.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-News.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\News\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020news\u0020article.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-News.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\News\u003A\u003A\u0024status",
             "name": "status",
@@ -1226,6 +1161,51 @@ Search.appendIndex(
             "summary": "The\u0020date\u0020the\u0020news\u0020was\u0020published\u0020on\u0020the\u0020source\u0020website.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-News.html#property_publication_date"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices",
+            "name": "Prices",
+            "summary": "Class\u0020Prices",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "Constructs\u0020a\u0020new\u0020Prices\u0020object\u0020and\u0020parses\u0020the\u0020response\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020prices\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024status",
+            "name": "status",
+            "summary": "The\u0020status\u0020of\u0020the\u0020response.\u0020Will\u0020be\u0020\u0022ok\u0022\u0020when\u0020there\u0020is\u0020data,\u0020\u0022no_data\u0022\u0020when\u0020no\u0020prices\u0020can\u0020be\u0020found,\nor\u0020\u0022error\u0022\u0020if\u0020the\u0020request\u0020produces\u0020an\u0020error\u0020response.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_status"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024symbols",
+            "name": "symbols",
+            "summary": "Array\u0020of\u0020ticker\u0020symbols\u0020that\u0020were\u0020requested.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_symbols"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024mid",
+            "name": "mid",
+            "summary": "Array\u0020of\u0020midpoint\u0020prices,\u0020as\u0020calculated\u0020by\u0020the\u0020SmartMid\u0020model.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_mid"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024change",
+            "name": "change",
+            "summary": "Array\u0020of\u0020price\u0020changes\u0020in\u0020currency\u0020units\u0020compared\u0020to\u0020the\u0020closing\u0020price\u0020of\u0020the\u0020previous\u0020primary\u0020trading\u0020session.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_change"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024changepct",
+            "name": "changepct",
+            "summary": "Array\u0020of\u0020price\u0020changes\u0020in\u0020percent,\u0020expressed\u0020as\u0020a\u0020decimal,\u0020compared\u0020to\u0020the\u0020closing\u0020price\u0020of\u0020the\u0020previous\u0020day.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_changepct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Prices\u003A\u003A\u0024updated",
+            "name": "updated",
+            "summary": "Array\u0020of\u0020date\/times\u0020for\u0020each\u0020stock\u0020price.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Prices.html#property_updated"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quote",
             "name": "Quote",
             "summary": "Class\u0020Quote",
@@ -1235,6 +1215,11 @@ Search.appendIndex(
             "name": "__construct",
             "summary": "Constructs\u0020a\u0020new\u0020Quote\u0020object\u0020and\u0020parses\u0020the\u0020response\u0020data.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Quote.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quote\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020quote.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Quote.html#method___toString"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quote\u003A\u003A\u0024status",
             "name": "status",
@@ -1316,6 +1301,16 @@ Search.appendIndex(
             "summary": "Quotes\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quotes\u003A\u003AextractQuoteAtIndex\u0028\u0029",
+            "name": "extractQuoteAtIndex",
+            "summary": "Extract\u0020quote\u0020data\u0020at\u0020a\u0020specific\u0020index\u0020from\u0020the\u0020multi\u002Dsymbol\u0020response.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method_extractQuoteAtIndex"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quotes\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020quotes\u0020collection.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Stocks-Quotes.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Stocks\\Quotes\u003A\u003A\u0024quotes",
             "name": "quotes",
             "summary": "Array\u0020of\u0020Quote\u0020objects.",
@@ -1331,6 +1326,11 @@ Search.appendIndex(
             "summary": "ApiStatus\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatus\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020API\u0020status.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatus\u003A\u003A\u0024status",
             "name": "status",
             "summary": "Will\u0020always\u0020be\u0020\u0022ok\u0022\u0020when\u0020the\u0020status\u0020information\u0020is\u0020successfully\u0020retrieved.",
@@ -1340,6 +1340,106 @@ Search.appendIndex(
             "name": "services",
             "summary": "Array\u0020of\u0020ServiceStatus\u0020objects\u0020representing\u0020the\u0020status\u0020of\u0020each\u0020service.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatus.html#property_services"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData",
+            "name": "ApiStatusData",
+            "summary": "Manages\u0020API\u0020status\u0020caching\u0020and\u0020provides\u0020service\u0020status\u0020checking.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003Aupdate\u0028\u0029",
+            "name": "update",
+            "summary": "Update\u0020internal\u0020state\u0020from\u0020API\u0020response.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_update"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AisValid\u0028\u0029",
+            "name": "isValid",
+            "summary": "Check\u0020if\u0020cache\u0020is\u0020still\u0020valid\u0020\u0028within\u00205\u0020minutes\u0029.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_isValid"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AinRefreshWindow\u0028\u0029",
+            "name": "inRefreshWindow",
+            "summary": "Check\u0020if\u0020cache\u0020is\u0020in\u0020refresh\u0020window\u0020\u00284min30sec\u0020\u002D\u00205min\u0029.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_inRefreshWindow"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003Arefresh\u0028\u0029",
+            "name": "refresh",
+            "summary": "Fetch\u0020fresh\u0020status\u0020from\u0020API.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_refresh"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003ArefreshBlocking\u0028\u0029",
+            "name": "refreshBlocking",
+            "summary": "Blocking\u0020refresh\u0020\u002D\u0020wait\u0020for\u0020response.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_refreshBlocking"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003ArefreshAsync\u0028\u0029",
+            "name": "refreshAsync",
+            "summary": "Trigger\u0020non\u002Dblocking\u0020async\u0020refresh.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_refreshAsync"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AgetApiStatus\u0028\u0029",
+            "name": "getApiStatus",
+            "summary": "Get\u0020status\u0020for\u0020specific\u0020service.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_getApiStatus"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AgetServiceStatus\u0028\u0029",
+            "name": "getServiceStatus",
+            "summary": "Get\u0020status\u0020for\u0020a\u0020specific\u0020service\u0020from\u0020cached\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_getServiceStatus"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AgetLastRefreshed\u0028\u0029",
+            "name": "getLastRefreshed",
+            "summary": "Get\u0020last\u0020refresh\u0020timestamp.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_getLastRefreshed"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AhasData\u0028\u0029",
+            "name": "hasData",
+            "summary": "Check\u0020if\u0020cache\u0020has\u0020data.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_hasData"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003AgetCachedApiStatus\u0028\u0029",
+            "name": "getCachedApiStatus",
+            "summary": "Get\u0020cached\u0020ApiStatus\u0020object.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#method_getCachedApiStatus"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024service",
+            "name": "service",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_service"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024status",
+            "name": "status",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_status"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024online",
+            "name": "online",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_online"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024uptimePct30d",
+            "name": "uptimePct30d",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_uptimePct30d"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024uptimePct90d",
+            "name": "uptimePct90d",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_uptimePct90d"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024updated",
+            "name": "updated",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_updated"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024lastRefreshed",
+            "name": "lastRefreshed",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_lastRefreshed"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ApiStatusData\u003A\u003A\u0024refreshPromise",
+            "name": "refreshPromise",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ApiStatusData.html#property_refreshPromise"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\Headers",
             "name": "Headers",
@@ -1351,6 +1451,11 @@ Search.appendIndex(
             "summary": "Headers\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\Headers\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020headers.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-Headers.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ServiceStatus",
             "name": "ServiceStatus",
             "summary": "Represents\u0020the\u0020status\u0020of\u0020a\u0020service.",
@@ -1361,6 +1466,11 @@ Search.appendIndex(
             "summary": "ServiceStatus\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ServiceStatus\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020service\u0020status.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#method___toString"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ServiceStatus\u003A\u003A\u0024service",
             "name": "service",
             "summary": "",
@@ -1370,6 +1480,11 @@ Search.appendIndex(
             "name": "status",
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_status"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ServiceStatus\u003A\u003A\u0024online",
+            "name": "online",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_online"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\ServiceStatus\u003A\u003A\u0024uptime_percentage_30d",
             "name": "uptime_percentage_30d",
@@ -1386,6 +1501,26 @@ Search.appendIndex(
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-ServiceStatus.html#property_updated"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\User",
+            "name": "User",
+            "summary": "Represents\u0020user\/rate\u0020limit\u0020information\u0020from\u0020the\u0020API.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-User.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\User\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "User\u0020constructor.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-User.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\User\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020user\u0020info.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-User.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Utilities\\User\u003A\u003A\u0024rate_limits",
+            "name": "rate_limits",
+            "summary": "The\u0020rate\u0020limit\u0020information.",
+            "url": "classes/MarketDataApp-Endpoints-Responses-Utilities-User.html#property_rate_limits"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks",
             "name": "Stocks",
             "summary": "Stocks\u0020class\u0020for\u0020handling\u0020stock\u002Drelated\u0020API\u0020endpoints.",
@@ -1396,6 +1531,36 @@ Search.appendIndex(
             "summary": "Stocks\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Stocks.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AisIntradayResolution\u0028\u0029",
+            "name": "isIntradayResolution",
+            "summary": "Check\u0020if\u0020a\u0020resolution\u0020is\u0020intraday\u0020\u0028minutely\u0020or\u0020hourly\u0029.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_isIntradayResolution"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AparseUserDate\u0028\u0029",
+            "name": "parseUserDate",
+            "summary": "Parse\u0020a\u0020user\u002Dprovided\u0020date\u0020string\u0020into\u0020a\u0020Carbon\u0020instance.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_parseUserDate"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AisParseableDate\u0028\u0029",
+            "name": "isParseableDate",
+            "summary": "Check\u0020if\u0020a\u0020date\u0020string\u0020can\u0020be\u0020parsed\u0020as\u0020an\u0020absolute\u0020date.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_isParseableDate"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AsplitDateRangeIntoYearChunks\u0028\u0029",
+            "name": "splitDateRangeIntoYearChunks",
+            "summary": "Split\u0020a\u0020date\u0020range\u0020into\u0020year\u002Dlong\u0020chunks\u0020for\u0020concurrent\u0020fetching.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_splitDateRangeIntoYearChunks"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AneedsAutomaticSplitting\u0028\u0029",
+            "name": "needsAutomaticSplitting",
+            "summary": "Determine\u0020if\u0020a\u0020candles\u0020request\u0020needs\u0020automatic\u0020date\u0020range\u0020splitting.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_needsAutomaticSplitting"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AmergeCandleResponses\u0028\u0029",
+            "name": "mergeCandleResponses",
+            "summary": "Merge\u0020multiple\u0020candle\u0020responses\u0020into\u0020a\u0020single\u0020Candles\u0020object.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_mergeCandleResponses"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AbulkCandles\u0028\u0029",
             "name": "bulkCandles",
             "summary": "Get\u0020bulk\u0020candle\u0020data\u0020for\u0020stocks.",
@@ -1403,8 +1568,18 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Acandles\u0028\u0029",
             "name": "candles",
-            "summary": "Get\u0020historical\u0020price\u0020candles\u0020for\u0020an\u0020index.",
+            "summary": "Get\u0020historical\u0020price\u0020candles\u0020for\u0020a\u0020stock.",
             "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_candles"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AcandlesConcurrent\u0028\u0029",
+            "name": "candlesConcurrent",
+            "summary": "Fetch\u0020candles\u0020concurrently\u0020by\u0020splitting\u0020date\u0020range\u0020into\u0020year\u002Dlong\u0020chunks.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_candlesConcurrent"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AcandlesConcurrentCsv\u0028\u0029",
+            "name": "candlesConcurrentCsv",
+            "summary": "Handle\u0020CSV\u0020format\u0020for\u0020concurrent\u0020candle\u0020requests.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_candlesConcurrentCsv"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Aquote\u0028\u0029",
             "name": "quote",
@@ -1413,13 +1588,13 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Aquotes\u0028\u0029",
             "name": "quotes",
-            "summary": "Get\u0020real\u002Dtime\u0020price\u0020quotes\u0020for\u0020multiple\u0020stocks\u0020by\u0020doing\u0020parallel\u0020requests.",
+            "summary": "Get\u0020real\u002Dtime\u0020price\u0020quotes\u0020for\u0020multiple\u0020stocks\u0020in\u0020a\u0020single\u0020API\u0020request.",
             "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_quotes"
         },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003AbulkQuotes\u0028\u0029",
-            "name": "bulkQuotes",
-            "summary": "Get\u0020real\u002Dtime\u0020price\u0020quotes\u0020for\u0020multiple\u0020stocks\u0020in\u0020a\u0020single\u0020API\u0020request.",
-            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_bulkQuotes"
+            "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Aprices\u0028\u0029",
+            "name": "prices",
+            "summary": "Get\u0020real\u002Dtime\u0020midpoint\u0020prices\u0020for\u0020one\u0020or\u0020more\u0020stocks.",
+            "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_prices"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Aearnings\u0028\u0029",
             "name": "earnings",
@@ -1428,7 +1603,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003Anews\u0028\u0029",
             "name": "news",
-            "summary": "Retrieve\u0020news\u0020articles\u0020for\u0020a\u0020given\u0020stock\u0020symbol\u0020within\u0020a\u0020specified\u0020date\u0020range.",
+            "summary": "Retrieve\u0020news\u0020articles\u0020for\u0020a\u0020given\u0020stock\u0020symbol.",
             "url": "classes/MarketDataApp-Endpoints-Stocks.html#method_news"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Stocks\u003A\u003ABASE_URL",
@@ -1451,6 +1626,16 @@ Search.appendIndex(
             "summary": "Utilities\u0020constructor.",
             "url": "classes/MarketDataApp-Endpoints-Utilities.html#method___construct"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003AgetApiStatusData\u0028\u0029",
+            "name": "getApiStatusData",
+            "summary": "Get\u0020the\u0020singleton\u0020ApiStatusData\u0020instance.",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_getApiStatusData"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003AclearApiStatusCache\u0028\u0029",
+            "name": "clearApiStatusCache",
+            "summary": "Clear\u0020the\u0020API\u0020status\u0020cache\u0020\u0028useful\u0020for\u0020testing\u0029.",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_clearApiStatusCache"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003Aapi_status\u0028\u0029",
             "name": "api_status",
             "summary": "Check\u0020the\u0020current\u0020status\u0020of\u0020Market\u0020Data\u0020services.",
@@ -1461,10 +1646,70 @@ Search.appendIndex(
             "summary": "Retrieve\u0020the\u0020headers\u0020sent\u0020by\u0020the\u0020application.",
             "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_headers"
         },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003Auser\u0028\u0029",
+            "name": "user",
+            "summary": "Retrieve\u0020rate\u0020limit\u0020information\u0020for\u0020the\u0020current\u0020user.",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_user"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003AgetServiceStatus\u0028\u0029",
+            "name": "getServiceStatus",
+            "summary": "Get\u0020the\u0020status\u0020of\u0020a\u0020specific\u0020service.",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_getServiceStatus"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003ArefreshApiStatus\u0028\u0029",
+            "name": "refreshApiStatus",
+            "summary": "Manually\u0020refresh\u0020the\u0020API\u0020status\u0020cache.",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#method_refreshApiStatus"
+        },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003A\u0024client",
             "name": "client",
             "summary": "",
             "url": "classes/MarketDataApp-Endpoints-Utilities.html#property_client"
+        },                {
+            "fqsen": "\\MarketDataApp\\Endpoints\\Utilities\u003A\u003A\u0024apiStatusData",
+            "name": "apiStatusData",
+            "summary": "",
+            "url": "classes/MarketDataApp-Endpoints-Utilities.html#property_apiStatusData"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\ApiStatusResult",
+            "name": "ApiStatusResult",
+            "summary": "Enum\u0020representing\u0020the\u0020status\u0020result\u0020of\u0020an\u0020API\u0020service.",
+            "url": "classes/MarketDataApp-Enums-ApiStatusResult.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\ApiStatusResult\u003A\u003AONLINE",
+            "name": "ONLINE",
+            "summary": "",
+            "url": "classes/MarketDataApp-Enums-ApiStatusResult.html#enumcase_ONLINE"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\ApiStatusResult\u003A\u003AOFFLINE",
+            "name": "OFFLINE",
+            "summary": "",
+            "url": "classes/MarketDataApp-Enums-ApiStatusResult.html#enumcase_OFFLINE"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\ApiStatusResult\u003A\u003AUNKNOWN",
+            "name": "UNKNOWN",
+            "summary": "",
+            "url": "classes/MarketDataApp-Enums-ApiStatusResult.html#enumcase_UNKNOWN"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\DateFormat",
+            "name": "DateFormat",
+            "summary": "Enum\u0020DateFormat",
+            "url": "classes/MarketDataApp-Enums-DateFormat.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\DateFormat\u003A\u003ATIMESTAMP",
+            "name": "TIMESTAMP",
+            "summary": "ISO\u0020timestamp\u0020format\u0020\u0028e.g.,\u0020\u00222023\u002D01\u002D20T10\u003A30\u003A00Z\u0022\u0029.",
+            "url": "classes/MarketDataApp-Enums-DateFormat.html#enumcase_TIMESTAMP"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\DateFormat\u003A\u003AUNIX",
+            "name": "UNIX",
+            "summary": "Unix\u0020timestamp\u0020format\u0020\u0028seconds\u0020since\u0020epoch,\u0020e.g.,\u00201674210600\u0029.",
+            "url": "classes/MarketDataApp-Enums-DateFormat.html#enumcase_UNIX"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\DateFormat\u003A\u003ASPREADSHEET",
+            "name": "SPREADSHEET",
+            "summary": "Spreadsheet\u002Dcompatible\u0020format\u0020\u0028Excel\u0020serial\u0020date\u0020numbers\u0029.",
+            "url": "classes/MarketDataApp-Enums-DateFormat.html#enumcase_SPREADSHEET"
         },                {
             "fqsen": "\\MarketDataApp\\Enums\\Expiration",
             "name": "Expiration",
@@ -1495,6 +1740,26 @@ Search.appendIndex(
             "name": "HTML",
             "summary": "Represents\u0020HTML\u0020format\u0020output.",
             "url": "classes/MarketDataApp-Enums-Format.html#enumcase_HTML"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\Mode",
+            "name": "Mode",
+            "summary": "Enum\u0020Mode",
+            "url": "classes/MarketDataApp-Enums-Mode.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\Mode\u003A\u003ALIVE",
+            "name": "LIVE",
+            "summary": "Represents\u0020live\u0020market\u0020data.",
+            "url": "classes/MarketDataApp-Enums-Mode.html#enumcase_LIVE"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\Mode\u003A\u003ACACHED",
+            "name": "CACHED",
+            "summary": "Represents\u0020cached\u0020data.",
+            "url": "classes/MarketDataApp-Enums-Mode.html#enumcase_CACHED"
+        },                {
+            "fqsen": "\\MarketDataApp\\Enums\\Mode\u003A\u003ADELAYED",
+            "name": "DELAYED",
+            "summary": "Represents\u0020delayed\u0020data.",
+            "url": "classes/MarketDataApp-Enums-Mode.html#enumcase_DELAYED"
         },                {
             "fqsen": "\\MarketDataApp\\Enums\\Range",
             "name": "Range",
@@ -1541,20 +1806,390 @@ Search.appendIndex(
             "summary": "ApiException\u0020constructor.",
             "url": "classes/MarketDataApp-Exceptions-ApiException.html#method___construct"
         },                {
-            "fqsen": "\\MarketDataApp\\Exceptions\\ApiException\u003A\u003AgetResponse\u0028\u0029",
-            "name": "getResponse",
-            "summary": "Get\u0020the\u0020API\u0020response\u0020associated\u0020with\u0020this\u0020exception.",
-            "url": "classes/MarketDataApp-Exceptions-ApiException.html#method_getResponse"
+            "fqsen": "\\MarketDataApp\\Exceptions\\BadStatusCodeError",
+            "name": "BadStatusCodeError",
+            "summary": "BadStatusCodeError\u0020class",
+            "url": "classes/MarketDataApp-Exceptions-BadStatusCodeError.html"
         },                {
-            "fqsen": "\\MarketDataApp\\Exceptions\\ApiException\u003A\u003A\u0024response",
+            "fqsen": "\\MarketDataApp\\Exceptions\\BadStatusCodeError\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "BadStatusCodeError\u0020constructor.",
+            "url": "classes/MarketDataApp-Exceptions-BadStatusCodeError.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException",
+            "name": "MarketDataException",
+            "summary": "Base\u0020exception\u0020class\u0020for\u0020all\u0020Market\u0020Data\u0020SDK\u0020exceptions.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "MarketDataException\u0020constructor.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AextractRequestId\u0028\u0029",
+            "name": "extractRequestId",
+            "summary": "Extract\u0020the\u0020request\u0020ID\u0020\u0028cf\u002Dray\u0020header\u0029\u0020from\u0020the\u0020response.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_extractRequestId"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetResponse\u0028\u0029",
+            "name": "getResponse",
+            "summary": "Get\u0020the\u0020HTTP\u0020response\u0020associated\u0020with\u0020this\u0020exception.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getResponse"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetRequestId\u0028\u0029",
+            "name": "getRequestId",
+            "summary": "Get\u0020the\u0020Cloudflare\u0020request\u0020ID\u0020for\u0020support\u0020tickets.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestId"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetRequestUrl\u0028\u0029",
+            "name": "getRequestUrl",
+            "summary": "Get\u0020the\u0020URL\u0020that\u0020was\u0020requested\u0020when\u0020the\u0020error\u0020occurred.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getRequestUrl"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetTimestamp\u0028\u0029",
+            "name": "getTimestamp",
+            "summary": "Get\u0020the\u0020timestamp\u0020when\u0020the\u0020exception\u0020occurred.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getTimestamp"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetSupportContext\u0028\u0029",
+            "name": "getSupportContext",
+            "summary": "Get\u0020all\u0020support\u0020ticket\u0020context\u0020as\u0020an\u0020associative\u0020array.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getSupportContext"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003AgetSupportInfo\u0028\u0029",
+            "name": "getSupportInfo",
+            "summary": "Get\u0020a\u0020pre\u002Dformatted\u0020string\u0020with\u0020all\u0020information\u0020needed\u0020for\u0020a\u0020support\u0020ticket.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method_getSupportInfo"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Get\u0020string\u0020representation\u0020of\u0020the\u0020exception.",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A\u0024response",
             "name": "response",
             "summary": "",
-            "url": "classes/MarketDataApp-Exceptions-ApiException.html#property_response"
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#property_response"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A\u0024requestId",
+            "name": "requestId",
+            "summary": "",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestId"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A\u0024requestUrl",
+            "name": "requestUrl",
+            "summary": "",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#property_requestUrl"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\MarketDataException\u003A\u003A\u0024timestamp",
+            "name": "timestamp",
+            "summary": "",
+            "url": "classes/MarketDataApp-Exceptions-MarketDataException.html#property_timestamp"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\RequestError",
+            "name": "RequestError",
+            "summary": "RequestError\u0020class",
+            "url": "classes/MarketDataApp-Exceptions-RequestError.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\RequestError\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "RequestError\u0020constructor.",
+            "url": "classes/MarketDataApp-Exceptions-RequestError.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\UnauthorizedException",
+            "name": "UnauthorizedException",
+            "summary": "UnauthorizedException\u0020class",
+            "url": "classes/MarketDataApp-Exceptions-UnauthorizedException.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Exceptions\\UnauthorizedException\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "UnauthorizedException\u0020constructor.",
+            "url": "classes/MarketDataApp-Exceptions-UnauthorizedException.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger",
+            "name": "DefaultLogger",
+            "summary": "Default\u0020PSR\u002D3\u0020compliant\u0020logger\u0020for\u0020MarketDataApp\u0020SDK.",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "Create\u0020a\u0020new\u0020DefaultLogger\u0020instance.",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003Alog\u0028\u0029",
+            "name": "log",
+            "summary": "Log\u0020a\u0020message\u0020at\u0020the\u0020specified\u0020level.",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#method_log"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003Ainterpolate\u0028\u0029",
+            "name": "interpolate",
+            "summary": "Interpolate\u0020context\u0020values\u0020into\u0020message\u0020placeholders.",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#method_interpolate"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003ALOGGER_NAME",
+            "name": "LOGGER_NAME",
+            "summary": "Logger\u0020name\u0020used\u0020in\u0020output\u0020format.",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#constant_LOGGER_NAME"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003A\u0024minLevel",
+            "name": "minLevel",
+            "summary": "",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#property_minLevel"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003A\u0024output",
+            "name": "output",
+            "summary": "",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#property_output"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\DefaultLogger\u003A\u003A\u0024levels",
+            "name": "levels",
+            "summary": "",
+            "url": "classes/MarketDataApp-Logging-DefaultLogger.html#property_levels"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggerFactory",
+            "name": "LoggerFactory",
+            "summary": "Factory\u0020for\u0020creating\u0020and\u0020managing\u0020logger\u0020instances.",
+            "url": "classes/MarketDataApp-Logging-LoggerFactory.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggerFactory\u003A\u003AgetLogger\u0028\u0029",
+            "name": "getLogger",
+            "summary": "Get\u0020the\u0020configured\u0020logger\u0020instance.",
+            "url": "classes/MarketDataApp-Logging-LoggerFactory.html#method_getLogger"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggerFactory\u003A\u003AsetLogger\u0028\u0029",
+            "name": "setLogger",
+            "summary": "Set\u0020a\u0020custom\u0020logger\u0020instance.",
+            "url": "classes/MarketDataApp-Logging-LoggerFactory.html#method_setLogger"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggerFactory\u003A\u003AresetLogger\u0028\u0029",
+            "name": "resetLogger",
+            "summary": "Reset\u0020the\u0020logger\u0020singleton.",
+            "url": "classes/MarketDataApp-Logging-LoggerFactory.html#method_resetLogger"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggerFactory\u003A\u003A\u0024instance",
+            "name": "instance",
+            "summary": "",
+            "url": "classes/MarketDataApp-Logging-LoggerFactory.html#property_instance"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggingUtilities",
+            "name": "LoggingUtilities",
+            "summary": "Utility\u0020functions\u0020for\u0020logging.",
+            "url": "classes/MarketDataApp-Logging-LoggingUtilities.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging\\LoggingUtilities\u003A\u003AformatDuration\u0028\u0029",
+            "name": "formatDuration",
+            "summary": "Format\u0020duration\u0020in\u0020milliseconds\u0020to\u0020human\u002Dreadable\u0020string.",
+            "url": "classes/MarketDataApp-Logging-LoggingUtilities.html#method_formatDuration"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits",
+            "name": "RateLimits",
+            "summary": "Represents\u0020rate\u0020limit\u0020information\u0020from\u0020API\u0020responses.",
+            "url": "classes/MarketDataApp-RateLimits.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "RateLimits\u0020constructor.",
+            "url": "classes/MarketDataApp-RateLimits.html#method___construct"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A__toString\u0028\u0029",
+            "name": "__toString",
+            "summary": "Returns\u0020a\u0020string\u0020representation\u0020of\u0020the\u0020rate\u0020limits.",
+            "url": "classes/MarketDataApp-RateLimits.html#method___toString"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A\u0024limit",
+            "name": "limit",
+            "summary": "Total\u0020number\u0020of\u0020credits\u0020allowed\u0020in\u0020the\u0020current\u0020rate\u0020limit\u0020window.",
+            "url": "classes/MarketDataApp-RateLimits.html#property_limit"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A\u0024remaining",
+            "name": "remaining",
+            "summary": "Number\u0020of\u0020credits\u0020remaining\u0020in\u0020the\u0020current\u0020rate\u0020limit\u0020window.",
+            "url": "classes/MarketDataApp-RateLimits.html#property_remaining"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A\u0024reset",
+            "name": "reset",
+            "summary": "Unix\u0020timestamp\u0020when\u0020the\u0020rate\u0020limit\u0020resets.",
+            "url": "classes/MarketDataApp-RateLimits.html#property_reset"
+        },                {
+            "fqsen": "\\MarketDataApp\\RateLimits\u003A\u003A\u0024consumed",
+            "name": "consumed",
+            "summary": "Number\u0020of\u0020credits\u0020consumed\u0020in\u0020the\u0020current\u0020request.",
+            "url": "classes/MarketDataApp-RateLimits.html#property_consumed"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig",
+            "name": "RetryConfig",
+            "summary": "Retry\u0020configuration\u0020constants\u0020matching\u0020the\u0020Python\u0020SDK.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig\u003A\u003AisRetryableStatusCode\u0028\u0029",
+            "name": "isRetryableStatusCode",
+            "summary": "Check\u0020if\u0020a\u0020status\u0020code\u0020is\u0020retryable\u0020\u0028status\u0020code\u0020\u003E\u0020500\u0029.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html#method_isRetryableStatusCode"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig\u003A\u003AMAX_RETRY_ATTEMPTS",
+            "name": "MAX_RETRY_ATTEMPTS",
+            "summary": "Maximum\u0020number\u0020of\u0020retry\u0020attempts.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html#constant_MAX_RETRY_ATTEMPTS"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig\u003A\u003ARETRY_BACKOFF",
+            "name": "RETRY_BACKOFF",
+            "summary": "Exponential\u0020backoff\u0020multiplier.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html#constant_RETRY_BACKOFF"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig\u003A\u003AMIN_RETRY_BACKOFF",
+            "name": "MIN_RETRY_BACKOFF",
+            "summary": "Minimum\u0020backoff\u0020time\u0020in\u0020seconds.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html#constant_MIN_RETRY_BACKOFF"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry\\RetryConfig\u003A\u003AMAX_RETRY_BACKOFF",
+            "name": "MAX_RETRY_BACKOFF",
+            "summary": "Maximum\u0020backoff\u0020time\u0020in\u0020seconds.",
+            "url": "classes/MarketDataApp-Retry-RetryConfig.html#constant_MAX_RETRY_BACKOFF"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings",
+            "name": "Settings",
+            "summary": "Settings\u0020class\u0020for\u0020MarketDataApp\u0020SDK.",
+            "url": "classes/MarketDataApp-Settings.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetToken\u0028\u0029",
+            "name": "getToken",
+            "summary": "Get\u0020the\u0020API\u0020token\u0020with\u0020automatic\u0020resolution\u0020from\u0020multiple\u0020sources.",
+            "url": "classes/MarketDataApp-Settings.html#method_getToken"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvToken\u0028\u0029",
+            "name": "getEnvToken",
+            "summary": "Get\u0020token\u0020from\u0020environment\u0020variables.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvToken"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetDotenvToken\u0028\u0029",
+            "name": "getDotenvToken",
+            "summary": "Get\u0020token\u0020from\u0020.env\u0020file.",
+            "url": "classes/MarketDataApp-Settings.html#method_getDotenvToken"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AloadDotenv\u0028\u0029",
+            "name": "loadDotenv",
+            "summary": "Load\u0020.env\u0020file\u0020if\u0020it\u0020exists.",
+            "url": "classes/MarketDataApp-Settings.html#method_loadDotenv"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetDefaultParameters\u0028\u0029",
+            "name": "getDefaultParameters",
+            "summary": "Get\u0020default\u0020universal\u0020parameters\u0020from\u0020environment\u0020variables\u0020and\u0020.env\u0020file.",
+            "url": "classes/MarketDataApp-Settings.html#method_getDefaultParameters"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvFormat\u0028\u0029",
+            "name": "getEnvFormat",
+            "summary": "Get\u0020format\u0020from\u0020environment\u0020variable\u0020MARKETDATA_OUTPUT_FORMAT.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvFormat"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvDateFormat\u0028\u0029",
+            "name": "getEnvDateFormat",
+            "summary": "Get\u0020date\u0020format\u0020from\u0020environment\u0020variable\u0020MARKETDATA_DATE_FORMAT.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvDateFormat"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvMode\u0028\u0029",
+            "name": "getEnvMode",
+            "summary": "Get\u0020mode\u0020from\u0020environment\u0020variable\u0020MARKETDATA_MODE.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvMode"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvColumns\u0028\u0029",
+            "name": "getEnvColumns",
+            "summary": "Get\u0020columns\u0020array\u0020from\u0020environment\u0020variable\u0020MARKETDATA_COLUMNS.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvColumns"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvBool\u0028\u0029",
+            "name": "getEnvBool",
+            "summary": "Get\u0020boolean\u0020value\u0020from\u0020environment\u0020variable.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvBool"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetLogLevel\u0028\u0029",
+            "name": "getLogLevel",
+            "summary": "Get\u0020the\u0020logging\u0020level\u0020from\u0020environment\u0020variable\u0020MARKETDATA_LOGGING_LEVEL.",
+            "url": "classes/MarketDataApp-Settings.html#method_getLogLevel"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AgetEnvValue\u0028\u0029",
+            "name": "getEnvValue",
+            "summary": "Get\u0020environment\u0020variable\u0020value\u0020from\u0020multiple\u0020sources.",
+            "url": "classes/MarketDataApp-Settings.html#method_getEnvValue"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AMAX_CONCURRENT_REQUESTS",
+            "name": "MAX_CONCURRENT_REQUESTS",
+            "summary": "Maximum\u0020number\u0020of\u0020concurrent\u0020requests\u0020allowed\u0020for\u0020the\u0020entire\u0020API.",
+            "url": "classes/MarketDataApp-Settings.html#constant_MAX_CONCURRENT_REQUESTS"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AREFRESH_API_STATUS_INTERVAL",
+            "name": "REFRESH_API_STATUS_INTERVAL",
+            "summary": "Refresh\u0020interval\u0020for\u0020API\u0020status\u0020cache.",
+            "url": "classes/MarketDataApp-Settings.html#constant_REFRESH_API_STATUS_INTERVAL"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003AAPI_STATUS_CACHE_VALIDITY",
+            "name": "API_STATUS_CACHE_VALIDITY",
+            "summary": "Cache\u0020validity\u0020period\u0020for\u0020API\u0020status.",
+            "url": "classes/MarketDataApp-Settings.html#constant_API_STATUS_CACHE_VALIDITY"
+        },                {
+            "fqsen": "\\MarketDataApp\\Settings\u003A\u003A\u0024dotenvLoaded",
+            "name": "dotenvLoaded",
+            "summary": "",
+            "url": "classes/MarketDataApp-Settings.html#property_dotenvLoaded"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay",
+            "name": "FormatsForDisplay",
+            "summary": "Trait\u0020for\u0020formatting\u0020values\u0020in\u0020__toString\u0028\u0029\u0020methods.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatCurrency\u0028\u0029",
+            "name": "formatCurrency",
+            "summary": "Format\u0020a\u0020float\u0020as\u0020currency\u0020\u0028e.g.,\u0020\u0022\u0024150.25\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatCurrency"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatPercent\u0028\u0029",
+            "name": "formatPercent",
+            "summary": "Format\u0020a\u0020percentage\u0020with\u0020sign\u0020\u0028e.g.,\u0020\u0022\u002B3.25\u0025\u0022\u0020or\u0020\u0022\u002D1.50\u0025\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercent"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatPercentRaw\u0028\u0029",
+            "name": "formatPercentRaw",
+            "summary": "Format\u0020a\u0020percentage\u0020that\u0020is\u0020already\u0020in\u0020percent\u0020form\u0020\u0028e.g.,\u0020\u002232.50\u0025\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatPercentRaw"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatVolume\u0028\u0029",
+            "name": "formatVolume",
+            "summary": "Format\u0020volume\u0020with\u0020K\/M\/B\u0020suffixes\u0020\u0028e.g.,\u0020\u002254.9M\u0022,\u0020\u002212.3K\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatVolume"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatDateTime\u0028\u0029",
+            "name": "formatDateTime",
+            "summary": "Format\u0020a\u0020Carbon\u0020date\u0020with\u0020time\u0020\u0028e.g.,\u0020\u0022Jan\u002024,\u00202026\u00203\u003A45\u0020PM\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDateTime"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatDate\u0028\u0029",
+            "name": "formatDate",
+            "summary": "Format\u0020a\u0020Carbon\u0020date\u0020without\u0020time\u0020\u0028e.g.,\u0020\u0022Jan\u002024,\u00202026\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatDate"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatGreek\u0028\u0029",
+            "name": "formatGreek",
+            "summary": "Format\u0020a\u0020Greek\u0020value\u0020\u00284\u0020decimal\u0020places,\u0020e.g.,\u0020\u00220.4520\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatGreek"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatNumber\u0028\u0029",
+            "name": "formatNumber",
+            "summary": "Format\u0020a\u0020number\u0020with\u0020commas\u0020\u0028e.g.,\u0020\u002215,234\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatNumber"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\FormatsForDisplay\u003A\u003AformatChange\u0028\u0029",
+            "name": "formatChange",
+            "summary": "Format\u0020a\u0020change\u0020value\u0020with\u0020sign\u0020and\u0020currency\u0020\u0028e.g.,\u0020\u0022\u002B\u00241.25\u0022\u0020or\u0020\u0022\u002D\u00240.50\u0022\u0029.",
+            "url": "classes/MarketDataApp-Traits-FormatsForDisplay.html#method_formatChange"
         },                {
             "fqsen": "\\MarketDataApp\\Traits\\UniversalParameters",
             "name": "UniversalParameters",
             "summary": "Trait\u0020UniversalParameters",
             "url": "classes/MarketDataApp-Traits-UniversalParameters.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\UniversalParameters\u003A\u003AmergeParameters\u0028\u0029",
+            "name": "mergeParameters",
+            "summary": "Merge\u0020method\u002Dlevel\u0020parameters\u0020with\u0020client\u0020default\u0020parameters.",
+            "url": "classes/MarketDataApp-Traits-UniversalParameters.html#method_mergeParameters"
         },                {
             "fqsen": "\\MarketDataApp\\Traits\\UniversalParameters\u003A\u003Aexecute\u0028\u0029",
             "name": "execute",
@@ -1565,6 +2200,66 @@ Search.appendIndex(
             "name": "execute_in_parallel",
             "summary": "Execute\u0020multiple\u0020API\u0020requests\u0020in\u0020parallel\u0020with\u0020universal\u0020parameters.",
             "url": "classes/MarketDataApp-Traits-UniversalParameters.html#method_execute_in_parallel"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs",
+            "name": "ValidatesInputs",
+            "summary": "Trait\u0020for\u0020input\u0020validation\u0020methods.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AcanParseAsDate\u0028\u0029",
+            "name": "canParseAsDate",
+            "summary": "Check\u0020if\u0020a\u0020string\u0020can\u0020be\u0020parsed\u0020as\u0020a\u0020date.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_canParseAsDate"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AparseDateToTimestamp\u0028\u0029",
+            "name": "parseDateToTimestamp",
+            "summary": "Parse\u0020a\u0020date\u0020string\u0020to\u0020unix\u0020timestamp.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_parseDateToTimestamp"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateDateRange\u0028\u0029",
+            "name": "validateDateRange",
+            "summary": "Validate\u0020date\u0020range\u0020logic.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateDateRange"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidatePositiveInteger\u0028\u0029",
+            "name": "validatePositiveInteger",
+            "summary": "Validate\u0020that\u0020an\u0020integer\u0020is\u0020positive\u0020if\u0020provided.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validatePositiveInteger"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidatePositiveNumber\u0028\u0029",
+            "name": "validatePositiveNumber",
+            "summary": "Validate\u0020that\u0020a\u0020number\u0020\u0028int\u0020or\u0020float\u0029\u0020is\u0020positive\u0020if\u0020provided.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validatePositiveNumber"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateNumericRange\u0028\u0029",
+            "name": "validateNumericRange",
+            "summary": "Validate\u0020that\u0020min\u0020\u003C\u0020max\u0020when\u0020both\u0020are\u0020provided.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateNumericRange"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateNonEmptyString\u0028\u0029",
+            "name": "validateNonEmptyString",
+            "summary": "Validate\u0020that\u0020a\u0020string\u0020is\u0020non\u002Dempty.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateNonEmptyString"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateNonEmptyArray\u0028\u0029",
+            "name": "validateNonEmptyArray",
+            "summary": "Validate\u0020that\u0020an\u0020array\u0020is\u0020non\u002Dempty.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateNonEmptyArray"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateSymbols\u0028\u0029",
+            "name": "validateSymbols",
+            "summary": "Validate\u0020symbols\u0020array\u0020\u0028trim\u0020and\u0020ensure\u0020non\u002Dempty\u0029.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateSymbols"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateResolution\u0028\u0029",
+            "name": "validateResolution",
+            "summary": "Validate\u0020resolution\u0020format.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateResolution"
+        },                {
+            "fqsen": "\\MarketDataApp\\Traits\\ValidatesInputs\u003A\u003AvalidateCountryCode\u0028\u0029",
+            "name": "validateCountryCode",
+            "summary": "Validate\u0020ISO\u00203166\u0020two\u002Dletter\u0020country\u0020code.",
+            "url": "classes/MarketDataApp-Traits-ValidatesInputs.html#method_validateCountryCode"
         },                {
             "fqsen": "\\",
             "name": "\\",
@@ -1585,11 +2280,6 @@ Search.appendIndex(
             "name": "Requests",
             "summary": "",
             "url": "namespaces/marketdataapp-endpoints-requests.html"
-        },                {
-            "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Indices",
-            "name": "Indices",
-            "summary": "",
-            "url": "namespaces/marketdataapp-endpoints-responses-indices.html"
         },                {
             "fqsen": "\\MarketDataApp\\Endpoints\\Responses\\Markets",
             "name": "Markets",
@@ -1630,6 +2320,16 @@ Search.appendIndex(
             "name": "Exceptions",
             "summary": "",
             "url": "namespaces/marketdataapp-exceptions.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Logging",
+            "name": "Logging",
+            "summary": "",
+            "url": "namespaces/marketdataapp-logging.html"
+        },                {
+            "fqsen": "\\MarketDataApp\\Retry",
+            "name": "Retry",
+            "summary": "",
+            "url": "namespaces/marketdataapp-retry.html"
         },                {
             "fqsen": "\\MarketDataApp\\Traits",
             "name": "Traits",

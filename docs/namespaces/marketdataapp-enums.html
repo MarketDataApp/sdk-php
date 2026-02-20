@@ -82,6 +82,14 @@
                 
             </li>
                     <li>
+                <a href="namespaces/marketdataapp-logging.html" class="">Logging</a>
+                
+            </li>
+                    <li>
+                <a href="namespaces/marketdataapp-retry.html" class="">Retry</a>
+                
+            </li>
+                    <li>
                 <a href="namespaces/marketdataapp-traits.html" class="">Traits</a>
                 
             </li>
@@ -136,7 +144,7 @@
 
     </h4>
     <dl class="phpdocumentor-table-of-contents">
-            <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Expiration.html"><abbr title="\MarketDataApp\Enums\Expiration">Expiration</abbr></a></dt><dd>Enum Expiration</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></dt><dd>Enum Format</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Range.html"><abbr title="\MarketDataApp\Enums\Range">Range</abbr></a></dt><dd>Enum Range</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Side.html"><abbr title="\MarketDataApp\Enums\Side">Side</abbr></a></dt><dd>Enum Side</dd></dl>
+            <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-ApiStatusResult.html"><abbr title="\MarketDataApp\Enums\ApiStatusResult">ApiStatusResult</abbr></a></dt><dd>Enum representing the status result of an API service.</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-DateFormat.html"><abbr title="\MarketDataApp\Enums\DateFormat">DateFormat</abbr></a></dt><dd>Enum DateFormat</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Expiration.html"><abbr title="\MarketDataApp\Enums\Expiration">Expiration</abbr></a></dt><dd>Enum Expiration</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Format.html"><abbr title="\MarketDataApp\Enums\Format">Format</abbr></a></dt><dd>Enum Format</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Mode.html"><abbr title="\MarketDataApp\Enums\Mode">Mode</abbr></a></dt><dd>Enum Mode</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Range.html"><abbr title="\MarketDataApp\Enums\Range">Range</abbr></a></dt><dd>Enum Range</dd>        <dt class="phpdocumentor-table-of-contents__entry -enum"><a href="classes/MarketDataApp-Enums-Side.html"><abbr title="\MarketDataApp\Enums\Side">Side</abbr></a></dt><dd>Enum Side</dd></dl>
 
 
 
@@ -182,6 +190,8 @@
                         if (xhr.status < 400 && xhr.responseText) {
                             code.textContent = xhr.responseText;
                             Prism.highlightElement(code);
+                            d=document.getElementsByClassName("line-numbers");
+                            d[0].scrollTop = d[0].children[1].offsetTop;
                             return;
                         }
 
