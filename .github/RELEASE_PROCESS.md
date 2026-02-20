@@ -12,7 +12,9 @@ Use this process for:
 ## 2. Release Inputs
 
 Before starting, confirm:
-- target version (for example `v1.0.1`)
+- target release version `X.Y.Z`
+- release tag format: `vX.Y.Z`
+- release title format: `Version X.Y.Z`
 - release owner
 - included PRs/issues
 - intended release date/time
@@ -77,7 +79,8 @@ git push origin vX.Y.Z
 ```
 
 2. Create GitHub Release for that tag and publish release notes.
-3. Mark as `Latest` when appropriate.
+3. Set release title to exactly `Version X.Y.Z`.
+4. Mark as `Latest` when appropriate.
 
 ## 6. Post-Release Checks
 
@@ -95,5 +98,5 @@ composer require MarketDataApp/sdk-php
 If release issues are discovered:
 1. Stop promotion messaging.
 2. Publish corrective note in release/changelog.
-3. Ship patch release (`vX.Y.Z+1`) from `main` with targeted fix.
+3. Ship a patch release (`vX.Y.(Z+1)`) from `main` with targeted fix.
 4. Document root cause and remediation in next changelog entry.
