@@ -28,7 +28,7 @@ jobs:
 
       - name: Install phpDocumentor
         run: |
-          wget https://phpdoc.org/phpDocumentor.phar
+          wget https://github.com/phpDocumentor/phpDocumentor/releases/latest/download/phpDocumentor.phar
           chmod +x phpDocumentor.phar
           sudo mv phpDocumentor.phar /usr/local/bin/phpdoc
 
