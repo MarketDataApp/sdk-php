@@ -64,29 +64,36 @@ Gate execution checklist:
 ## 4. Release Preparation
 
 1. Ensure `main` is current and CI is green.
-2. Finalize release notes (highlights, breaking changes, migration notes).
-3. Confirm target tag does not already exist.
+2. **Update CHANGELOG.md** with final release notes:
+   - Change `(Unreleased)` to the release date `(YYYY-MM-DD)`
+   - Verify all breaking changes have migration guides
+   - Ensure highlights, breaking changes, and migration notes are complete
+3. Commit and push CHANGELOG.md changes to `main`.
+4. Confirm target tag does not already exist.
+
+> **Important**: The release workflow extracts release notes directly from CHANGELOG.md.
+> The `## vX.Y.Z` section must be present and complete before triggering the release.
 
 ## 5. Publish Release
 
-1. Create and push annotated tag:
+Use the GitHub Actions workflow dispatch to create the release:
 
-```bash
-git checkout main
-git pull
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
-
-2. Create GitHub Release for that tag and publish release notes.
-3. Set release title to exactly `Version X.Y.Z`.
-4. Mark as `Latest` when appropriate.
+1. Go to Actions → "Prepare and Publish Release"
+2. Click "Run workflow" and fill in:
+   - **version**: `X.Y.Z` (without `v` prefix)
+   - **ref**: `main` (or specific commit SHA)
+   - **prerelease**: `false` (unless it's a prerelease)
+   - **confirm**: `RELEASE` (exactly, to confirm)
+3. The workflow will:
+   - Run the full test matrix (PHP 8.2-8.5, prefer-lowest/prefer-stable, Ubuntu/Windows)
+   - Extract release notes from CHANGELOG.md
+   - Create the tag `vX.Y.Z`
+   - Create GitHub Release with title "Version X.Y.Z"
 
 ## 6. Post-Release Checks
 
-1. Confirm `Update Changelog` workflow ran (`.github/workflows/update-changelog.yml`).
-2. Confirm changelog update commit landed on `main`.
-3. Confirm package update is visible on Packagist.
+1. Verify the GitHub Release was created with correct notes from CHANGELOG.
+2. Confirm package update is visible on Packagist.
 4. Smoke-test install in clean project:
 
 ```bash
