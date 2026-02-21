@@ -64,12 +64,23 @@ Gate execution checklist:
 ## 4. Release Preparation
 
 1. Ensure `main` is current and CI is green.
-2. **Update CHANGELOG.md** with final release notes:
+
+2. **Update version numbers** in the following files:
+
+   | File | Location | Example |
+   |------|----------|---------|
+   | `README.md` | Title header | `# Market Data PHP SDK v1.1` |
+
+   > **Note**: `composer.json` does not contain a version field (Packagist uses git tags).
+
+3. **Update CHANGELOG.md** with final release notes:
    - Change `(Unreleased)` to the release date `(YYYY-MM-DD)`
    - Verify all breaking changes have migration guides
    - Ensure highlights, breaking changes, and migration notes are complete
-3. Commit and push CHANGELOG.md changes to `main`.
-4. Confirm target tag does not already exist.
+
+4. Commit and push all changes to `main`.
+
+5. Confirm target tag does not already exist.
 
 > **Important**: The release workflow extracts release notes directly from CHANGELOG.md.
 > The `## vX.Y.Z` section must be present and complete before triggering the release.
