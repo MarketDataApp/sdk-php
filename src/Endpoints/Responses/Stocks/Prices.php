@@ -25,40 +25,11 @@ class Prices extends ResponseBase
     public string $status = 'no_data';
 
     /**
-     * Array of ticker symbols that were requested.
+     * Array of Price objects containing individual stock price data.
      *
-     * @var array
+     * @var Price[]
      */
-    public array $symbols = [];
-
-    /**
-     * Array of midpoint prices, as calculated by the SmartMid model.
-     *
-     * @var array
-     */
-    public array $mid = [];
-
-    /**
-     * Array of price changes in currency units compared to the closing price of the previous primary trading session.
-     *
-     * @var array
-     */
-    public array $change = [];
-
-    /**
-     * Array of price changes in percent, expressed as a decimal, compared to the closing price of the previous day.
-     * For example, a 3% change will be represented as 0.03.
-     *
-     * @var array
-     */
-    public array $changepct = [];
-
-    /**
-     * Array of date/times for each stock price.
-     *
-     * @var array
-     */
-    public array $updated = [];
+    public array $prices = [];
 
     /**
      * Constructs a new Prices object and parses the response data.
@@ -78,37 +49,55 @@ class Prices extends ResponseBase
         // Determine if this is human-readable format (has "Symbol" key) or regular format (has "s" status)
         $isHumanReadable = isset($responseArray['Symbol']);
 
-        // Convert the response to this object.
-        // Check for human-readable keys first (with spaces), then fall back to regular keys
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
-            $this->status = 'ok'; // Human-readable format always returns data when successful
-            $this->symbols = $responseArray['Symbol'] ?? [];
-            $this->mid = $responseArray['Mid'] ?? [];
-            $this->change = $responseArray['Change $'] ?? [];
-            $this->changepct = $responseArray['Change %'] ?? [];
-            
-            // Convert updated timestamps to Carbon objects
-            $this->updated = [];
-            if (isset($responseArray['Date']) && is_array($responseArray['Date'])) {
-                foreach ($responseArray['Date'] as $timestamp) {
-                    $this->updated[] = Carbon::parse($timestamp);
-                }
+            $symbols = $responseArray['Symbol'] ?? [];
+            $mids = $responseArray['Mid'] ?? [];
+            $changes = $responseArray['Change $'] ?? [];
+            $changepcts = $responseArray['Change %'] ?? [];
+            $dates = $responseArray['Date'] ?? [];
+
+            if (empty($symbols)) {
+                return;
+            }
+
+            $this->status = 'ok';
+
+            // Create Price objects for each item
+            $count = count($symbols);
+            for ($i = 0; $i < $count; $i++) {
+                $this->prices[] = new Price(
+                    symbol: $symbols[$i],
+                    mid: $mids[$i] ?? 0.0,
+                    change: $changes[$i] ?? 0.0,
+                    changepct: $changepcts[$i] ?? 0.0,
+                    updated: Carbon::parse($dates[$i] ?? 0)
+                );
             }
         } else {
             // Regular format
             $this->status = $response->s ?? 'no_data';
-            $this->symbols = $response->symbol ?? [];
-            $this->mid = $response->mid ?? [];
-            $this->change = $response->change ?? [];
-            $this->changepct = $response->changepct ?? [];
-            
-            // Convert updated timestamps to Carbon objects
-            $this->updated = [];
-            if (isset($response->updated) && is_array($response->updated)) {
-                foreach ($response->updated as $timestamp) {
-                    $this->updated[] = Carbon::parse($timestamp);
-                }
+
+            if ($this->status !== 'ok') {
+                return;
+            }
+
+            $symbols = $response->symbol ?? [];
+            $mids = $response->mid ?? [];
+            $changes = $response->change ?? [];
+            $changepcts = $response->changepct ?? [];
+            $updatedTimestamps = $response->updated ?? [];
+
+            // Create Price objects for each item
+            $count = count($symbols);
+            for ($i = 0; $i < $count; $i++) {
+                $this->prices[] = new Price(
+                    symbol: $symbols[$i],
+                    mid: $mids[$i] ?? 0.0,
+                    change: $changes[$i] ?? 0.0,
+                    changepct: $changepcts[$i] ?? 0.0,
+                    updated: Carbon::parse($updatedTimestamps[$i] ?? 0)
+                );
             }
         }
     }
@@ -124,24 +113,19 @@ class Prices extends ResponseBase
             return "Prices - Non-JSON format, use getCsv() or getHtml()";
         }
 
-        $count = count($this->symbols);
+        $count = count($this->prices);
         $lines = [sprintf("Prices: %d symbol%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
 
         $displayCount = min(3, $count);
         for ($i = 0; $i < $displayCount; $i++) {
-            $symbol = $this->symbols[$i] ?? 'N/A';
-            $mid = $this->mid[$i] ?? null;
-            $change = $this->change[$i] ?? null;
-            $changePct = $this->changepct[$i] ?? null;
-            $updated = $this->updated[$i] ?? null;
-
+            $price = $this->prices[$i];
             $lines[] = sprintf(
                 "  %s: %s (%s) Change: %s  Updated: %s",
-                $symbol,
-                $this->formatCurrency($mid),
-                $this->formatPercent($changePct),
-                $this->formatChange($change),
-                $updated ? $this->formatDateTime($updated) : 'N/A'
+                $price->symbol,
+                $this->formatCurrency($price->mid),
+                $this->formatPercent($price->changepct),
+                $this->formatChange($price->change),
+                $this->formatDateTime($price->updated)
             );
         }
 

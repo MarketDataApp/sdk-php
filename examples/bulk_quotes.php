@@ -36,8 +36,8 @@ echo "AAPL 52-Week: \${$q52->fifty_two_week_low} - \${$q52->fifty_two_week_high}
 // Real-time prices (SmartMid)
 echo "SmartMid Prices:\n";
 $prices = $client->stocks->prices(['AAPL', 'MSFT', 'GOOGL']);
-for ($i = 0; $i < count($prices->symbols); $i++) {
-    printf("  %s: \$%.2f (as of %s)\n", $prices->symbols[$i], $prices->mid[$i], $prices->updated[$i]->format('H:i:s'));
+foreach ($prices->prices as $price) {
+    printf("  %s: \$%.2f (as of %s)\n", $price->symbol, $price->mid, $price->updated->format('H:i:s'));
 }
 echo "\n";
 
@@ -62,4 +62,4 @@ echo "\n";
 // Extended vs regular hours
 $ext = $client->stocks->prices('AAPL', extended: true);
 $reg = $client->stocks->prices('AAPL', extended: false);
-printf("AAPL Extended: \$%.2f | Regular: \$%.2f\n", $ext->mid[0], $reg->mid[0]);
+printf("AAPL Extended: \$%.2f | Regular: \$%.2f\n", $ext->prices[0]->mid, $reg->prices[0]->mid);

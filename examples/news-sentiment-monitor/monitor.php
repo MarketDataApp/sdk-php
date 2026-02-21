@@ -153,12 +153,14 @@ try {
                 to: $toDate
             );
 
-            // News returns a single article per call
-            if ($news->status === 'ok' && !empty($news->headline)) {
+            // News now returns all articles in the articles array
+            if ($news->status === 'ok' && !empty($news->articles)) {
                 if (!isset($allNews[$symbol])) {
                     $allNews[$symbol] = [];
                 }
-                $allNews[$symbol][] = $news;
+                foreach ($news->articles as $article) {
+                    $allNews[$symbol][] = $article;
+                }
                 $symbolsWithNews++;
             }
         } catch (ApiException $e) {

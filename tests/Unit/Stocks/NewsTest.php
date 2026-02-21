@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Endpoints\Responses\Stocks\Article;
 use MarketDataApp\Endpoints\Responses\Stocks\News;
 use MarketDataApp\Enums\Format;
 
@@ -24,22 +25,70 @@ class NewsTest extends StocksTestCase
         // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
             's'               => 'ok',
-            'symbol'          => 'AAPL',
-            'headline'        => 'Whoa, There! Let Apple Stock Take a Breather Before Jumping in Headfirst.',
-            'content'         => "Apple is a rock-solid company, but this doesn't mean prudent investors need to buy AAPL stock at any price.",
-            'source'          => 'https=>//investorplace.com/2023/12/whoa-there-let-apple-stock-take-a-breather-before-jumping-in-headfirst/',
-            'publicationDate' => 1703041200
+            'symbol'          => ['AAPL'],
+            'headline'        => ['Whoa, There! Let Apple Stock Take a Breather Before Jumping in Headfirst.'],
+            'content'         => ["Apple is a rock-solid company, but this doesn't mean prudent investors need to buy AAPL stock at any price."],
+            'source'          => ['https://investorplace.com/2023/12/whoa-there-let-apple-stock-take-a-breather-before-jumping-in-headfirst/'],
+            'publicationDate' => [1703041200]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
         $news = $this->client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
 
         $this->assertInstanceOf(News::class, $news);
-        $this->assertEquals($mocked_response['s'], $news->status);
-        $this->assertEquals($mocked_response['symbol'], $news->symbol);
-        $this->assertEquals($mocked_response['headline'], $news->headline);
-        $this->assertEquals($mocked_response['content'], $news->content);
-        $this->assertEquals($mocked_response['source'], $news->source);
-        $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
+        $this->assertEquals('ok', $news->status);
+        $this->assertCount(1, $news->articles);
+        $this->assertInstanceOf(Article::class, $news->articles[0]);
+        $this->assertEquals($mocked_response['symbol'][0], $news->articles[0]->symbol);
+        $this->assertEquals($mocked_response['headline'][0], $news->articles[0]->headline);
+        $this->assertEquals($mocked_response['content'][0], $news->articles[0]->content);
+        $this->assertEquals($mocked_response['source'][0], $news->articles[0]->source);
+        $this->assertEquals(Carbon::parse($mocked_response['publicationDate'][0]), $news->articles[0]->publication_date);
+    }
+
+    /**
+     * Test the news endpoint with multiple articles.
+     *
+     * @return void
+     */
+    public function testNews_multipleArticles_success()
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'symbol'          => ['AAPL', 'AAPL', 'AAPL'],
+            'headline'        => [
+                'First Apple Headline',
+                'Second Apple Headline',
+                'Third Apple Headline'
+            ],
+            'content'         => [
+                'Content for the first article.',
+                'Content for the second article.',
+                'Content for the third article.'
+            ],
+            'source'          => [
+                'https://example.com/article1',
+                'https://example.com/article2',
+                'https://example.com/article3'
+            ],
+            'publicationDate' => [1703041200, 1703127600, 1703214000]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+        $news = $this->client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
+
+        $this->assertInstanceOf(News::class, $news);
+        $this->assertEquals('ok', $news->status);
+        $this->assertCount(3, $news->articles);
+
+        // Verify each article
+        for ($i = 0; $i < 3; $i++) {
+            $this->assertInstanceOf(Article::class, $news->articles[$i]);
+            $this->assertEquals($mocked_response['symbol'][$i], $news->articles[$i]->symbol);
+            $this->assertEquals($mocked_response['headline'][$i], $news->articles[$i]->headline);
+            $this->assertEquals($mocked_response['content'][$i], $news->articles[$i]->content);
+            $this->assertEquals($mocked_response['source'][$i], $news->articles[$i]->source);
+            $this->assertEquals(Carbon::parse($mocked_response['publicationDate'][$i]), $news->articles[$i]->publication_date);
+        }
     }
 
     /**
@@ -72,12 +121,12 @@ class NewsTest extends StocksTestCase
     {
         // Mock response: NOT from real API output (synthetic/test data)
         $mocked_response = [
-            'headline' => 'Test Headline',
-            'content' => 'Test Content',
-            'source' => 'https://example.com',
-            'publicationDate' => 1703041200,
-            'Symbol' => 'AAPL',
-            'Date' => 1703041200
+            'headline' => ['Test Headline'],
+            'content' => ['Test Content'],
+            'source' => ['https://example.com'],
+            'publicationDate' => [1703041200],
+            'Symbol' => ['AAPL'],
+            'Date' => [1703041200]
         ];
         $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
         $news = $this->client->stocks->news(
@@ -88,11 +137,12 @@ class NewsTest extends StocksTestCase
 
         $this->assertInstanceOf(News::class, $news);
         $this->assertEquals('ok', $news->status);
-        $this->assertEquals($mocked_response['Symbol'], $news->symbol);
-        $this->assertEquals($mocked_response['headline'], $news->headline);
-        $this->assertEquals($mocked_response['content'], $news->content);
-        $this->assertEquals($mocked_response['source'], $news->source);
-        $this->assertEquals(Carbon::parse($mocked_response['publicationDate']), $news->publication_date);
+        $this->assertCount(1, $news->articles);
+        $this->assertEquals($mocked_response['Symbol'][0], $news->articles[0]->symbol);
+        $this->assertEquals($mocked_response['headline'][0], $news->articles[0]->headline);
+        $this->assertEquals($mocked_response['content'][0], $news->articles[0]->content);
+        $this->assertEquals($mocked_response['source'][0], $news->articles[0]->source);
+        $this->assertEquals(Carbon::parse($mocked_response['publicationDate'][0]), $news->articles[0]->publication_date);
     }
 
     /**
@@ -120,9 +170,9 @@ class NewsTest extends StocksTestCase
 
         $this->assertInstanceOf(News::class, $news);
         $this->assertEquals('ok', $news->status);
-        // Note: News class extracts first element from arrays
-        $this->assertEquals('AAPL', $news->symbol);
-        $this->assertEquals('Dow Jones Futures Due With Trump Tariffs, Government Shutdown, Big Earnings In Focus', $news->headline);
+        $this->assertCount(1, $news->articles);
+        $this->assertEquals('AAPL', $news->articles[0]->symbol);
+        $this->assertEquals('Dow Jones Futures Due With Trump Tariffs, Government Shutdown, Big Earnings In Focus', $news->articles[0]->headline);
     }
 
     /**
@@ -162,11 +212,8 @@ class NewsTest extends StocksTestCase
 
         // These should NOT throw "uninitialized property" errors
         $this->assertEquals('no_data', $news->status);
-        $this->assertEquals('', $news->symbol);
-        $this->assertEquals('', $news->headline);
-        $this->assertEquals('', $news->content);
-        $this->assertEquals('', $news->source);
-        $this->assertNull($news->publication_date);
+        $this->assertIsArray($news->articles);
+        $this->assertCount(0, $news->articles);
     }
 
     /**
@@ -191,11 +238,8 @@ class NewsTest extends StocksTestCase
 
         // These should NOT throw "uninitialized property" errors
         $this->assertEquals('no_data', $news->status);
-        $this->assertEquals('', $news->symbol);
-        $this->assertEquals('', $news->headline);
-        $this->assertEquals('', $news->content);
-        $this->assertEquals('', $news->source);
-        $this->assertNull($news->publication_date);
+        $this->assertIsArray($news->articles);
+        $this->assertCount(0, $news->articles);
     }
 
     /**
@@ -226,6 +270,7 @@ class NewsTest extends StocksTestCase
 
         $this->assertInstanceOf(News::class, $news);
         $this->assertEquals('no_data', $news->status);
+        $this->assertCount(0, $news->articles);
     }
 
     /**
@@ -289,7 +334,34 @@ class NewsTest extends StocksTestCase
         $this->assertInstanceOf(News::class, $news);
         // Should return defaults since Symbol array is empty
         $this->assertEquals('no_data', $news->status);
-        $this->assertEquals('', $news->symbol);
-        $this->assertEquals('', $news->headline);
+        $this->assertCount(0, $news->articles);
+    }
+
+    /**
+     * Test that Article object has correct __toString output.
+     *
+     * @return void
+     */
+    public function testArticle_toString_returnsFormattedString(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = [
+            's'               => 'ok',
+            'symbol'          => ['AAPL'],
+            'headline'        => ['Test Headline for Apple Stock'],
+            'content'         => ['This is the content of the article.'],
+            'source'          => ['https://example.com/article'],
+            'publicationDate' => [1703041200]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+        $news = $this->client->stocks->news(symbol: 'AAPL', from: '2023-01-01');
+
+        $article = $news->articles[0];
+        $string = (string) $article;
+
+        $this->assertStringContainsString('AAPL', $string);
+        $this->assertStringContainsString('Test Headline for Apple Stock', $string);
+        $this->assertStringContainsString('https://example.com/article', $string);
+        $this->assertStringContainsString('Content:', $string);
     }
 }

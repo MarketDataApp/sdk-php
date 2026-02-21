@@ -2,6 +2,59 @@
 
 ## [Unreleased]
 
+## v1.1.0 (Unreleased)
+
+### Breaking Changes
+
+#### Prices Endpoint - Object Array Pattern
+The `Prices` response now uses typed `Price` objects instead of parallel arrays.
+
+```php
+// Before (v1.0.x)
+for ($i = 0; $i < count($prices->symbols); $i++) {
+    echo $prices->symbols[$i] . ": $" . $prices->mid[$i];
+}
+
+// After (v1.1.0)
+foreach ($prices->prices as $price) {
+    echo $price->symbol . ": $" . $price->mid;
+}
+```
+
+**Removed properties**: `$symbols`, `$mid`, `$change`, `$changepct`, `$updated` arrays
+
+**Added property**: `$prices` array of `Price` objects
+
+**Migration**: Change `$prices->symbols[$i]` to `$prices->prices[$i]->symbol`, and similarly for other fields.
+
+#### News Endpoint - Multi-Article Support
+The `News` response now returns ALL articles from the API instead of only the first one. Uses typed `Article` objects.
+
+```php
+// Before (v1.0.x)
+echo $news->headline;
+echo $news->symbol;
+
+// After (v1.1.0)
+foreach ($news->articles as $article) {
+    echo $article->headline;
+    echo $article->symbol;
+}
+```
+
+**Removed properties**: `$symbol`, `$headline`, `$content`, `$source`, `$publication_date` flat properties
+
+**Added property**: `$articles` array of `Article` objects
+
+**Bug fix**: The News endpoint previously only returned the first article from the API. It now returns ALL articles.
+
+**Migration**: Change `$news->headline` to `$news->articles[0]->headline`, and similarly for other fields.
+
+### Added
+
+- New `Price` class (`src/Endpoints/Responses/Stocks/Price.php`) for individual stock price data
+- New `Article` class (`src/Endpoints/Responses/Stocks/Article.php`) for individual news article data
+
 ---
 
 ## v1.0.0 (2026-02-20)

@@ -23,43 +23,11 @@ class News extends ResponseBase
     public string $status = 'no_data';
 
     /**
-     * The symbol of the stock.
+     * Array of Article objects containing individual news article data.
      *
-     * @var string
+     * @var Article[]
      */
-    public string $symbol = '';
-
-    /**
-     * The headline of the news article.
-     *
-     * @var string
-     */
-    public string $headline = '';
-
-    /**
-     * The content of the article, if available.
-     *
-     * TIP: Please be aware that this may or may not include the full content of the news article. Additionally, it may
-     * include captions of images, copyright notices, syndication information, and other elements that may not be
-     * suitable for reproduction without additional filtering.
-     *
-     * @var string
-     */
-    public string $content = '';
-
-    /**
-     * The source URL where the news appeared.
-     *
-     * @var string
-     */
-    public string $source = '';
-
-    /**
-     * The date the news was published on the source website.
-     *
-     * @var Carbon|null
-     */
-    public ?Carbon $publication_date = null;
+    public array $articles = [];
 
     /**
      * Constructs a new News object and parses the response data.
@@ -82,41 +50,69 @@ class News extends ResponseBase
 
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
-            // Note: News endpoint returns arrays for all fields, even for single items
-            // Check if arrays have data before accessing index 0
-            if (is_array($responseArray['Symbol']) && empty($responseArray['Symbol'])) {
+            // Note: News endpoint returns arrays for all fields
+            $symbols = is_array($responseArray['Symbol']) ? $responseArray['Symbol'] : [$responseArray['Symbol']];
+
+            if (empty($symbols)) {
                 return;
             }
+
             $this->status = 'ok';
-            $this->symbol = is_array($responseArray['Symbol']) ? $responseArray['Symbol'][0] : $responseArray['Symbol'];
-            $this->headline = is_array($responseArray['headline']) ? $responseArray['headline'][0] : $responseArray['headline'];
-            $this->content = is_array($responseArray['content']) ? $responseArray['content'][0] : $responseArray['content'];
-            $this->source = is_array($responseArray['source']) ? $responseArray['source'][0] : $responseArray['source'];
-            $publicationDate = is_array($responseArray['publicationDate']) ? $responseArray['publicationDate'][0] : $responseArray['publicationDate'];
-            $this->publication_date = Carbon::parse($publicationDate);
+
+            $headlines = is_array($responseArray['headline']) ? $responseArray['headline'] : [$responseArray['headline']];
+            $contents = is_array($responseArray['content']) ? $responseArray['content'] : [$responseArray['content']];
+            $sources = is_array($responseArray['source']) ? $responseArray['source'] : [$responseArray['source']];
+            $publicationDates = is_array($responseArray['publicationDate']) ? $responseArray['publicationDate'] : [$responseArray['publicationDate']];
+
+            // Create Article objects for each item
+            $count = count($symbols);
+            for ($i = 0; $i < $count; $i++) {
+                $this->articles[] = new Article(
+                    symbol: $symbols[$i] ?? '',
+                    headline: $headlines[$i] ?? '',
+                    content: $contents[$i] ?? '',
+                    source: $sources[$i] ?? '',
+                    publication_date: Carbon::parse($publicationDates[$i] ?? 0)
+                );
+            }
         } else {
             // Regular format
             // Note: News endpoint returns arrays for all fields, even for single items
             $this->status = $response->s ?? 'no_data';
 
-            if ($this->status === 'ok') {
-                // Check if arrays have data before accessing index 0
-                if (is_array($response->symbol) && empty($response->symbol)) {
-                    $this->status = 'no_data';
-                    return;
-                }
-                $this->symbol = is_array($response->symbol) ? $response->symbol[0] : $response->symbol;
-                $this->headline = is_array($response->headline) ? $response->headline[0] : $response->headline;
-                $this->content = is_array($response->content) ? $response->content[0] : $response->content;
-                $this->source = is_array($response->source) ? $response->source[0] : $response->source;
-                $publicationDate = is_array($response->publicationDate) ? $response->publicationDate[0] : $response->publicationDate;
-                $this->publication_date = Carbon::parse($publicationDate);
+            if ($this->status !== 'ok') {
+                return;
+            }
+
+            $symbols = is_array($response->symbol) ? $response->symbol : [$response->symbol];
+
+            // Check if arrays have data
+            if (empty($symbols)) {
+                $this->status = 'no_data';
+                return;
+            }
+
+            $headlines = is_array($response->headline) ? $response->headline : [$response->headline];
+            $contents = is_array($response->content) ? $response->content : [$response->content];
+            $sources = is_array($response->source) ? $response->source : [$response->source];
+            $publicationDates = is_array($response->publicationDate) ? $response->publicationDate : [$response->publicationDate];
+
+            // Create Article objects for each item
+            $count = count($symbols);
+            for ($i = 0; $i < $count; $i++) {
+                $this->articles[] = new Article(
+                    symbol: $symbols[$i] ?? '',
+                    headline: $headlines[$i] ?? '',
+                    content: $contents[$i] ?? '',
+                    source: $sources[$i] ?? '',
+                    publication_date: Carbon::parse($publicationDates[$i] ?? 0)
+                );
             }
         }
     }
 
     /**
-     * Returns a string representation of the news article.
+     * Returns a string representation of the news collection.
      *
      * @return string Human-readable news summary.
      */
@@ -126,22 +122,28 @@ class News extends ResponseBase
             return "News - Non-JSON format, use getCsv() or getHtml()";
         }
 
-        $lines = [];
-        $lines[] = sprintf("%s: %s", $this->symbol, $this->headline);
-        $lines[] = sprintf(
-            "  Published: %s  Source: %s",
-            $this->formatDateTime($this->publication_date),
-            $this->source
-        );
+        $count = count($this->articles);
+        $lines = [sprintf("News: %d article%s (status: %s)", $count, $count === 1 ? '' : 's', $this->status)];
 
-        // Include content preview (first 200 chars if longer)
-        if (!empty($this->content)) {
-            $contentPreview = strlen($this->content) > 200
-                ? substr($this->content, 0, 197) . '...'
-                : $this->content;
-            $lines[] = sprintf("  Content: %s", $contentPreview);
+        foreach ($this->articles as $article) {
+            $lines[] = sprintf("%s: %s", $article->symbol, $article->headline);
+            $lines[] = sprintf(
+                "  Published: %s  Source: %s",
+                $this->formatDateTime($article->publication_date),
+                $article->source
+            );
+
+            // Include content preview (first 200 chars if longer)
+            if (!empty($article->content)) {
+                $contentPreview = strlen($article->content) > 200
+                    ? substr($article->content, 0, 197) . '...'
+                    : $article->content;
+                $lines[] = sprintf("  Content: %s", $contentPreview);
+            }
+
+            $lines[] = ''; // Blank line between articles
         }
 
-        return implode("\n", $lines);
+        return implode("\n", array_filter($lines, fn($line) => $line !== '' || $count > 0));
     }
 }

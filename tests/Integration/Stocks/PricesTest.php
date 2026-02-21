@@ -5,6 +5,7 @@ namespace MarketDataApp\Tests\Integration\Stocks;
 use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use MarketDataApp\Endpoints\Requests\Parameters;
+use MarketDataApp\Endpoints\Responses\Stocks\Price;
 use MarketDataApp\Endpoints\Responses\Stocks\Prices;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
@@ -25,21 +26,14 @@ class PricesTest extends StocksTestCase
 
         $this->assertInstanceOf(Prices::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertNotEmpty($response->symbols);
-        $this->assertCount(1, $response->symbols);
-        $this->assertEquals('AAPL', $response->symbols[0]);
-        $this->assertNotEmpty($response->mid);
-        $this->assertCount(1, $response->mid);
-        $this->assertTrue(in_array(gettype($response->mid[0]), ['double', 'integer']), "Expected mid to be double or integer");
-        $this->assertNotEmpty($response->change);
-        $this->assertCount(1, $response->change);
-        $this->assertTrue(in_array(gettype($response->change[0]), ['double', 'integer', 'NULL']));
-        $this->assertNotEmpty($response->changepct);
-        $this->assertCount(1, $response->changepct);
-        $this->assertTrue(in_array(gettype($response->changepct[0]), ['double', 'integer', 'NULL']));
-        $this->assertNotEmpty($response->updated);
-        $this->assertCount(1, $response->updated);
-        $this->assertInstanceOf(Carbon::class, $response->updated[0]);
+        $this->assertNotEmpty($response->prices);
+        $this->assertCount(1, $response->prices);
+        $this->assertInstanceOf(Price::class, $response->prices[0]);
+        $this->assertEquals('AAPL', $response->prices[0]->symbol);
+        $this->assertTrue(in_array(gettype($response->prices[0]->mid), ['double', 'integer']), "Expected mid to be double or integer");
+        $this->assertTrue(in_array(gettype($response->prices[0]->change), ['double', 'integer', 'NULL']), "Expected change to be double, integer, or NULL");
+        $this->assertTrue(in_array(gettype($response->prices[0]->changepct), ['double', 'integer', 'NULL']), "Expected changepct to be double, integer, or NULL");
+        $this->assertInstanceOf(Carbon::class, $response->prices[0]->updated);
     }
 
     /**
@@ -53,30 +47,22 @@ class PricesTest extends StocksTestCase
 
         $this->assertInstanceOf(Prices::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertNotEmpty($response->symbols);
-        $this->assertCount(3, $response->symbols);
-        $this->assertContains('AAPL', $response->symbols);
-        $this->assertContains('META', $response->symbols);
-        $this->assertContains('MSFT', $response->symbols);
+        $this->assertNotEmpty($response->prices);
+        $this->assertCount(3, $response->prices);
 
-        // Verify all arrays have the same length
-        $this->assertCount(3, $response->mid);
-        $this->assertCount(3, $response->change);
-        $this->assertCount(3, $response->changepct);
-        $this->assertCount(3, $response->updated);
+        // Collect symbols from prices
+        $symbols = array_map(fn($price) => $price->symbol, $response->prices);
+        $this->assertContains('AAPL', $symbols);
+        $this->assertContains('META', $symbols);
+        $this->assertContains('MSFT', $symbols);
 
-        // Verify data types (API may return integer for round numbers or double for decimals)
-        foreach ($response->mid as $mid) {
-            $this->assertTrue(in_array(gettype($mid), ['double', 'integer']), "Expected mid to be double or integer, got " . gettype($mid));
-        }
-        foreach ($response->change as $change) {
-            $this->assertTrue(in_array(gettype($change), ['double', 'integer', 'NULL']), "Expected change to be double, integer, or NULL, got " . gettype($change));
-        }
-        foreach ($response->changepct as $changepct) {
-            $this->assertTrue(in_array(gettype($changepct), ['double', 'integer', 'NULL']), "Expected changepct to be double, integer, or NULL, got " . gettype($changepct));
-        }
-        foreach ($response->updated as $updated) {
-            $this->assertInstanceOf(Carbon::class, $updated);
+        // Verify data types for each price
+        foreach ($response->prices as $price) {
+            $this->assertInstanceOf(Price::class, $price);
+            $this->assertTrue(in_array(gettype($price->mid), ['double', 'integer']), "Expected mid to be double or integer, got " . gettype($price->mid));
+            $this->assertTrue(in_array(gettype($price->change), ['double', 'integer', 'NULL']), "Expected change to be double, integer, or NULL, got " . gettype($price->change));
+            $this->assertTrue(in_array(gettype($price->changepct), ['double', 'integer', 'NULL']), "Expected changepct to be double, integer, or NULL, got " . gettype($price->changepct));
+            $this->assertInstanceOf(Carbon::class, $price->updated);
         }
     }
 
@@ -91,10 +77,9 @@ class PricesTest extends StocksTestCase
 
         $this->assertInstanceOf(Prices::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertNotEmpty($response->symbols);
-        $this->assertCount(1, $response->symbols);
-        $this->assertNotEmpty($response->mid);
-        $this->assertNotEmpty($response->updated);
+        $this->assertNotEmpty($response->prices);
+        $this->assertCount(1, $response->prices);
+        $this->assertInstanceOf(Price::class, $response->prices[0]);
     }
 
     /**
@@ -108,10 +93,9 @@ class PricesTest extends StocksTestCase
 
         $this->assertInstanceOf(Prices::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertNotEmpty($response->symbols);
-        $this->assertCount(1, $response->symbols);
-        $this->assertNotEmpty($response->mid);
-        $this->assertNotEmpty($response->updated);
+        $this->assertNotEmpty($response->prices);
+        $this->assertCount(1, $response->prices);
+        $this->assertInstanceOf(Price::class, $response->prices[0]);
     }
 
     /**
@@ -146,18 +130,12 @@ class PricesTest extends StocksTestCase
 
         $this->assertInstanceOf(Prices::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertNotEmpty($response->symbols);
-        $this->assertCount(2, $response->symbols);
-        $this->assertNotEmpty($response->mid);
-        $this->assertCount(2, $response->mid);
-        $this->assertNotEmpty($response->change);
-        $this->assertCount(2, $response->change);
-        $this->assertNotEmpty($response->changepct);
-        $this->assertCount(2, $response->changepct);
-        $this->assertNotEmpty($response->updated);
-        $this->assertCount(2, $response->updated);
-        foreach ($response->updated as $updated) {
-            $this->assertInstanceOf(Carbon::class, $updated);
+        $this->assertNotEmpty($response->prices);
+        $this->assertCount(2, $response->prices);
+
+        foreach ($response->prices as $price) {
+            $this->assertInstanceOf(Price::class, $price);
+            $this->assertInstanceOf(Carbon::class, $price->updated);
         }
     }
 }
