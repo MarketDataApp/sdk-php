@@ -13,8 +13,26 @@ use Psr\Log\NullLogger;
 
 $client = new Client(logger: new NullLogger());
 
-// Single quote
+// ============================================================
+// Quick Display - All objects support echo for instant output
+// ============================================================
+
+// Single quote - just echo it
 $quote = $client->stocks->quote('AAPL');
+echo "Quick display (single quote):\n";
+echo $quote . "\n\n";
+
+// Multiple prices - echo the container
+$prices = $client->stocks->prices(['AAPL', 'MSFT', 'GOOGL']);
+echo "Quick display (prices):\n";
+echo $prices . "\n\n";
+
+// ============================================================
+// Custom Formatting - Access properties for custom output
+// ============================================================
+
+// Single quote with custom format
+echo "Custom format (single quote):\n";
 echo "AAPL: \${$quote->last} | Change: \${$quote->change} ({$quote->change_percent}%)\n";
 echo "  Bid/Ask: \${$quote->bid}/\${$quote->ask} | Volume: " . number_format($quote->volume) . "\n\n";
 
@@ -33,11 +51,18 @@ $range = $q52->fifty_two_week_high - $q52->fifty_two_week_low;
 $position = ($q52->last - $q52->fifty_two_week_low) / $range * 100;
 echo "AAPL 52-Week: \${$q52->fifty_two_week_low} - \${$q52->fifty_two_week_high} (Currently: " . number_format($position, 1) . "% of range)\n\n";
 
-// Real-time prices (SmartMid)
-echo "SmartMid Prices:\n";
-$prices = $client->stocks->prices(['AAPL', 'MSFT', 'GOOGL']);
-foreach ($prices->prices as $price) {
+// Real-time prices (SmartMid) with custom formatting
+echo "SmartMid Prices (custom format):\n";
+$smartPrices = $client->stocks->prices(['AAPL', 'MSFT', 'GOOGL']);
+foreach ($smartPrices->prices as $price) {
     printf("  %s: \$%.2f (as of %s)\n", $price->symbol, $price->mid, $price->updated->format('H:i:s'));
+}
+echo "\n";
+
+// Or display each price object directly
+echo "SmartMid Prices (quick display):\n";
+foreach ($smartPrices->prices as $price) {
+    echo "  " . $price . "\n";
 }
 echo "\n";
 
