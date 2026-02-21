@@ -100,19 +100,45 @@ jobs:
             exit 1
           fi
 
+      - name: Extract release notes from CHANGELOG
+        env:
+          VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          # Extract the section for this version from CHANGELOG.md
+          # Matches from "## vX.Y.Z" until the next "## v" or "---" or end of file
+          awk -v ver="$VERSION" '
+            /^## v'"$VERSION"'/ { found=1; next }
+            found && /^## v[0-9]/ { exit }
+            found && /^---$/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+
+          # Verify we extracted something
+          if [ ! -s release-notes.md ]; then
+            echo "ERROR: Could not extract release notes for v${VERSION} from CHANGELOG.md"
+            exit 1
+          fi
+
+          echo "=== Extracted release notes ==="
+          cat release-notes.md
+
       - name: Create and publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          TARGET_REF: ${{ inputs.ref }}
+          IS_PRERELEASE: ${{ inputs.prerelease }}
         shell: bash
         run: |
-          TAG="v${{ inputs.version }}"
+          TAG="v${VERSION}"
           FLAGS=""
-          if [ "${{ inputs.prerelease }}" = "true" ]; then
+          if [ "$IS_PRERELEASE" = "true" ]; then
             FLAGS="${FLAGS} --prerelease"
           fi
 
           gh release create "${TAG}" \
-            --target "${{ inputs.ref }}" \
-            --title "${TAG}" \
-            --generate-notes \
+            --target "${TARGET_REF}" \
+            --title "Version ${VERSION}" \
+            --notes-file release-notes.md \
             ${FLAGS}
