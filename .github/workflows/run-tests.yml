@@ -51,6 +51,6 @@ jobs:
         # Only upload coverage from one canonical job to avoid merge issues
         # with platform-specific tests that skip on Windows vs Unix
         if: matrix.php == '8.4' && matrix.stability == 'prefer-stable' && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
