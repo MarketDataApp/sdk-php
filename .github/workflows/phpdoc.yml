@@ -35,9 +35,6 @@ jobs:
       - name: Generate Documentation
         run: phpdoc -d ./src -t ./docs
 
-      - name: Ensure .nojekyll
-        run: touch docs/.nojekyll
-
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 
