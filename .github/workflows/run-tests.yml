@@ -8,6 +8,16 @@ on:
       - 'phpunit.xml.dist'
       - 'composer.json'
       - 'composer.lock'
+  # Without this, the suite never runs on a pull request: it only fired after a
+  # merge, so a PR could be merged with nothing having tested it, and no test
+  # check existed for branch protection to require.
+  pull_request:
+    paths:
+      - '**.php'
+      - '.github/workflows/run-tests.yml'
+      - 'phpunit.xml.dist'
+      - 'composer.json'
+      - 'composer.lock'
 
 jobs:
   test:
