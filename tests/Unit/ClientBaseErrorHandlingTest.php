@@ -423,6 +423,32 @@ class ClientBaseErrorHandlingTest extends TestCase
     }
 
     /**
+     * Test response extraction from a response-aware transport exception.
+     *
+     * @return void
+     */
+    public function testGetExceptionResponse_withResponseAwareException_returnsResponse(): void
+    {
+        $response = new Response(503);
+        $exception = new class ($response) extends \RuntimeException {
+            public function __construct(private readonly Response $response)
+            {
+                parent::__construct('Service unavailable');
+            }
+
+            public function getResponse(): Response
+            {
+                return $this->response;
+            }
+        };
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('getExceptionResponse');
+
+        $this->assertSame($response, $method->invoke($this->client, $exception));
+    }
+
+    /**
      * Test getErrorMessage with empty body.
      *
      * @return void
