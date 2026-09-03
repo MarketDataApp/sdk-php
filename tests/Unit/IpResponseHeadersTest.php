@@ -67,6 +67,11 @@ class IpResponseHeadersTest extends TestCase
         $this->assertSame('203.0.113.11', $this->client->detected_ip);
     }
 
+    public function testExtractDetectedIpReturnsNullWithoutResponse(): void
+    {
+        $this->assertNull($this->client->extractDetectedIpFromResponse(null));
+    }
+
     public function testResponseWithoutDetectedIpDoesNotEraseLatestValue(): void
     {
         $this->setMockResponses([
