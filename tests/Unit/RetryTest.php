@@ -54,8 +54,18 @@ class RetryTest extends TestCase
         // Use empty token for unit tests to skip validation (tests use mocks anyway)
         $this->client = new Client("");
         
-        // Clear API status cache before each test to ensure fresh state
+        // Seed a fresh, unrelated status entry so retry tests exercise UNKNOWN
+        // without launching a status request into their endpoint mock queues.
+        // Empty and stale cache refresh behavior is covered by ApiStatusTest.
         Utilities::clearApiStatusCache();
+        Utilities::getApiStatusData()->update((object)[
+            'service' => ['/test/status/'],
+            'status' => ['online'],
+            'online' => [true],
+            'uptimePct30d' => [1.0],
+            'uptimePct90d' => [1.0],
+            'updated' => [time()]
+        ]);
     }
 
     /**

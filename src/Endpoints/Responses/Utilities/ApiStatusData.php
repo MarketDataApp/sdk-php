@@ -227,7 +227,7 @@ class ApiStatusData
      *
      * @param ClientBase $client The API client instance (ClientBase or Client).
      * @param string $service The service path to check (e.g., "/v1/stocks/quotes/").
-     * @param bool $skipBlockingRefresh If true, return UNKNOWN instead of blocking on refresh when cache is stale.
+     * @param bool $skipBlockingRefresh If true, refresh asynchronously and return UNKNOWN instead of blocking when cache is stale.
      * @return ApiStatusResult The status result (ONLINE, OFFLINE, or UNKNOWN)
      */
     public function getApiStatus(ClientBase $client, string $service, bool $skipBlockingRefresh = false): ApiStatusResult
@@ -248,9 +248,11 @@ class ApiStatusData
 
         // If cache is stale (> 5min) or empty
         if (!$this->isValid()) {
-            // During retry logic, skip blocking refresh to avoid extra API calls
-            // Return UNKNOWN which allows retry to continue
+            // During retry logic, refresh asynchronously instead of blocking.
+            // Return UNKNOWN for the current attempt so the retry can continue;
+            // subsequent attempts can use the refreshed status.
             if ($skipBlockingRefresh) {
+                $this->refreshAsync($client);
                 return ApiStatusResult::UNKNOWN;
             }
             

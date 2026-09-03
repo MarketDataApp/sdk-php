@@ -1077,7 +1077,7 @@ abstract class ClientBase
             
             // Check service status
             // Skip blocking refresh during retry logic to avoid extra API calls
-            // If cache is stale/empty, return UNKNOWN (allows retry)
+            // If cache is stale/empty, trigger an async refresh and return UNKNOWN (allows retry)
             $status = $apiStatusData->getApiStatus($this, $servicePath, true);
             
             // Skip retries if service is offline
