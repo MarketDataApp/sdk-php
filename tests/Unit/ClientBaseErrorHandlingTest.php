@@ -3,7 +3,7 @@
 namespace MarketDataApp\Tests\Unit;
 
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -93,7 +93,7 @@ class ClientBaseErrorHandlingTest extends TestCase
         // Set up mock that will throw a network exception (not UnauthorizedException)
         // We need to set up the mock on the client we're testing
         $mockHandler = new \GuzzleHttp\Handler\MockHandler([
-            new RequestException("Network Error", new Request('GET', 'user/')),
+            new ConnectException("Network Error", new Request('GET', 'user/')),
         ]);
         $handlerStack = \GuzzleHttp\HandlerStack::create($mockHandler);
         $mockGuzzle = new \GuzzleHttp\Client(['handler' => $handlerStack]);
@@ -420,6 +420,32 @@ class ClientBaseErrorHandlingTest extends TestCase
         $message = $method->invoke($this->client, null);
         
         $this->assertEquals("Request failed", $message);
+    }
+
+    /**
+     * Test response extraction from a response-aware transport exception.
+     *
+     * @return void
+     */
+    public function testGetExceptionResponse_withResponseAwareException_returnsResponse(): void
+    {
+        $response = new Response(503);
+        $exception = new class ($response) extends \RuntimeException {
+            public function __construct(private readonly Response $response)
+            {
+                parent::__construct('Service unavailable');
+            }
+
+            public function getResponse(): Response
+            {
+                return $this->response;
+            }
+        };
+
+        $reflection = new ReflectionClass($this->client);
+        $method = $reflection->getMethod('getExceptionResponse');
+
+        $this->assertSame($response, $method->invoke($this->client, $exception));
     }
 
     /**
@@ -751,27 +777,31 @@ class ClientBaseErrorHandlingTest extends TestCase
     }
 
     /**
-     * Test async RequestException exhausts retries and throws RequestError.
+     * Test async network exception exhausts retries and throws RequestError.
      * 
-     * This test covers lines 300-305 in ClientBase.php - the RequestException
-     * handling path in async promise rejection handler when retries are exhausted.
+     * This test covers the PSR network-exception handling path in the async
+     * promise rejection handler when retries are exhausted.
      *
      * @return void
      */
-    public function testAsyncRequestException_exhaustsRetries_throwsRequestError(): void
+    public function testAsyncNetworkException_exhaustsRetries_throwsRequestError(): void
     {
-        // Mock RequestException (network error) that exhausts all retries
-        // MAX_RETRY_ATTEMPTS is 3, so we need 3 RequestExceptions
+        // ConnectException models a genuine no-response transport failure in
+        // both Guzzle 7 and 8. MAX_RETRY_ATTEMPTS is 3.
         $this->setMockResponses([
-            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
-            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
-            new RequestException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+            new ConnectException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+            new ConnectException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
+            new ConnectException("Network Error", new Request('GET', 'v1/stocks/quotes/AAPL')),
         ]);
 
-        $this->expectException(RequestError::class);
-        $this->expectExceptionMessage('Request failed: Network Error');
-
-        $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+        try {
+            $this->client->execute_in_parallel([['v1/stocks/quotes/AAPL', []]]);
+            $this->fail('Expected retries to end in a RequestError');
+        } catch (RequestError $exception) {
+            $this->assertSame('Request failed: Network Error', $exception->getMessage());
+            $this->assertNull($exception->getResponse());
+            $this->assertInstanceOf(ConnectException::class, $exception->getPrevious());
+        }
     }
 
     /**

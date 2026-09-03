@@ -3,7 +3,7 @@
 namespace MarketDataApp\Tests\Unit\Utilities;
 
 use Carbon\Carbon;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -796,9 +796,9 @@ class ApiStatusTest extends TestCase
         
         $originalLastRefreshed = $data->getLastRefreshed();
 
-        // Mock network failure (RequestException)
+        // Mock a genuine no-response network failure
         $this->setMockResponses([
-            new RequestException("Network Error", new Request('GET', 'status/')),
+            new ConnectException("Network Error", new Request('GET', 'status/')),
         ]);
 
         // Trigger async refresh
@@ -813,7 +813,7 @@ class ApiStatusTest extends TestCase
         try {
             $promise->wait();
         } catch (\Exception $e) {
-            // Exception is expected (RequestException)
+            // Exception is expected (ConnectException)
         }
 
         // Poll until promise is cleared (rejection handler at line 214 should execute)

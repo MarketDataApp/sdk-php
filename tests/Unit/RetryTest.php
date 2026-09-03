@@ -2,7 +2,7 @@
 
 namespace MarketDataApp\Tests\Unit;
 
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -133,8 +133,8 @@ class RetryTest extends TestCase
     public function testSyncRetryOnNetworkError_retriesAndSucceeds(): void
     {
         $this->setMockResponses([
-            new RequestException("Network Error", new Request('GET', 'test')),
-            new RequestException("Network Error", new Request('GET', 'test')),
+            new ConnectException("Network Error", new Request('GET', 'test')),
+            new ConnectException("Network Error", new Request('GET', 'test')),
             new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
         ]);
 
@@ -249,8 +249,8 @@ class RetryTest extends TestCase
     public function testAsyncRetryOnNetworkError_retriesAndSucceeds(): void
     {
         $this->setMockResponses([
-            new RequestException("Network Error", new Request('GET', 'test')),
-            new RequestException("Network Error", new Request('GET', 'test')),
+            new ConnectException("Network Error", new Request('GET', 'test')),
+            new ConnectException("Network Error", new Request('GET', 'test')),
             new Response(200, [], json_encode(['s' => 'ok', 'symbol' => ['AAPL'], 'last' => [150.0], 'ask' => [150.1], 'askSize' => [200], 'bid' => [150.0], 'bidSize' => [300], 'mid' => [150.05], 'change' => [0.5], 'changepct' => [0.33], 'volume' => [1000000], 'updated' => [1234567890]])),
         ]);
 
@@ -380,7 +380,7 @@ class RetryTest extends TestCase
     {
         $this->setMockResponses([
             // First request fails with network error
-            new RequestException("Network Error", new Request('GET', 'test')),
+            new ConnectException("Network Error", new Request('GET', 'test')),
             // Retry succeeds with multi-symbol response
             new Response(200, [], json_encode([
                 's' => 'ok',
