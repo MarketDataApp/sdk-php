@@ -88,4 +88,4 @@ jobs:
       - name: Execute authenticated integration contracts
         env:
           MARKETDATA_TOKEN: ${{ secrets.MARKETDATA_TOKEN }}
-        run: vendor/bin/phpunit --testsuite Integration --group ci
+        run: vendor/bin/phpunit --no-coverage --testsuite Integration --group ci

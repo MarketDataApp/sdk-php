@@ -204,7 +204,7 @@ export MARKETDATA_TOKEN=your_token_here
 ./test.sh integration
 
 # Quota-bounded contract subset used on pull requests and release gates
-vendor/bin/phpunit --testsuite Integration --group ci
+vendor/bin/phpunit --no-coverage --testsuite Integration --group ci
 ```
 
 ## Contributing
