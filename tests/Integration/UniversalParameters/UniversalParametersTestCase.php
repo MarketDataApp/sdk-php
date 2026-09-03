@@ -3,7 +3,7 @@
 namespace MarketDataApp\Tests\Integration\UniversalParameters;
 
 use MarketDataApp\Client;
-use PHPUnit\Framework\TestCase;
+use MarketDataApp\Tests\Integration\TestCase;
 
 /**
  * Base test case for Universal Parameters integration tests.
@@ -27,15 +27,6 @@ abstract class UniversalParametersTestCase extends TestCase
     protected function setUp(): void
     {
         error_reporting(E_ALL);
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
-        $client = new Client($token);
-        $this->client = $client;
+        $this->client = new Client($this->requireMarketDataToken());
     }
 }

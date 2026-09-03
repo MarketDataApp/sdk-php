@@ -21,6 +21,7 @@ class CandlesTest extends StocksTestCase
      *
      * @throws GuzzleException|ApiException
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testCandles_success()
     {
         $response = $this->client->stocks->candles(
@@ -31,9 +32,13 @@ class CandlesTest extends StocksTestCase
         );
 
         $this->assertInstanceOf(Candles::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->candles);
 
         $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $this->assertSame('AAPL', $response->candles[0]->symbol);
+        $this->assertGreaterThanOrEqual('2022-09-01', $response->candles[0]->timestamp->toDateString());
+        $this->assertLessThanOrEqual('2022-09-05', $response->candles[array_key_last($response->candles)]->timestamp->toDateString());
         $this->assertEquals('double', gettype($response->candles[0]->close));
         $this->assertEquals('double', gettype($response->candles[0]->high));
         $this->assertEquals('double', gettype($response->candles[0]->low));

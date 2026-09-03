@@ -50,6 +50,9 @@ If we need more information, we'll comment on the issue. Issues without a respon
 # Integration tests (requires MARKETDATA_TOKEN)
 ./test.sh integration
 
+# Quota-bounded live API contracts used by CI
+vendor/bin/phpunit --no-coverage --testsuite Integration --group ci
+
 # Test across all PHP versions
 ./test-with-act.sh
 ```

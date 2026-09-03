@@ -21,13 +21,14 @@ class QuoteTest extends StocksTestCase
     /**
      * Test successful retrieval of a stock quote.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testQuote_success()
     {
         $response = $this->client->stocks->quote('AAPL');
 
         $this->assertInstanceOf(Quote::class, $response);
-        $this->assertEquals('string', gettype($response->status));
-        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertSame('ok', $response->status);
+        $this->assertSame('AAPL', $response->symbol);
         $this->assertEquals('double', gettype($response->ask));
         $this->assertEquals('integer', gettype($response->ask_size));
         $this->assertEquals('double', gettype($response->bid));

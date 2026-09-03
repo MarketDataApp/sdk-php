@@ -15,6 +15,7 @@ use MarketDataApp\Enums\Format;
  */
 class DateFormatTest extends UniversalParametersTestCase
 {
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testDateFormat_unix_returnsCsvWithUnixTimestamps(): void
     {
         $response = $this->client->stocks->candles(
@@ -30,22 +31,12 @@ class DateFormatTest extends UniversalParametersTestCase
 
         $csv = $response->getCsv();
         $lines = explode("\n", trim($csv));
-        if (count($lines) > 1) {
-            $headerRow = str_getcsv($lines[0], ',', '"', '\\');
-            $dateColumnIndex = array_search('t', $headerRow);
-            if ($dateColumnIndex === false) {
-                $dateColumnIndex = array_search('Date', $headerRow);
-            }
-
-            if ($dateColumnIndex !== false && count($lines) > 1) {
-                $dataRow = str_getcsv($lines[1], ',', '"', '\\');
-                if (isset($dataRow[$dateColumnIndex])) {
-                    $dateValue = $dataRow[$dateColumnIndex];
-                    $this->assertTrue(is_numeric($dateValue), "Date should be Unix timestamp");
-                    $this->assertGreaterThan(1000000000, (int)$dateValue, "Unix timestamp should be > 1000000000");
-                }
-            }
-        }
+        $this->assertGreaterThan(1, count($lines));
+        $headerRow = str_getcsv($lines[0], ',', '"', '\\');
+        $dateColumnIndex = array_search('t', $headerRow, true);
+        $this->assertNotFalse($dateColumnIndex, 'CSV must contain the requested Unix timestamp column');
+        $dataRow = str_getcsv($lines[1], ',', '"', '\\');
+        $this->assertSame('1704171600', $dataRow[$dateColumnIndex]);
     }
 
     public function testDateFormat_timestamp_returnsCsvWithIsoTimestamps(): void

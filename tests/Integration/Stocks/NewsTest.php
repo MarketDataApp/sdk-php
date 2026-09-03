@@ -39,6 +39,7 @@ class NewsTest extends StocksTestCase
      * Test that news endpoint returns multiple articles.
      * Verifies that the API can return more than one article.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testNews_returnsMultipleArticles()
     {
         // Use a broader date range to ensure we get multiple articles
@@ -54,8 +55,9 @@ class NewsTest extends StocksTestCase
         // Verify that all items are Article objects
         foreach ($response->articles as $article) {
             $this->assertInstanceOf(Article::class, $article);
-            $this->assertNotEmpty($article->symbol);
+            $this->assertSame('AAPL', $article->symbol);
             $this->assertNotEmpty($article->headline);
+            $this->assertGreaterThanOrEqual('2024-01-01', $article->publication_date->toDateString());
             $this->assertInstanceOf(Carbon::class, $article->publication_date);
         }
     }

@@ -17,6 +17,7 @@ class QuotesTest extends OptionsTestCase
     /**
      * Test successful retrieval of option quotes.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testQuotes_success()
     {
         $response = $this->client->options->quotes('AAPL281215C00400000');
@@ -26,7 +27,8 @@ class QuotesTest extends OptionsTestCase
         $this->assertNotEmpty($response->quotes);
 
         $this->assertInstanceOf(OptionQuote::class, $response->quotes[0]);
-        $this->assertEquals('string', gettype($response->quotes[0]->option_symbol));
+        $this->assertSame('AAPL281215C00400000', $response->quotes[0]->option_symbol);
+        $this->assertSame('AAPL', $response->quotes[0]->underlying);
         $this->assertEquals('double', gettype($response->quotes[0]->ask));
         $this->assertEquals('integer', gettype($response->quotes[0]->ask_size));
         $this->assertEquals('double', gettype($response->quotes[0]->bid));

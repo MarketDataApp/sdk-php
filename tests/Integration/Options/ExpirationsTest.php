@@ -16,11 +16,13 @@ class ExpirationsTest extends OptionsTestCase
     /**
      * Test successful retrieval of option expirations.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testExpirations_success()
     {
         $response = $this->client->options->expirations('AAPL');
 
         $this->assertInstanceOf(Expirations::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->expirations);
         $this->assertInstanceOf(Carbon::class, $response->updated);
         $this->assertInstanceOf(Carbon::class, $response->expirations[0]);

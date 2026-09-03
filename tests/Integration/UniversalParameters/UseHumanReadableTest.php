@@ -40,6 +40,7 @@ class UseHumanReadableTest extends UniversalParametersTestCase
         $this->assertInstanceOf(Carbon::class, $response->updated);
     }
 
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testUseHumanReadable_false_returnsValidData(): void
     {
         $response = $this->client->stocks->quote(
@@ -50,7 +51,9 @@ class UseHumanReadableTest extends UniversalParametersTestCase
 
         $this->assertInstanceOf(Quote::class, $response);
         $this->assertEquals('ok', $response->status);
-        $this->assertEquals('string', gettype($response->symbol));
+        $this->assertSame('AAPL', $response->symbol);
+        $this->assertNull($response->fifty_two_week_high);
+        $this->assertNull($response->fifty_two_week_low);
         $this->assertEquals('double', gettype($response->ask));
     }
 

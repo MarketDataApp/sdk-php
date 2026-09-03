@@ -7,7 +7,6 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Stocks\Quote;
 use MarketDataApp\Enums\Format;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Integration tests for the Filename SDK feature.
@@ -25,16 +24,7 @@ class FilenameTest extends TestCase
     {
         parent::setUp();
 
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
-
-        $this->client = new Client($token);
+        $this->client = new Client($this->requireMarketDataToken());
     }
 
     public function testFilename_createsFile(): void

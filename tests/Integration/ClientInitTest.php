@@ -5,7 +5,6 @@ namespace MarketDataApp\Tests\Integration;
 use Carbon\Carbon;
 use MarketDataApp\Client;
 use MarketDataApp\Exceptions\UnauthorizedException;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Integration tests for client initialization with different token scenarios.
@@ -30,14 +29,7 @@ class ClientInitTest extends TestCase
      */
     public function testClientInit_validToken_succeeds()
     {
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
+        $token = $this->requireMarketDataToken();
         
         // Create client with valid token
         $client = new Client($token);
@@ -124,14 +116,7 @@ class ClientInitTest extends TestCase
      */
     public function testClientInit_withEnvVar_succeeds()
     {
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
+        $this->requireMarketDataToken();
 
         // Temporarily unset any existing env var to test clean state
         $originalToken = getenv('MARKETDATA_TOKEN');
@@ -157,14 +142,7 @@ class ClientInitTest extends TestCase
      */
     public function testClientInit_explicitTokenOverridesEnvVar()
     {
-        // Use the same robust token detection as Settings class
-        $envToken = getenv('MARKETDATA_TOKEN');
-        if ($envToken === false || $envToken === '') {
-            $envToken = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($envToken === null || $envToken === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
+        $this->requireMarketDataToken();
 
         // Use a different explicit token (empty string to test precedence)
         $explicitToken = '';

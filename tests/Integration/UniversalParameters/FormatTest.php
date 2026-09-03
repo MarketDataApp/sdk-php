@@ -15,6 +15,7 @@ use MarketDataApp\Enums\Format;
  */
 class FormatTest extends UniversalParametersTestCase
 {
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testFormat_json_returnsJsonObject(): void
     {
         $response = $this->client->stocks->quote(
@@ -25,6 +26,7 @@ class FormatTest extends UniversalParametersTestCase
         $this->assertInstanceOf(Quote::class, $response);
         $this->assertFalse($response->isCsv());
         $this->assertEquals('ok', $response->status);
+        $this->assertSame('AAPL', $response->symbol);
     }
 
     public function testFormat_csv_returnsCsvString(): void

@@ -197,11 +197,14 @@ To test the SDK across all supported PHP versions (8.2, 8.3, 8.4, 8.5), use the 
 - Docker installed and running
 - `act` installed (`brew install act` on macOS, or see [act installation guide](https://github.com/nektos/act#installation))
 
-**Integration Tests:** Set the `MARKETDATA_TOKEN` environment variable before running to include integration tests:
+**Integration Tests:** Set the `MARKETDATA_TOKEN` environment variable before running integration tests. The suite fails when the token is absent so a green result always represents authenticated API calls:
 
 ```bash
 export MARKETDATA_TOKEN=your_token_here
-./test-with-act.sh
+./test.sh integration
+
+# Quota-bounded contract subset used on pull requests and release gates
+vendor/bin/phpunit --no-coverage --testsuite Integration --group ci
 ```
 
 ## Contributing

@@ -18,6 +18,7 @@ class OptionChainTest extends OptionsTestCase
     /**
      * Test successful retrieval of option chain.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testOptionChain_success()
     {
         $response = $this->client->options->option_chain(
@@ -27,14 +28,16 @@ class OptionChainTest extends OptionsTestCase
         );
 
         $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->option_chains);
         $option_chain = array_pop($response->option_chains);
         $this->assertNotEmpty($option_chain);
 
         $option_strike = array_pop($option_chain);
         $this->assertInstanceOf(OptionQuote::class, $option_strike);
-        $this->assertEquals('string', gettype($option_strike->option_symbol));
-        $this->assertEquals('string', gettype($option_strike->underlying));
+        $this->assertStringStartsWith('AAPL281215C', $option_strike->option_symbol);
+        $this->assertSame('AAPL', $option_strike->underlying);
+        $this->assertSame('2028-12-15', $option_strike->expiration->toDateString());
         $this->assertInstanceOf(Carbon::class, $option_strike->expiration);
         $this->assertInstanceOf(Side::class, $option_strike->side);
         $this->assertEquals('double', gettype($option_strike->strike));

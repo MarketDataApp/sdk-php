@@ -13,11 +13,13 @@ class LookupTest extends OptionsTestCase
     /**
      * Test successful lookup of an option symbol.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testLookup_success()
     {
         $response = $this->client->options->lookup('AAPL 12/15/28 $400 Call');
 
         $this->assertInstanceOf(Lookup::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertEquals('AAPL281215C00400000', $response->option_symbol);
     }
 

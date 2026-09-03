@@ -10,7 +10,7 @@ use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
 use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\UnauthorizedException;
-use PHPUnit\Framework\TestCase;
+use MarketDataApp\Tests\Integration\TestCase;
 
 /**
  * Integration tests for the Utilities endpoints of the MarketDataApp API.
@@ -32,16 +32,7 @@ class UtilitiesTest extends TestCase
      */
     protected function setUp(): void
     {
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
-        $client = new Client($token);
-        $this->client = $client;
+        $this->client = new Client($this->requireMarketDataToken());
     }
 
     /**
@@ -49,6 +40,7 @@ class UtilitiesTest extends TestCase
      *
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testApiStatus_success()
     {
         $response = $this->client->utilities->api_status();
@@ -155,6 +147,7 @@ class UtilitiesTest extends TestCase
      *
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testUser_success()
     {
         $response = $this->client->utilities->user();
