@@ -20,6 +20,7 @@ class PricesTest extends StocksTestCase
      *
      * @throws GuzzleException|ApiException
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testPrices_singleSymbol_success()
     {
         $response = $this->client->stocks->prices('AAPL');

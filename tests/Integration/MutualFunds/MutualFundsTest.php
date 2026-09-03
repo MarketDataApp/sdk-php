@@ -9,7 +9,7 @@ use MarketDataApp\Endpoints\Responses\MutualFunds\Candle;
 use MarketDataApp\Endpoints\Responses\MutualFunds\Candles;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
-use PHPUnit\Framework\TestCase;
+use MarketDataApp\Tests\Integration\TestCase;
 
 /**
  * Class MutualFundsTest
@@ -29,36 +29,34 @@ class MutualFundsTest extends TestCase
      */
     protected function setUp(): void
     {
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
-        $client = new Client($token);
-        $this->client = $client;
+        $this->client = new Client($this->requireMarketDataToken());
     }
 
     /**
      * Test successful candles retrieval for mutual funds.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testCandles_success()
     {
+        $from = Carbon::now('America/New_York')->subMonthNoOverflow()->startOfMonth();
+        $to = $from->copy()->addDays(7);
         $response = $this->client->mutual_funds->candles(
             symbol: 'VFINX',
-            from: '2022-09-01',
-            to: '2022-09-05',
+            from: $from->toDateString(),
+            to: $to->toDateString(),
             resolution: 'D'
         );
 
         // Verify that the response is an object of the correct type.
         $this->assertInstanceOf(Candles::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->candles);
 
         // Verify each item in the response is an object of the correct type and has the correct values.
         $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $this->assertObjectNotHasProperty('symbol', $response->candles[0]);
+        $this->assertGreaterThanOrEqual($from->toDateString(), $response->candles[0]->timestamp->toDateString());
+        $this->assertLessThanOrEqual($to->toDateString(), $response->candles[array_key_last($response->candles)]->timestamp->toDateString());
         $this->assertEquals('double', gettype($response->candles[0]->close));
         $this->assertEquals('double', gettype($response->candles[0]->high));
         $this->assertEquals('double', gettype($response->candles[0]->low));

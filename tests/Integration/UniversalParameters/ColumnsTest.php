@@ -40,6 +40,7 @@ class ColumnsTest extends UniversalParametersTestCase
         }
     }
 
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testColumns_multipleColumns_returnsCsvWithRequestedColumns(): void
     {
         $response = $this->client->stocks->quote(
@@ -59,11 +60,10 @@ class ColumnsTest extends UniversalParametersTestCase
 
         $this->assertEquals(['symbol', 'ask', 'bid', 'last'], $headerRow);
 
-        if (count($lines) > 1) {
-            $dataRow = str_getcsv($lines[1], ',', '"', '\\');
-            $this->assertCount(4, $dataRow);
-            $this->assertEquals('AAPL', $dataRow[0]);
-        }
+        $this->assertCount(2, $lines);
+        $dataRow = str_getcsv($lines[1], ',', '"', '\\');
+        $this->assertCount(4, $dataRow);
+        $this->assertSame('AAPL', $dataRow[0]);
     }
 
     public function testColumns_customOrder_returnsCsvWithColumnsInRequestedOrder(): void

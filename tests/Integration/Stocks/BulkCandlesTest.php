@@ -20,17 +20,27 @@ class BulkCandlesTest extends StocksTestCase
      *
      * @throws GuzzleException|ApiException
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testBulkCandles_success()
     {
+        $date = Carbon::now('America/New_York')->subWeeks(2)->previous(Carbon::WEDNESDAY);
         $response = $this->client->stocks->bulkCandles(
-            symbols: ["AAPL"],
-            resolution: 'D'
+            symbols: ['AAPL', 'MSFT'],
+            resolution: 'D',
+            date: $date->toDateString()
         );
 
         $this->assertInstanceOf(BulkCandles::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->candles);
 
         $this->assertInstanceOf(Candle::class, $response->candles[0]);
+        $symbols = array_values(array_unique(array_column($response->candles, 'symbol')));
+        sort($symbols);
+        $this->assertSame(['AAPL', 'MSFT'], $symbols);
+        foreach ($response->candles as $candle) {
+            $this->assertSame($date->toDateString(), $candle->timestamp->toDateString());
+        }
         $this->assertEquals('double', gettype($response->candles[0]->close));
         $this->assertEquals('double', gettype($response->candles[0]->high));
         $this->assertEquals('double', gettype($response->candles[0]->low));

@@ -16,6 +16,7 @@ class StrikesTest extends OptionsTestCase
     /**
      * Test successful retrieval of option strikes.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testStrikes_success()
     {
         $response = $this->client->options->strikes(
@@ -24,6 +25,8 @@ class StrikesTest extends OptionsTestCase
         );
 
         $this->assertInstanceOf(Strikes::class, $response);
+        $this->assertSame('ok', $response->status);
+        $this->assertSame('2023-01-03', $response->updated->toDateString());
         $this->assertInstanceOf(Carbon::class, $response->updated);
         $this->assertNotEmpty($response->dates);
         $this->assertNotEmpty(array_pop($response->dates));

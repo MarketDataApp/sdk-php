@@ -9,7 +9,7 @@ use MarketDataApp\Endpoints\Responses\Markets\Status;
 use MarketDataApp\Endpoints\Responses\Markets\Statuses;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
-use PHPUnit\Framework\TestCase;
+use MarketDataApp\Tests\Integration\TestCase;
 
 /**
  * Integration tests for Markets endpoints.
@@ -26,31 +26,30 @@ class MarketsTest extends TestCase
      */
     protected function setUp(): void
     {
-        // Use the same robust token detection as Settings class
-        $token = getenv('MARKETDATA_TOKEN');
-        if ($token === false || $token === '') {
-            $token = $_ENV['MARKETDATA_TOKEN'] ?? $_SERVER['MARKETDATA_TOKEN'] ?? null;
-        }
-        if ($token === null || $token === '') {
-            $this->markTestSkipped('MARKETDATA_TOKEN environment variable not set');
-        }
-        $client = new Client($token);
-        $this->client = $client;
+        $this->client = new Client($this->requireMarketDataToken());
     }
 
     /**
      * Test markets status with human-readable format.
      * Verifies that the API returns human-readable JSON keys with spaces.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testStatus_humanReadable_returnsHumanReadableKeys()
     {
+        $from = Carbon::now('America/New_York')->subMonthNoOverflow()->startOfMonth();
+        $to = $from->copy()->addDays(7);
         $response = $this->client->markets->status(
+            from: $from->toDateString(),
+            to: $to->toDateString(),
             parameters: new Parameters(use_human_readable: true)
         );
 
         $this->assertInstanceOf(Statuses::class, $response);
         $this->assertEquals('ok', $response->status);
         $this->assertNotEmpty($response->statuses);
+        $dates = array_map(fn (Status $status) => $status->date->toDateString(), $response->statuses);
+        $this->assertSame($from->toDateString(), $dates[0]);
+        $this->assertSame($to->toDateString(), $dates[array_key_last($dates)]);
         $this->assertInstanceOf(Status::class, $response->statuses[0]);
         $this->assertInstanceOf(Carbon::class, $response->statuses[0]->date);
         $this->assertTrue(in_array($response->statuses[0]->status, ['open', 'closed']));

@@ -18,15 +18,18 @@ class EarningsTest extends StocksTestCase
     /**
      * Test successful retrieval of earnings data.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testEarnings_success()
     {
         $response = $this->client->stocks->earnings(symbol: 'AAPL', from: '2024-01-01');
 
         $this->assertInstanceOf(Earnings::class, $response);
+        $this->assertSame('ok', $response->status);
         $this->assertNotEmpty($response->earnings);
 
         $this->assertEquals('string', gettype($response->status));
-        $this->assertEquals('string', gettype($response->earnings[0]->symbol));
+        $this->assertSame('AAPL', $response->earnings[0]->symbol);
+        $this->assertSame('2023-12-31', $response->earnings[0]->date->toDateString());
         $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_year));
         $this->assertEquals('integer', gettype($response->earnings[0]->fiscal_quarter));
         $this->assertInstanceOf(Carbon::class, $response->earnings[0]->date);

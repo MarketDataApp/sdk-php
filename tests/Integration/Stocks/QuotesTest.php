@@ -44,6 +44,7 @@ class QuotesTest extends StocksTestCase
     /**
      * Test successful retrieval of multiple stock quotes with multiple symbols.
      */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testQuotes_multipleSymbols_success()
     {
         $response = $this->client->stocks->quotes(['AAPL', 'MSFT', 'GOOG']);
@@ -53,9 +54,8 @@ class QuotesTest extends StocksTestCase
 
         // Verify all quotes are valid Quote objects with correct symbols
         $symbols = array_map(fn($q) => $q->symbol, $response->quotes);
-        $this->assertContains('AAPL', $symbols);
-        $this->assertContains('MSFT', $symbols);
-        $this->assertContains('GOOG', $symbols);
+        sort($symbols);
+        $this->assertSame(['AAPL', 'GOOG', 'MSFT'], $symbols);
 
         // Verify each quote has valid data
         foreach ($response->quotes as $quote) {
