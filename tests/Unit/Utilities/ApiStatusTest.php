@@ -277,14 +277,99 @@ class ApiStatusTest extends TestCase
      *
      * @return void
      */
-    public function testGetApiStatus_withSkipBlockingRefresh_returnsUnknown()
+    public function testGetApiStatus_withSkipBlockingRefresh_refreshesEmptyCacheAsynchronously()
     {
         $data = new ApiStatusData();
-        
-        // No cache - should return UNKNOWN when skipBlockingRefresh is true
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'service' => ['/v1/stocks/quotes/'],
+                'status' => ['online'],
+                'online' => [true],
+                'uptimePct30d' => [0.99],
+                'uptimePct90d' => [0.98],
+                'updated' => [time()]
+            ])),
+        ], $history);
+
+        // No cache: the retry path returns UNKNOWN without waiting for status.
         $result = $data->getApiStatus($this->client, '/v1/stocks/quotes/', true);
-        
-        $this->assertEquals(ApiStatusResult::UNKNOWN, $result);
+
+        $this->assertSame(ApiStatusResult::UNKNOWN, $result);
+
+        $reflection = new \ReflectionClass($data);
+        $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
+        $promise = $refreshPromiseProperty->getValue($data);
+        $this->assertNotNull($promise, 'An async refresh should be started for an empty cache');
+
+        $promise->wait();
+
+        $this->assertCount(1, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+        $this->assertSame('status/', $history[0]['request']->getUri()->getPath());
+
+        $this->assertSame(
+            ApiStatusResult::ONLINE,
+            $data->getApiStatus($this->client, '/v1/stocks/quotes/', true),
+            'A subsequent retry should use the asynchronously refreshed status'
+        );
+    }
+
+    /**
+     * Test retry status checks asynchronously refresh stale cache.
+     *
+     * @return void
+     */
+    public function testGetApiStatus_withSkipBlockingRefresh_refreshesStaleCacheAsynchronously()
+    {
+        $data = new ApiStatusData();
+        $data->update((object)[
+            'service' => ['/v1/stocks/quotes/'],
+            'status' => ['offline'],
+            'online' => [false],
+            'uptimePct30d' => [0.99],
+            'uptimePct90d' => [0.98],
+            'updated' => [time()]
+        ]);
+
+        $reflection = new \ReflectionClass($data);
+        $lastRefreshedProperty = $reflection->getProperty('lastRefreshed');
+        $lastRefreshedProperty->setValue(
+            $data,
+            Carbon::now()->subSeconds(Settings::API_STATUS_CACHE_VALIDITY)
+        );
+
+        $history = [];
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'service' => ['/v1/stocks/quotes/'],
+                'status' => ['online'],
+                'online' => [true],
+                'uptimePct30d' => [0.99],
+                'uptimePct90d' => [0.98],
+                'updated' => [time()]
+            ])),
+        ], $history);
+
+        $result = $data->getApiStatus($this->client, '/v1/stocks/quotes/', true);
+
+        $this->assertSame(ApiStatusResult::UNKNOWN, $result);
+
+        $refreshPromiseProperty = $reflection->getProperty('refreshPromise');
+        $promise = $refreshPromiseProperty->getValue($data);
+        $this->assertNotNull($promise, 'An async refresh should be started for stale cache');
+
+        $promise->wait();
+
+        $this->assertCount(1, $history);
+
+        $this->assertSame(
+            ApiStatusResult::ONLINE,
+            $data->getApiStatus($this->client, '/v1/stocks/quotes/', true),
+            'A subsequent retry should use the asynchronously refreshed status'
+        );
     }
 
     /**
