@@ -26,8 +26,16 @@ class ExceptionHandlingTest extends StocksTestCase
             new RequestException("Error Communicating with Server", new Request('GET', 'test')),
         ]);
 
-        // After retries are exhausted, RequestError is thrown (not GuzzleException)
-        $this->expectException(\MarketDataApp\Exceptions\RequestError::class);
-        $response = $this->client->stocks->quote("INVALID");
+        try {
+            $this->client->stocks->quote("INVALID");
+            $this->fail('Expected retries to end in a RequestError');
+        } catch (\MarketDataApp\Exceptions\RequestError $exception) {
+            $this->assertSame(
+                'Request failed: Error Communicating with Server',
+                $exception->getMessage()
+            );
+            $this->assertNull($exception->getResponse());
+            $this->assertInstanceOf(RequestException::class, $exception->getPrevious());
+        }
     }
 }

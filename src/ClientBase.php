@@ -22,6 +22,8 @@ use MarketDataApp\Exceptions\UnauthorizedException;
 use MarketDataApp\Logging\LoggerFactory;
 use MarketDataApp\Logging\LoggingUtilities;
 use MarketDataApp\Retry\RetryConfig;
+use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Client\RequestExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
@@ -434,8 +436,13 @@ abstract class ClientBase
                         );
                     }
 
-                    // Handle RequestException (network errors, timeouts) - always retryable
-                    if ($reason instanceof \GuzzleHttp\Exception\RequestException) {
+                    // Handle request and network failures - always retryable.
+                    // PSR-18 covers both Guzzle 7 ConnectException and the
+                    // Guzzle 8 NetworkException hierarchy.
+                    if (
+                        $reason instanceof RequestExceptionInterface
+                        || $reason instanceof NetworkExceptionInterface
+                    ) {
                         $attempt++;
                         if ($attempt < $maxAttempts) {
                             $delay = $this->calculateBackoffDelay($attempt);
@@ -448,7 +455,7 @@ abstract class ClientBase
                             "Request failed: " . $reason->getMessage(),
                             $reason->getCode(),
                             $reason,
-                            $reason->hasResponse() ? $reason->getResponse() : null,
+                            $this->getExceptionResponse($reason),
                             $fullUrl
                         );
                     }
@@ -609,8 +616,8 @@ abstract class ClientBase
                     $fullUrl
                 );
                 
-            } catch (\GuzzleHttp\Exception\RequestException $e) {
-                // Network errors, timeouts, etc. - always retryable
+            } catch (RequestExceptionInterface|NetworkExceptionInterface $e) {
+                // Request and network failures - always retryable
                 $attempt++;
                 if ($attempt < $maxAttempts) {
                     $this->waitForRetry($attempt);
@@ -622,7 +629,7 @@ abstract class ClientBase
                     "Request failed: " . $e->getMessage(),
                     $e->getCode(),
                     $e,
-                    $e->hasResponse() ? $e->getResponse() : null,
+                    $this->getExceptionResponse($e),
                     $fullUrl
                 );
                 
@@ -845,6 +852,27 @@ abstract class ClientBase
         } catch (\Exception $e) {
             return "Request failed with status code: " . $response->getStatusCode();
         }
+    }
+
+    /**
+     * Extract a response from a response-aware transport exception.
+     *
+     * Guzzle 7 exposes response access on RequestException, while Guzzle 8
+     * exposes it only on response-aware subclasses. Network failures have no
+     * response in either version.
+     *
+     * @param \Throwable $exception The transport exception.
+     *
+     * @return ResponseInterface|null The response, when one was received.
+     */
+    private function getExceptionResponse(\Throwable $exception): ?ResponseInterface
+    {
+        if (!method_exists($exception, 'getResponse')) {
+            return null;
+        }
+
+        $response = $exception->getResponse();
+        return $response instanceof ResponseInterface ? $response : null;
     }
 
     /**

@@ -1361,8 +1361,8 @@ class QuotesTest extends OptionsTestCase
         $response404 = new Response(404, [], json_encode(['s' => 'error', 'errmsg' => 'No data available']));
 
         $this->setMockResponses([
-            new \GuzzleHttp\Exception\RequestException('Not Found', $request1, $response404),
-            new \GuzzleHttp\Exception\RequestException('Not Found', $request2, $response404),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request1, $response404),
+            new \GuzzleHttp\Exception\ClientException('Not Found', $request2, $response404),
         ]);
 
         $this->expectException(\Throwable::class);
