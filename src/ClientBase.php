@@ -16,6 +16,7 @@ use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Exceptions\ApiException;
 use MarketDataApp\Exceptions\BadStatusCodeError;
+use MarketDataApp\Exceptions\ForbiddenException;
 use MarketDataApp\Exceptions\RequestError;
 use MarketDataApp\Exceptions\UnauthorizedException;
 use MarketDataApp\Logging\LoggerFactory;
@@ -68,6 +69,12 @@ abstract class ClientBase
      *                       Tracks credits (not requests), as some requests may consume multiple credits.
      */
     public ?RateLimits $rate_limits = null;
+
+    /**
+     * @var string|null IP address detected by the API on the latest successful response
+     *                  that included X-API-Detected-IP.
+     */
+    public ?string $detected_ip = null;
 
     /**
      * @var Parameters Default universal parameters for all API requests.
@@ -257,6 +264,7 @@ abstract class ClientBase
      * @return PromiseInterface
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws ForbiddenException
      * @throws UnauthorizedException
      */
     protected function async($method, array $arguments = []): PromiseInterface
@@ -308,6 +316,8 @@ abstract class ClientBase
                         if ($rateLimits !== null) {
                             $this->rate_limits = $rateLimits;
                         }
+
+                        $this->updateDetectedIpFromResponse($response);
 
                         return $response;
                     } catch (RequestError $e) {
@@ -405,6 +415,15 @@ abstract class ClientBase
                                 $fullUrl
                             );
                         }
+                        if ($statusCode === 403) {
+                            throw new ForbiddenException(
+                                $this->getErrorMessage($reason->getResponse()),
+                                $statusCode,
+                                $reason,
+                                $reason->getResponse(),
+                                $fullUrl
+                            );
+                        }
                         // Other 4xx errors are non-retryable
                         throw new BadStatusCodeError(
                             $this->getErrorMessage($reason->getResponse()),
@@ -454,6 +473,7 @@ abstract class ClientBase
      * @throws ApiException
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws ForbiddenException
      * @throws UnauthorizedException
      */
     public function execute($method, array $arguments = []): object
@@ -500,6 +520,8 @@ abstract class ClientBase
                     $this->rate_limits = $rateLimits;
                 }
 
+                $this->updateDetectedIpFromResponse($response);
+
                 // Success - process response
                 return $this->processResponse($response, $format, $arguments, $fullUrl);
                 
@@ -526,6 +548,15 @@ abstract class ClientBase
                 // 401 UNAUTHORIZED gets a specific exception
                 if ($statusCode === 401) {
                     throw new UnauthorizedException(
+                        $this->getErrorMessage($e->getResponse()),
+                        $statusCode,
+                        $e,
+                        $e->getResponse(),
+                        $fullUrl
+                    );
+                }
+                if ($statusCode === 403) {
+                    throw new ForbiddenException(
                         $this->getErrorMessage($e->getResponse()),
                         $statusCode,
                         $e,
@@ -724,6 +755,7 @@ abstract class ClientBase
      * @return void
      * @throws RequestError
      * @throws BadStatusCodeError
+     * @throws ForbiddenException
      * @throws UnauthorizedException
      */
     public function validateResponseStatusCode($response, bool $raiseForStatus = true, ?string $requestUrl = null): void
@@ -752,7 +784,41 @@ abstract class ClientBase
             if ($statusCode === 401) {
                 throw new UnauthorizedException($errorMessage, $statusCode, null, $response, $requestUrl);
             }
+            if ($statusCode === 403) {
+                throw new ForbiddenException($errorMessage, $statusCode, null, $response, $requestUrl);
+            }
             throw new BadStatusCodeError($errorMessage, $statusCode, null, $response, $requestUrl);
+        }
+    }
+
+    /**
+     * Extract the caller IP detected by the API from a response.
+     *
+     * @param \Psr\Http\Message\ResponseInterface|null $response The HTTP response.
+     *
+     * @return string|null The detected IP, or null when the header is absent.
+     */
+    public function extractDetectedIpFromResponse($response): ?string
+    {
+        if (!$response) {
+            return null;
+        }
+
+        $detectedIp = $response->getHeaderLine('X-API-Detected-IP');
+        return $detectedIp !== '' ? $detectedIp : null;
+    }
+
+    /**
+     * Update the latest detected IP when a response includes it.
+     *
+     * Responses without the header do not erase metadata captured from an earlier
+     * successful response.
+     */
+    protected function updateDetectedIpFromResponse($response): void
+    {
+        $detectedIp = $this->extractDetectedIpFromResponse($response);
+        if ($detectedIp !== null) {
+            $this->detected_ip = $detectedIp;
         }
     }
 
@@ -1083,6 +1149,7 @@ abstract class ClientBase
      *
      * @return \Psr\Http\Message\ResponseInterface The HTTP response.
      * @throws GuzzleException
+     * @throws ForbiddenException
      * @throws UnauthorizedException
      */
     public function makeRawRequest(string $method, array $arguments = []): ResponseInterface
@@ -1104,6 +1171,8 @@ abstract class ClientBase
             // Internal requests logged at DEBUG level
             $this->logRequest('GET', $response, $durationMs, $fullUrl, 'debug');
 
+            $this->updateDetectedIpFromResponse($response);
+
             return $response;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $durationMs = (microtime(true) - $startTime) * 1000;
@@ -1115,6 +1184,15 @@ abstract class ClientBase
             // 401 UNAUTHORIZED gets a specific exception
             if ($statusCode === 401) {
                 throw new UnauthorizedException(
+                    $this->getErrorMessage($e->getResponse()),
+                    $statusCode,
+                    $e,
+                    $e->getResponse(),
+                    $fullUrl
+                );
+            }
+            if ($statusCode === 403) {
+                throw new ForbiddenException(
                     $this->getErrorMessage($e->getResponse()),
                     $statusCode,
                     $e,

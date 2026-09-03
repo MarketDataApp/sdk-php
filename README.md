@@ -29,6 +29,7 @@
 - **Multiple Output Formats**: JSON, CSV, or HTML formats
 - **Built-in Retry Logic**: Automatic retry with exponential backoff for reliable data fetching
 - **Rate Limit Tracking**: Automatic rate limit monitoring with easy access via `$client->rate_limits`
+- **IP Diagnostics**: Access the API-detected IP and the authorized IP included with IP-block errors
 - **Type-Safe**: Full type hints and strict typing (PHP 8.2+)
 - **Zero Config**: Works out of the box with sensible defaults
 
@@ -126,6 +127,30 @@ $quotes = $client->options->quotes('AAPL281215C00400000');
 // Utilities
 $status = $client->utilities->api_status();
 $headers = $client->utilities->headers();
+```
+
+### IP diagnostics
+
+Successful API responses can include `X-API-Detected-IP`. The SDK stores the
+latest value on the client:
+
+```php
+$quote = $client->stocks->quote('AAPL');
+echo $client->detected_ip;
+```
+
+When a 403 response includes `X-API-Authorized-IP`, the SDK throws a
+`ForbiddenException` whose message includes the authorized IP and exposes it
+programmatically:
+
+```php
+use MarketDataApp\Exceptions\ForbiddenException;
+
+try {
+    $quote = $client->stocks->quote('AAPL');
+} catch (ForbiddenException $e) {
+    echo $e->getAuthorizedIp();
+}
 ```
 
 ### Universal Parameters

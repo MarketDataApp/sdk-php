@@ -224,10 +224,10 @@ class UserAgentTest extends TestCase
      */
     public function testMakeRawRequest_withNon401ClientException_rethrowsException(): void
     {
-        // Mock a 403 Forbidden response (non-401 ClientException)
+        // Mock a 400 Bad Request response (non-401/403 ClientException)
         // MockHandler will automatically throw ClientException for 4xx responses
         $this->setMockResponsesWithHistory([
-            new Response(403, [], json_encode(['errmsg' => 'Forbidden']))
+            new Response(400, [], json_encode(['errmsg' => 'Bad request']))
         ]);
 
         // Expect ClientException to be re-thrown (not converted to UnauthorizedException)

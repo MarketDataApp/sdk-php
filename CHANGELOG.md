@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- Surface `X-API-Detected-IP` on `$client->detected_ip` after successful responses.
+- Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
+  `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
+
 ## v1.1.0 (2026-02-21)
 
 ### Breaking Changes

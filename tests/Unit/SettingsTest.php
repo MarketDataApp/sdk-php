@@ -143,9 +143,22 @@ class SettingsTest extends TestCase
         unset($_ENV['MARKETDATA_TOKEN']);
         unset($_SERVER['MARKETDATA_TOKEN']);
 
-        // Should return empty string as fallback
-        $token = Settings::getToken(null);
-        $this->assertEquals('', $token);
+        // Run outside the repository so a developer's local .env file is not
+        // itself a token source for this test.
+        $tempDir = $this->createTempDir();
+        $originalCwd = getcwd();
+        try {
+            chdir($tempDir);
+            $this->resetDotenvLoaded();
+
+            // Should return empty string as fallback
+            $token = Settings::getToken(null);
+            $this->assertEquals('', $token);
+        } finally {
+            if ($originalCwd && is_dir($originalCwd)) {
+                @chdir($originalCwd);
+            }
+        }
     }
 
     /**

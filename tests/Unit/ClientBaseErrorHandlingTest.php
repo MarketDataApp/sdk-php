@@ -1340,9 +1340,9 @@ class ClientBaseErrorHandlingTest extends TestCase
      */
     public function testMakeRawRequest_withNon401ClientException_rethrowsException(): void
     {
-        // Set up mock that returns 403 (should be re-thrown, not converted)
+        // Set up mock that returns 400 (should be re-thrown, not converted)
         $this->setMockResponses([
-            new Response(403, [], json_encode(['errmsg' => 'Forbidden'])),
+            new Response(400, [], json_encode(['errmsg' => 'Bad request'])),
         ]);
 
         $this->expectException(\GuzzleHttp\Exception\ClientException::class);
