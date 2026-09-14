@@ -286,6 +286,12 @@ Follow the standard bug-fixing process.
 5. [ ] **Commit**: Use message format `fix: Description (closes #NNN)`
 6. [ ] **Push**: Push the fix to the appropriate branch
 
+> **Stacking a PR on another PR?** Retarget it to `main` as soon as a reviewer
+> approves it. Do not wait for its base to merge. A PR merged into a base branch that
+> has already merged puts its work on a branch nothing points at, and the work never
+> reaches `main`. **Automatically delete head branches** is on, so GitHub retargets a
+> stacked PR when its base merges — retargeting early keeps the work off that race.
+
 ### Commit Message Format
 
 ```
