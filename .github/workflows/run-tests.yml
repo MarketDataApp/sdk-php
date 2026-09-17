@@ -11,13 +11,15 @@ on:
   # Without this, the suite never runs on a pull request: it only fired after a
   # merge, so a PR could be merged with nothing having tested it, and no test
   # check existed for branch protection to require.
+  #
+  # And no `paths:` filter here, deliberately. Branch protection requires the
+  # four `P8.x - prefer-stable - ubuntu-latest` contexts on every pull request.
+  # A filter means a pull request touching no PHP file never runs this workflow,
+  # so those contexts never report and the pull request stays BLOCKED forever
+  # with nothing to fix. That happened to #91 and #92, which both needed an
+  # admin merge. A required check that cannot run on some pull requests is a
+  # contradiction: either it runs on all of them, or it is not required.
   pull_request:
-    paths:
-      - '**.php'
-      - '.github/workflows/run-tests.yml'
-      - 'phpunit.xml.dist'
-      - 'composer.json'
-      - 'composer.lock'
 
 jobs:
   test:
