@@ -49,8 +49,9 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          # A push only reaches this workflow through the paths filter above, so
-          # by the time we are here the change is already PHP-relevant.
+          # Only a pull request can be documentation-only here. A push reaches
+          # this workflow through the paths filter above, so by then the change is
+          # already PHP-relevant.
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "php=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -74,13 +75,18 @@ jobs:
           echo "changed files:"
           printf '%s\n' "$files" | sed 's/^/  /'
 
-          # Keep this list in step with the `push` paths filter above.
-          if printf '%s\n' "$files" | grep -qE '(\.php$|^\.github/workflows/run-tests\.yml$|^phpunit\.xml\.dist$|^composer\.(json|lock)$)'; then
-            echo "php=true" >> "$GITHUB_OUTPUT"
-            echo "PHP-relevant: running the suite."
-          else
+          # Inverted deliberately, and matching the other five SDKs. This lists
+          # what DOCUMENTATION looks like and runs the suite for everything else.
+          # The first version enumerated PHP-relevant paths instead, which meant
+          # the suite skipped for any file nobody had listed -- a new config
+          # file, a new source directory -- and skipping is the answer that
+          # produces a green over untested code.
+          if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE '(^docs/|\.md$)'; then
             echo "php=false" >> "$GITHUB_OUTPUT"
-            echo "Nothing PHP-relevant: the suite skips and reports success."
+            echo "Documentation only: the suite skips, and Tests passed says so."
+          else
+            echo "php=true" >> "$GITHUB_OUTPUT"
+            echo "Something other than documentation changed: running the suite."
           fi
 
   test:
