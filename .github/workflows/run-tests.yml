@@ -22,7 +22,74 @@ on:
   pull_request:
 
 jobs:
+  # A required status check can never be conditional: the list is static. And a
+  # matrix job that GitHub skips does NOT expand its name -- it reports one check
+  # called `P${{ matrix.php }} - ...`, and zero `P8.x` contexts. Measured on #95.
+  # So the matrix contexts cannot be both required and skippable, which is why
+  # `Tests passed` below is the context branch protection requires instead.
+  #
+  # With that in place this job is free to decide whether the suite applies, and a
+  # documentation-only pull request costs one short job rather than seventeen.
+  changes:
+    name: Decide whether the PHP suite applies
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect PHP-relevant changes
+        id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # A push only reaches this workflow through the paths filter above, so
+          # by the time we are here the change is already PHP-relevant.
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "php=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Every path out of here that is not a confident "false" says true.
+          # A gate that cannot see both ends of the diff must not conclude that
+          # nothing PHP changed.
+          for sha in "$BASE" "$HEAD"; do
+            if ! git cat-file -e "$sha^{commit}" 2>/dev/null; then
+              echo "php=true" >> "$GITHUB_OUTPUT"
+              echo "Cannot reach $sha, so running the suite rather than guessing."
+              exit 0
+            fi
+          done
+
+          # Three dots: the diff from the merge base, not from whatever main has
+          # moved to since. Two dots would call every file main gained a change
+          # of this pull request.
+          files=$(git diff --name-only "$BASE...$HEAD")
+          echo "changed files:"
+          printf '%s\n' "$files" | sed 's/^/  /'
+
+          # Keep this list in step with the `push` paths filter above.
+          if printf '%s\n' "$files" | grep -qE '(\.php$|^\.github/workflows/run-tests\.yml$|^phpunit\.xml\.dist$|^composer\.(json|lock)$)'; then
+            echo "php=true" >> "$GITHUB_OUTPUT"
+            echo "PHP-relevant: running the suite."
+          else
+            echo "php=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing PHP-relevant: the suite skips and reports success."
+          fi
+
   test:
+    needs: changes
+    # `!= 'false'` and not `== 'true'`, deliberately. If the gate job fails, its
+    # output is empty, and the safe reading of empty is RUN THE SUITE. The other
+    # polarity would turn a broken gate into a green check over untested code.
+    # `Tests passed` enforces the same thing from the other side.
+    if: needs.changes.outputs.php != 'false'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
@@ -68,7 +135,8 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   integration:
-    if: github.event_name == 'pull_request'
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.php != 'false'
     name: Live API integration contracts
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -91,3 +159,47 @@ jobs:
         env:
           MARKETDATA_TOKEN: ${{ secrets.MARKETDATA_TOKEN }}
         run: vendor/bin/phpunit --no-coverage --testsuite Integration --group ci
+
+  tests-passed:
+    # The single context branch protection should require, replacing the four
+    # `P8.x - prefer-stable - ubuntu-latest` entries. Those cannot do the job: a
+    # skipped matrix job reports no per-combination context at all, so requiring
+    # them means a pull request that touches no PHP file waits forever for checks
+    # that will never arrive. #91 and #92 both needed an admin merge for that.
+    #
+    # This job always reports, so it is always a decision rather than a silence.
+    name: Tests passed
+    needs: [changes, test]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Require the suite to have passed, or to have been skipped for cause
+        env:
+          PHP_RELEVANT: ${{ needs.changes.outputs.php }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          echo "gate said php=${PHP_RELEVANT:-<nothing: the gate itself failed>}"
+          echo "matrix result: ${TEST_RESULT}"
+
+          case "$TEST_RESULT" in
+            success)
+              echo "The suite ran and passed."
+              ;;
+            skipped)
+              # A skip is acceptable ONLY because the gate said so out loud. If
+              # the gate failed, its output is empty, the matrix skipped for the
+              # wrong reason, and a green here would cover untested code.
+              if [ "$PHP_RELEVANT" = "false" ]; then
+                echo "No PHP-relevant file changed, so the suite did not apply."
+              else
+                echo "The suite was skipped and the gate did not ask for it."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "The suite reported: ${TEST_RESULT}"
+              exit 1
+              ;;
+          esac
