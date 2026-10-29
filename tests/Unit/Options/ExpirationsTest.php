@@ -9,12 +9,93 @@ use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Options\Expirations;
 use MarketDataApp\Enums\DateFormat;
 use MarketDataApp\Enums\Format;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Unit tests for the Options Expirations endpoint.
  */
 class ExpirationsTest extends OptionsTestCase
 {
+    /**
+     * The default time zone before the test changed it.
+     *
+     * @var string
+     */
+    private string $originalTimezone;
+
+    /**
+     * Save the default time zone and set up the client.
+     *
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        $this->originalTimezone = date_default_timezone_get();
+        parent::setUp();
+    }
+
+    /**
+     * Restore the default time zone and the token state.
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        date_default_timezone_set($this->originalTimezone);
+        parent::tearDown();
+    }
+
+    /**
+     * Default time zones paired with each response shape that carries expirations.
+     *
+     * @return array<string, array{string, bool}> The default zone and whether the response is human-readable.
+     */
+    public static function defaultTimezoneProvider(): array
+    {
+        return [
+            'UTC, regular'                        => ['UTC', false],
+            'UTC, human-readable'                 => ['UTC', true],
+            'Asia/Tokyo, regular'                 => ['Asia/Tokyo', false],
+            'Asia/Tokyo, human-readable'          => ['Asia/Tokyo', true],
+            'America/Los_Angeles, regular'        => ['America/Los_Angeles', false],
+            'America/Los_Angeles, human-readable' => ['America/Los_Angeles', true],
+        ];
+    }
+
+    /**
+     * An expiration is midnight America/New_York of its date, whatever the default time zone.
+     *
+     * @param string $defaultTimezone The PHP default time zone during the test.
+     * @param bool   $humanReadable   Whether the response uses human-readable keys.
+     *
+     * @return void
+     */
+    #[DataProvider('defaultTimezoneProvider')]
+    public function testExpirations_areEasternMidnight_whateverTheDefaultTimezone(
+        string $defaultTimezone,
+        bool $humanReadable
+    ): void {
+        date_default_timezone_set($defaultTimezone);
+
+        // Mock response: NOT from real API output (synthetic/test data)
+        $dates = ['2026-09-23', '2026-12-18'];
+        $mocked_response = $humanReadable
+            ? ['Expirations' => $dates, 'Date' => 1790136000]
+            : ['s' => 'ok', 'expirations' => $dates, 'updated' => 1790136000];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->options->expirations(
+            'AAPL',
+            parameters: new Parameters(use_human_readable: $humanReadable)
+        );
+
+        $this->assertSame('2026-09-23 00:00:00 -04:00', $response->expirations[0]->format('Y-m-d H:i:s P'));
+        $this->assertSame('2026-12-18 00:00:00 -05:00', $response->expirations[1]->format('Y-m-d H:i:s P'));
+        $this->assertSame('America/New_York', $response->expirations[0]->tzName);
+        // The API's dateformat=unix value for 2026-09-23.
+        $this->assertSame(1790136000, $response->expirations[0]->getTimestamp());
+    }
+
     /**
      * Test the expirations endpoint for a successful response.
      */
@@ -35,7 +116,10 @@ class ExpirationsTest extends OptionsTestCase
         $this->assertEquals(Carbon::parse($mocked_response['updated']), $response->updated);
 
         for ($i = 0; $i < count($response->expirations); $i++) {
-            $this->assertEquals(Carbon::parse($mocked_response['expirations'][$i]), $response->expirations[$i]);
+            $this->assertSame(
+                $mocked_response['expirations'][$i] . ' 00:00:00 -04:00',
+                $response->expirations[$i]->format('Y-m-d H:i:s P')
+            );
         }
     }
 

@@ -22,7 +22,8 @@ class Expirations extends ResponseBase
     public string $status = 'no_data';
 
     /**
-     * The expiration dates requested for the underlying with the option strikes for each expiration.
+     * The expiration dates requested for the underlying with the option strikes for each expiration,
+     * each at midnight America/New_York of that date.
      *
      * @var Carbon[]
      */
@@ -71,9 +72,7 @@ class Expirations extends ResponseBase
         if ($isHumanReadable) {
             // Human-readable format - no "s" status field
             $this->status = 'ok';
-            $this->expirations = array_map(function ($expiration) {
-                return Carbon::parse($expiration);
-            }, $responseArray['Expirations']);
+            $this->expirations = array_map(self::parseExpiration(...), $responseArray['Expirations']);
             $this->updated = Carbon::parse($responseArray['Date']);
         } else {
             // Regular format
@@ -81,9 +80,7 @@ class Expirations extends ResponseBase
 
             switch ($this->status) {
                 case 'ok':
-                    $this->expirations = array_map(function ($expiration) {
-                        return Carbon::parse($expiration);
-                    }, $response->expirations);
+                    $this->expirations = array_map(self::parseExpiration(...), $response->expirations);
                     $this->updated = Carbon::parse($response->updated);
                     break;
 
@@ -98,6 +95,19 @@ class Expirations extends ResponseBase
                     break;
             }
         }
+    }
+
+    /**
+     * Read an expiration date as midnight America/New_York of that date.
+     *
+     * @param int|string $expiration The date as the API sends it, in YYYY-MM-DD format, or a Unix timestamp.
+     *
+     * @return Carbon Midnight of that date in America/New_York, whatever the default time zone, or the
+     *                instant of the timestamp.
+     */
+    private static function parseExpiration(int|string $expiration): Carbon
+    {
+        return Carbon::parse($expiration, 'America/New_York');
     }
 
     /**
