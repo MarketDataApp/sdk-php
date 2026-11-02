@@ -8,6 +8,11 @@
 - Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
   `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
 
+### Fixed
+
+- Option expirations are midnight America/New_York of their date, whatever PHP's default time zone.
+  They were midnight in the server's zone, which on a UTC server is the evening before in New York.
+
 ## v1.1.0 (2026-02-21)
 
 ### Breaking Changes
