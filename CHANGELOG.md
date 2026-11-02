@@ -8,6 +8,12 @@
 - Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
   `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
 
+### Fixed
+
+- A request no longer waits forever when the API does not answer. The default HTTP client gives up after
+  99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
+  network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
+
 ## v1.1.0 (2026-02-21)
 
 ### Breaking Changes
