@@ -69,6 +69,14 @@ foreach ($liquid->getAllQuotes() as $opt) {
 }
 echo "\n";
 
+// Options near a specific days-to-expiry target (dte picks its own expiration)
+echo "Calls near 30 DTE:\n";
+$dte30 = $client->options->option_chain($symbol, side: Side::CALL, dte: 30, strike_limit: 3);
+foreach ($dte30->getAllQuotes() as $opt) {
+    printf("  \$%-7s | DTE: %3d | Bid: \$%.2f | Ask: \$%.2f\n", $opt->strike, $opt->dte, $opt->bid, $opt->ask);
+}
+echo "\n";
+
 // Option symbol lookup
 $lookup = $client->options->lookup("AAPL 1/17/25 \$200 Call");
 echo "Lookup: 'AAPL 1/17/25 \$200 Call' -> {$lookup->option_symbol}\n\n";

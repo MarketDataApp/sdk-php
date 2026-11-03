@@ -7,6 +7,8 @@
 - Surface `X-API-Detected-IP` on `$client->detected_ip` after successful responses.
 - Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
   `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
+- `Options::option_chain()`: `dte` now accepts string expressions like `"15,30,45"`, `"0-45"`,
+  and `">=30"` for filtering by days to expiry, in addition to integers (API release 2.0.0).
 
 ## v1.1.0 (2026-02-21)
 

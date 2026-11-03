@@ -805,6 +805,242 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test option chain URL with dte as string single value.
+     *
+     * The dte parameter widened from int to int|string|null: a single value can
+     * now also be passed as a string, e.g. "30".
+     */
+    public function testOptionChain_withDteStringSingleValue_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', dte: '30');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('dte', $query);
+        $this->assertEquals('30', $query['dte']);
+    }
+
+    /**
+     * Test option chain URL with dte as a comma-separated list.
+     *
+     * A comma-separated list (e.g. "15,30,45") selects the closest expiration
+     * for each value, deduplicated.
+     */
+    public function testOptionChain_withDteStringList_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000', 'AAPL240216C00160000'],
+                'underlying' => ['AAPL', 'AAPL'],
+                'expiration' => [1705622400, 1708128000],
+                'side' => ['call', 'call'],
+                'strike' => [150.0, 160.0],
+                'firstTraded' => [1234567890, 1234567890],
+                'dte' => [15, 45],
+                'updated' => [1234567890, 1234567890],
+                'bid' => [5.0, 3.0],
+                'bidSize' => [10, 10],
+                'mid' => [5.5, 3.5],
+                'ask' => [6.0, 4.0],
+                'askSize' => [10, 10],
+                'last' => [5.5, 3.5],
+                'openInterest' => [1000, 800],
+                'volume' => [500, 300],
+                'inTheMoney' => [true, false],
+                'intrinsicValue' => [10.0, 0.0],
+                'extrinsicValue' => [5.0, 3.5],
+                'underlyingPrice' => [160.0, 160.0],
+                'iv' => [0.25, 0.28],
+                'delta' => [0.60, 0.30],
+                'gamma' => [0.02, 0.03],
+                'theta' => [-0.05, -0.04],
+                'vega' => [0.15, 0.12],
+                'rho' => [0.03, 0.02]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', dte: '15,30,45');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('dte', $query);
+        $this->assertEquals('15,30,45', $query['dte']);
+    }
+
+    /**
+     * Test option chain URL with dte as a closed range.
+     *
+     * A closed range (e.g. "0-45") returns every expiration whose dte falls
+     * within the bounds, inclusive.
+     */
+    public function testOptionChain_withDteStringClosedRange_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', dte: '0-45');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('dte', $query);
+        $this->assertEquals('0-45', $query['dte']);
+    }
+
+    /**
+     * Test option chain URL with dte as a comparison operator expression.
+     *
+     * A comparison operator (e.g. ">=30" or "<45") returns every expiration
+     * whose dte satisfies the comparison.
+     */
+    public function testOptionChain_withDteStringComparison_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [45],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', dte: '>=30');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('dte', $query);
+        $this->assertEquals('>=30', $query['dte']);
+    }
+
+    /**
+     * Test option chain URL with dte as a "less than" comparison operator
+     * expression.
+     *
+     * The API's description enumerates both ">=30" and "<45" as comparison
+     * operator examples, so each is pinned to its own wire test.
+     */
+    public function testOptionChain_withDteStringComparisonLessThan_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', dte: '<45');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('dte', $query);
+        $this->assertEquals('<45', $query['dte']);
+    }
+
+    /**
      * Test option chain URL with weekly=false sends parameter.
      */
     public function testOptionChain_withWeeklyFalse_addsParameter(): void

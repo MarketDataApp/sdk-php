@@ -293,6 +293,23 @@ class OptionChainTest extends OptionsTestCase
     }
 
     /**
+     * Test option_chain endpoint with invalid int dte.
+     *
+     * The int form of dte keeps its existing positive-integer check even
+     * though dte widened to int|string|null.
+     */
+    public function testOptionChain_invalidIntDte_throwsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`dte` must be a positive integer');
+
+        $this->client->options->option_chain(
+            symbol: 'AAPL',
+            dte: -5
+        );
+    }
+
+    /**
      * Test option_chain endpoint with invalid numeric ranges.
      */
     public function testOptionChain_invalidNumericRanges_throwsException(): void
