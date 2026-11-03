@@ -13,7 +13,7 @@ php examples/options_chain.php
 - Fetching option expiration dates
 - Getting available strikes for an expiration
 - Exploring option chains with filters
-- Filtering by ITM/OTM, volume, open interest
+- Filtering by ITM/OTM, volume, open interest, days to expiry (dte)
 - Option symbol lookup (human-readable to OCC)
 - Getting individual option quotes
 - Working with Greeks (delta, gamma, theta, vega)
@@ -116,6 +116,48 @@ foreach ($liquidOptions->getAllQuotes() as $option) {
         $option->volume,
         $option->open_interest
     );
+}
+```
+
+## Filter by Days to Expiry (dte)
+
+`dte` accepts a single value, a comma-separated list, a closed range, or a comparison operator:
+
+```php
+// Single value: the one expiration closest to 30 days out
+$nearest30Dte = $client->options->option_chain(
+    symbol: 'AAPL',
+    side: Side::CALL,
+    dte: 30,
+    strike_limit: 5
+);
+
+// Comma-separated list: the closest expiration for each value, deduplicated
+$dteList = $client->options->option_chain(
+    symbol: 'AAPL',
+    side: Side::CALL,
+    dte: '15,30,45',
+    strike_limit: 5
+);
+
+// Closed range: every expiration with a dte between 0 and 45, inclusive
+$dteRange = $client->options->option_chain(
+    symbol: 'AAPL',
+    side: Side::CALL,
+    dte: '0-45',
+    strike_limit: 5
+);
+
+// Comparison operator: every expiration with a dte of 30 or more
+$dteComparison = $client->options->option_chain(
+    symbol: 'AAPL',
+    side: Side::CALL,
+    dte: '>=30',
+    strike_limit: 5
+);
+
+foreach ($nearest30Dte->getAllQuotes() as $option) {
+    printf("%s | DTE: %d | Strike: $%.2f\n", $option->option_symbol, $option->dte, $option->strike);
 }
 ```
 

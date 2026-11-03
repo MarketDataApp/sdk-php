@@ -338,4 +338,235 @@ class OptionChainTest extends OptionsTestCase
         // Quarterly expirations may be sparse, so we just check the response is valid
         $this->assertContains($response->status, ['ok', 'no_data'], 'Real-time chain with quarterly filter should return valid status');
     }
+
+    /**
+     * Test real-time option chain with dte as a single int value (existing form).
+     *
+     * A single dte value limits the chain to the one expiration closest to it.
+     * Combining dte with expiration: Expiration::ALL makes the server ignore
+     * dte entirely and return the complete chain, so these tests omit
+     * expiration to let dte alone pick the expiration, as the documentation's
+     * own default ("if omitted the next monthly expiration ... will be
+     * returned") describes for real-time quotes.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_realTimeWithDteIntSingleValue_success(): void
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: 400,
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertSame('ok', $response->status);
+        $this->assertCount(
+            1,
+            $response->getExpirationDates(),
+            'A single dte value should limit the chain to exactly one expiration'
+        );
+        $quotes = $response->getAllQuotes();
+        $this->assertNotEmpty($quotes);
+        $this->assertGreaterThan(
+            150,
+            $quotes[0]->dte,
+            'dte=400 should select a far-dated expiration, which the near-term default (no dte) cannot satisfy'
+        );
+    }
+
+    /**
+     * Test real-time option chain with dte as a single string value.
+     *
+     * The dte parameter now also accepts a single value as a string (e.g. "400"),
+     * which must behave the same way as the existing int form.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_realTimeWithDteStringSingleValue_success(): void
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: '400',
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertSame('ok', $response->status);
+        $this->assertCount(
+            1,
+            $response->getExpirationDates(),
+            'A single string dte value should limit the chain to exactly one expiration'
+        );
+        $quotes = $response->getAllQuotes();
+        $this->assertNotEmpty($quotes);
+        $this->assertGreaterThan(
+            150,
+            $quotes[0]->dte,
+            'dte="400" should select a far-dated expiration, which the near-term default (no dte) cannot satisfy'
+        );
+    }
+
+    /**
+     * Test real-time option chain with dte as a comma-separated list.
+     *
+     * A comma-separated list selects the closest expiration for each value,
+     * deduplicated, so the result must never have more expirations than values
+     * provided, and must have more than the single expiration the default
+     * (no dte) chain returns.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_realTimeWithDteStringList_success(): void
+    {
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: '15,30,45',
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertSame('ok', $response->status);
+        $expirationCount = count($response->getExpirationDates());
+        $this->assertGreaterThan(
+            1,
+            $expirationCount,
+            'A three-value dte list should return more than the one expiration the default (no dte) chain returns'
+        );
+        $this->assertLessThanOrEqual(
+            3,
+            $expirationCount,
+            'A three-value dte list should return at most one expiration per value, deduplicated'
+        );
+    }
+
+    /**
+     * Test real-time option chain with dte as a closed range.
+     *
+     * A closed range returns every expiration whose dte falls within the
+     * bounds, inclusive, and must return more than the single expiration the
+     * default (no dte) chain returns.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_realTimeWithDteStringClosedRange_success(): void
+    {
+        // Anchor the upper bound on the actual dte of the expiration closest to
+        // 45, found via the single-value form.
+        $anchorResponse = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: 45,
+        );
+        $anchorDte = $anchorResponse->getAllQuotes()[0]->dte;
+
+        $response = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: "0-{$anchorDte}",
+        );
+
+        $this->assertInstanceOf(OptionChains::class, $response);
+        $this->assertSame('ok', $response->status);
+        $quotes = $response->getAllQuotes();
+        $this->assertNotEmpty($quotes, 'Should have option chains within the dte range');
+
+        $dtes = [];
+        foreach ($quotes as $quote) {
+            $this->assertGreaterThanOrEqual(0, $quote->dte, "dte {$quote->dte} should satisfy the 0-{$anchorDte} range");
+            $this->assertLessThanOrEqual($anchorDte, $quote->dte, "dte {$quote->dte} should satisfy the 0-{$anchorDte} range");
+            $dtes[] = $quote->dte;
+        }
+        $this->assertContains(
+            $anchorDte,
+            $dtes,
+            'The closed range upper bound is inclusive, so the anchor expiration must be kept'
+        );
+        $this->assertGreaterThan(
+            1,
+            count($response->getExpirationDates()),
+            'The dte range should return more than the one expiration the default (no dte) chain returns'
+        );
+    }
+
+    /**
+     * Test real-time option chain with dte as a comparison operator expression.
+     *
+     * >=N keeps the expiration at exactly N (inclusive), while <N leaves it out
+     * (exclusive). A low anchor is used for >=, and a high anchor for <, so
+     * that each filtered answer still spans more than the single expiration
+     * the default (no dte) chain returns.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_realTimeWithDteStringComparison_success(): void
+    {
+        // Low anchor: the expiration closest to 7 days, found via the
+        // single-value form.
+        $lowAnchorResponse = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: 7,
+        );
+        $lowAnchorDte = $lowAnchorResponse->getAllQuotes()[0]->dte;
+
+        $gteResponse = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: ">={$lowAnchorDte}",
+        );
+        $this->assertInstanceOf(OptionChains::class, $gteResponse);
+        $this->assertSame('ok', $gteResponse->status);
+        $gteDtes = array_map(fn($quote) => $quote->dte, $gteResponse->getAllQuotes());
+        $this->assertNotEmpty($gteDtes);
+        foreach ($gteDtes as $dte) {
+            $this->assertGreaterThanOrEqual($lowAnchorDte, $dte, "dte {$dte} should satisfy >={$lowAnchorDte}");
+        }
+        $this->assertContains(
+            $lowAnchorDte,
+            $gteDtes,
+            ">={$lowAnchorDte} is inclusive, so the anchor expiration must be kept"
+        );
+        $this->assertGreaterThan(
+            1,
+            count($gteResponse->getExpirationDates()),
+            ">={$lowAnchorDte} should return more than the one expiration the default (no dte) chain returns"
+        );
+
+        // High anchor: the expiration closest to 400 days, found via the
+        // single-value form.
+        $highAnchorResponse = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: 400,
+        );
+        $highAnchorDte = $highAnchorResponse->getAllQuotes()[0]->dte;
+
+        $ltResponse = $this->client->options->option_chain(
+            symbol: 'AAPL',
+            side: Side::CALL,
+            strike_limit: 1,
+            dte: "<{$highAnchorDte}",
+        );
+        $this->assertInstanceOf(OptionChains::class, $ltResponse);
+        $this->assertSame('ok', $ltResponse->status);
+        $ltDtes = array_map(fn($quote) => $quote->dte, $ltResponse->getAllQuotes());
+        $this->assertNotEmpty($ltDtes);
+        foreach ($ltDtes as $dte) {
+            $this->assertLessThan($highAnchorDte, $dte, "dte {$dte} should satisfy <{$highAnchorDte}");
+        }
+        $this->assertNotContains(
+            $highAnchorDte,
+            $ltDtes,
+            "<{$highAnchorDte} is exclusive, so the anchor expiration must be left out"
+        );
+        $this->assertGreaterThan(
+            1,
+            count($ltResponse->getExpirationDates()),
+            "<{$highAnchorDte} should return more than the one expiration the default (no dte) chain returns"
+        );
+    }
 }

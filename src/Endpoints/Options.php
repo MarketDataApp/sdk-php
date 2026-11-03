@@ -254,12 +254,21 @@ class Options
      *                                                  to false, no non-standard options expirations will be returned.
      *                                                  If no parameter is provided, the output will default to false.
      *
-     * @param int|null          $dte                    Days to expiry. Limit the option chain to a single expiration
-     *                                                  date closest to the dte provided. Should not be used together
-     *                                                  with from and to. Take care before combining with weekly,
-     *                                                  monthly, quarterly, since that will limit the expirations dte
-     *                                                  can return. If you are using the date parameter, dte is
-     *                                                  relative to the date provided.
+     * @param int|string|null   $dte                    Days to expiry.
+     *                                                  - A single value limits the option chain to the expiration
+     *                                                  date closest to the dte provided. (e.g. 30)
+     *                                                  - A comma-separated list selects the closest expiration for
+     *                                                  each value, deduplicated. (e.g. 15,30,45)
+     *                                                  - A closed range returns every expiration whose dte falls
+     *                                                  within the bounds, inclusive. (e.g. 0-45)
+     *                                                  - A comparison operator returns every expiration whose dte
+     *                                                  satisfies it. (e.g. >=30 or <45)
+     *
+     *                                                  Values are whole numbers of days, at most 36500. Should not
+     *                                                  be used together with from and to. Take care before combining
+     *                                                  with weekly, monthly, quarterly, since that will limit the
+     *                                                  expirations dte can return. If you are using the date
+     *                                                  parameter, dte is relative to the date provided.
      *
      * @param string|float|null $delta
      *                                                  - Limit the option chain to a single strike closest to the
@@ -359,7 +368,7 @@ class Options
         bool $monthly = true,
         bool $quarterly = true,
         ?bool $non_standard = null,
-        ?int $dte = null,
+        int|string|null $dte = null,
         string|float|null $delta = null,
         ?Side $side = null,
         Range $range = Range::ALL,
@@ -389,7 +398,9 @@ class Options
             throw new \InvalidArgumentException("`month` must be between 1 and 12. Got: {$month}");
         }
         $this->validatePositiveInteger($year, 'year');
-        $this->validatePositiveInteger($dte, 'dte');
+        if (is_int($dte)) {
+            $this->validatePositiveInteger($dte, 'dte');
+        }
         $this->validatePositiveInteger($strike_limit, 'strike_limit');
         $this->validatePositiveInteger($min_open_interest, 'min_open_interest');
         $this->validatePositiveInteger($min_volume, 'min_volume');
