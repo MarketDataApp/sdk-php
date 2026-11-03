@@ -262,7 +262,9 @@ class Options
      *                                                  - A closed range returns every expiration whose dte falls
      *                                                  within the bounds, inclusive. (e.g. 0-45)
      *                                                  - A comparison operator returns every expiration whose dte
-     *                                                  satisfies it. (e.g. >=30 or <45)
+     *                                                  satisfies it, as an open interval: >=30 keeps an expiration
+     *                                                  at exactly 30, while <45 excludes one at exactly 45. (e.g.
+     *                                                  >=30 or <45)
      *
      *                                                  Values are whole numbers of days, at most 36500. Should not
      *                                                  be used together with from and to. Take care before combining
