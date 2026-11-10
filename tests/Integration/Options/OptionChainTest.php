@@ -338,4 +338,120 @@ class OptionChainTest extends OptionsTestCase
         // Quarterly expirations may be sparse, so we just check the response is valid
         $this->assertContains($response->status, ['ok', 'no_data'], 'Real-time chain with quarterly filter should return valid status');
     }
+
+    /**
+     * Test option chain dte filter with a single value selects the expiration
+     * closest to the value provided.
+     *
+     * Per the API: "A single value limits the option chain to the expiration
+     * date closest to the dte provided."
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_dteSingleValue_selectsClosestExpiration()
+    {
+        $near = $this->client->options->option_chain(symbol: 'AAPL', dte: 7, side: Side::CALL, strike_limit: 3);
+        $far = $this->client->options->option_chain(symbol: 'AAPL', dte: 365, side: Side::CALL, strike_limit: 3);
+
+        $this->assertEquals('ok', $near->status);
+        $this->assertEquals('ok', $far->status);
+
+        $nearExpirations = array_keys($near->option_chains);
+        $farExpirations = array_keys($far->option_chains);
+
+        // A server that ignored `dte` would answer both calls with the same
+        // single default expiration.
+        $this->assertNotEquals($nearExpirations, $farExpirations);
+
+        $nearDte = array_values($near->option_chains[$nearExpirations[0]])[0]->dte;
+        $farDte = array_values($far->option_chains[$farExpirations[0]])[0]->dte;
+        $this->assertLessThan(abs($farDte - 7), abs($nearDte - 7));
+    }
+
+    /**
+     * Test option chain dte filter with a comma-separated list selects one
+     * expiration per value, deduplicated.
+     *
+     * Per the API: "A comma-separated list (15,30,45) selects the closest
+     * expiration for each value, deduplicated."
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_dteCommaList_selectsMultipleExpirations()
+    {
+        $response = $this->client->options->option_chain(symbol: 'AAPL', dte: '7,30,90', side: Side::CALL, strike_limit: 3);
+
+        $this->assertEquals('ok', $response->status);
+        // Without `dte`, the chain defaults to a single expiration; a
+        // comma-separated list must select more than one.
+        $this->assertGreaterThan(1, count($response->option_chains));
+        // "selects the closest expiration for each value, deduplicated":
+        // at most one expiration per requested value, never the whole chain.
+        $this->assertLessThanOrEqual(3, count($response->option_chains));
+    }
+
+    /**
+     * Test option chain dte filter with a closed range returns every
+     * expiration whose dte falls within the bounds, inclusive.
+     *
+     * Per the API: "A closed range (0-45) ... returns every expiration
+     * whose dte falls within the bounds, inclusive."
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_dteClosedRange_returnsExpirationsWithinBounds()
+    {
+        $response = $this->client->options->option_chain(symbol: 'AAPL', dte: '0-45', side: Side::CALL, strike_limit: 3);
+
+        $this->assertEquals('ok', $response->status);
+        // Without `dte`, the chain defaults to a single expiration; a
+        // closed range must select every matching expiration.
+        $this->assertGreaterThan(1, count($response->option_chains));
+
+        foreach ($response->getAllQuotes() as $quote) {
+            $this->assertGreaterThanOrEqual(0, $quote->dte);
+            $this->assertLessThanOrEqual(45, $quote->dte);
+        }
+    }
+
+    /**
+     * Test option chain dte filter with a comparison operator (>=) returns
+     * every expiration whose dte satisfies the bound, inclusive.
+     *
+     * Per the API: "A comparison operator (>=30, <45) returns every
+     * expiration whose dte falls within the bounds, inclusive."
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_dteComparisonGte_returnsExpirationsAtOrBeyondBound()
+    {
+        $response = $this->client->options->option_chain(symbol: 'AAPL', dte: '>=40', side: Side::CALL, strike_limit: 3);
+
+        $this->assertEquals('ok', $response->status);
+        // Without `dte`, the chain defaults to a single expiration; a
+        // comparison operator must select every matching expiration.
+        $this->assertGreaterThan(1, count($response->option_chains));
+
+        foreach ($response->getAllQuotes() as $quote) {
+            $this->assertGreaterThanOrEqual(40, $quote->dte);
+        }
+    }
+
+    /**
+     * Test option chain dte filter with a comparison operator (<) returns
+     * every expiration whose dte satisfies the bound.
+     *
+     * Per the API: "A comparison operator (>=30, <45) returns every
+     * expiration whose dte falls within the bounds."
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_dteComparisonLt_returnsExpirationsBeforeBound()
+    {
+        $response = $this->client->options->option_chain(symbol: 'AAPL', dte: '<40', side: Side::CALL, strike_limit: 3);
+
+        $this->assertEquals('ok', $response->status);
+        // Without `dte`, the chain defaults to a single expiration; a
+        // comparison operator must select every matching expiration.
+        $this->assertGreaterThan(1, count($response->option_chains));
+
+        foreach ($response->getAllQuotes() as $quote) {
+            $this->assertLessThan(40, $quote->dte);
+        }
+    }
 }

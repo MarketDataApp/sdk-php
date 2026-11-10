@@ -7,6 +7,7 @@
 - Surface `X-API-Detected-IP` on `$client->detected_ip` after successful responses.
 - Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
   `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
+- `Options::option_chain()`: the `dte` parameter now accepts string forms (comma-separated list, closed range, comparison operators) in addition to single integer values (API release 2.0.0). An `int` works exactly as before.
 
 ## v1.1.0 (2026-02-21)
 
