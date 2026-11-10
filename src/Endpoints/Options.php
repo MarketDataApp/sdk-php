@@ -254,12 +254,23 @@ class Options
      *                                                  to false, no non-standard options expirations will be returned.
      *                                                  If no parameter is provided, the output will default to false.
      *
-     * @param int|null          $dte                    Days to expiry. Limit the option chain to a single expiration
-     *                                                  date closest to the dte provided. Should not be used together
-     *                                                  with from and to. Take care before combining with weekly,
-     *                                                  monthly, quarterly, since that will limit the expirations dte
-     *                                                  can return. If you are using the date parameter, dte is
-     *                                                  relative to the date provided.
+     * @param int|string|null   $dte
+     *                                                  - Limit the option chain to a single expiration date closest
+     *                                                  to the dte provided. (e.g. 30)
+     *                                                  - Limit the option chain to a specific set of expirations by
+     *                                                  dte, deduplicated. (e.g. 15,30,45)
+     *                                                  - Limit the option chain to a closed interval of dte values by
+     *                                                  specifying both endpoints. (e.g. 0-45)
+     *                                                  - Limit the option chain to an open interval of dte values
+     *                                                  using a comparison operator. (e.g. >=30)
+     *
+     * Days to expiry. Values are whole numbers of days, at most 36500. Should not be used together with from and to.
+     * Take care before combining with weekly, monthly, quarterly, since that will limit the expirations dte can
+     * return. If you are using the date parameter, dte is relative to the date provided.
+     *
+     * NOTE: When dte is passed as a single int, it is validated client-side and must be positive (dte: 0 throws).
+     * The string forms (list, range, comparison) are passed through unvalidated, so a bound of 0 (e.g. 0-45) is
+     * accepted, matching the API's documented closed-range syntax.
      *
      * @param string|float|null $delta
      *                                                  - Limit the option chain to a single strike closest to the
@@ -359,7 +370,7 @@ class Options
         bool $monthly = true,
         bool $quarterly = true,
         ?bool $non_standard = null,
-        ?int $dte = null,
+        int|string|null $dte = null,
         string|float|null $delta = null,
         ?Side $side = null,
         Range $range = Range::ALL,
@@ -389,7 +400,9 @@ class Options
             throw new \InvalidArgumentException("`month` must be between 1 and 12. Got: {$month}");
         }
         $this->validatePositiveInteger($year, 'year');
-        $this->validatePositiveInteger($dte, 'dte');
+        if (is_int($dte)) {
+            $this->validatePositiveInteger($dte, 'dte');
+        }
         $this->validatePositiveInteger($strike_limit, 'strike_limit');
         $this->validatePositiveInteger($min_open_interest, 'min_open_interest');
         $this->validatePositiveInteger($min_volume, 'min_volume');
