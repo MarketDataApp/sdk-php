@@ -16,6 +16,9 @@
 - A request no longer waits forever when the API does not answer. The default HTTP client gives up after
   99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
   network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
+- `$client->stocks->earnings()` no longer throws `TypeError` when the API sends `reportTime: null` (an upcoming
+  report whose source gives only the day) or a null fiscal year or quarter. `Earning::$report_time`,
+  `$fiscal_year` and `$fiscal_quarter` are now nullable.
 - A CSV request now ends as the same request in JSON does. With no data, the CSV and the `filename` file are
   empty: the API's `0` / `""` placeholder and its `no_data` table are no longer returned as data. The API's
   error table (`s,errmsg` with `error`) now throws `ApiException` with the API's message, as JSON does, and on
