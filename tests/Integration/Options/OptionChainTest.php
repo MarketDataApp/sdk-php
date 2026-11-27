@@ -413,10 +413,10 @@ class OptionChainTest extends OptionsTestCase
 
     /**
      * Test option chain dte filter with a comparison operator (>=) returns
-     * every expiration whose dte satisfies the bound, inclusive.
+     * every expiration whose dte is at or beyond the bound, inclusive.
      *
-     * Per the API: "A comparison operator (>=30, <45) returns every
-     * expiration whose dte falls within the bounds, inclusive."
+     * Per the API: comparison operators follow standard inequality syntax:
+     * `<` and `>` exclude the bound, while `<=` and `>=` include it.
      */
     #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testOptionChain_dteComparisonGte_returnsExpirationsAtOrBeyondBound()
@@ -435,10 +435,10 @@ class OptionChainTest extends OptionsTestCase
 
     /**
      * Test option chain dte filter with a comparison operator (<) returns
-     * every expiration whose dte satisfies the bound, inclusive.
+     * every expiration whose dte is strictly before the bound.
      *
-     * Per the API: "A comparison operator (>=30, <45) returns every
-     * expiration whose dte falls within the bounds, inclusive."
+     * Per the API: comparison operators follow standard inequality syntax:
+     * `<` and `>` exclude the bound, while `<=` and `>=` include it.
      */
     #[\PHPUnit\Framework\Attributes\Group('ci')]
     public function testOptionChain_dteComparisonLt_returnsExpirationsBeforeBound()
@@ -451,7 +451,7 @@ class OptionChainTest extends OptionsTestCase
         $this->assertGreaterThan(1, count($response->option_chains));
 
         foreach ($response->getAllQuotes() as $quote) {
-            $this->assertLessThanOrEqual(40, $quote->dte);
+            $this->assertLessThan(40, $quote->dte);
         }
     }
 }

@@ -111,8 +111,10 @@ $selected = $client->options->option_chain(symbol: 'AAPL', dte: '15,30,45', side
 // A closed range selects every expiration within both endpoints, inclusive
 $inRange = $client->options->option_chain(symbol: 'AAPL', dte: '0-45', side: Side::CALL, strike_limit: 5);
 
-// A comparison operator selects every expiration on the open side of the bound
+// A comparison operator selects every expiration on the open side of the
+// bound. `<` and `>` exclude the bound; `<=` and `>=` include it.
 $beyond = $client->options->option_chain(symbol: 'AAPL', dte: '>=30', side: Side::CALL, strike_limit: 5);
+$before = $client->options->option_chain(symbol: 'AAPL', dte: '<45', side: Side::CALL, strike_limit: 5);
 ```
 
 ## Filter by Volume and Open Interest

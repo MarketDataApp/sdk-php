@@ -262,7 +262,8 @@ class Options
      *                                                  - Limit the option chain to a closed interval of dte values by
      *                                                  specifying both endpoints. (e.g. 0-45)
      *                                                  - Limit the option chain to an open interval of dte values
-     *                                                  using a comparison operator. (e.g. >=30)
+     *                                                  using a comparison operator. `<` and `>` exclude the bound;
+     *                                                  `<=` and `>=` include it. (e.g. >=30, <45)
      *
      * Days to expiry. Values are whole numbers of days, at most 36500. Should not be used together with from and to.
      * Take care before combining with weekly, monthly, quarterly, since that will limit the expirations dte can

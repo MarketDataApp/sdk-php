@@ -950,8 +950,7 @@ class UrlConstructionTest extends TestCase
      * Test option chain URL with dte as a comparison operator (>=).
      *
      * This verifies the API change: dte now accepts a comparison operator
-     * (e.g. >=30) that returns every expiration whose dte satisfies the
-     * bound, inclusive.
+     * (e.g. >=30); `>=` includes the bound.
      */
     public function testOptionChain_withDteComparisonGte_addsParameter(): void
     {
@@ -998,8 +997,7 @@ class UrlConstructionTest extends TestCase
      * Test option chain URL with dte as a comparison operator (<).
      *
      * This verifies the API change: dte now accepts a comparison operator
-     * (e.g. <45) that returns every expiration whose dte satisfies the
-     * bound.
+     * (e.g. <45); `<` excludes the bound.
      */
     public function testOptionChain_withDteComparisonLt_addsParameter(): void
     {
