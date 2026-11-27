@@ -756,6 +756,7 @@ class RetryTest extends TestCase
         
         // Test unknown service returns null
         $this->assertNull($method->invoke($this->client, 'v1/unknown/service/'));
+        $this->assertNull($method->invoke($this->client, 'v1/stocks/bulkquotes/'));
     }
 
     /**
