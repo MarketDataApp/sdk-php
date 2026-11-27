@@ -57,6 +57,16 @@ abstract class ClientBase
     public const VERSION = '1.0.0';
 
     /**
+     * Seconds a request on the default HTTP client may take in total.
+     */
+    private const REQUEST_TIMEOUT = 99;
+
+    /**
+     * Seconds the default HTTP client waits to open a connection.
+     */
+    private const CONNECT_TIMEOUT = 2;
+
+    /**
      * @var GuzzleClient The Guzzle HTTP client instance.
      */
     protected GuzzleClient $guzzle;
@@ -93,6 +103,8 @@ abstract class ClientBase
     /**
      * ClientBase constructor.
      *
+     * Builds the default HTTP client with a 99-second request timeout and a 2-second connection timeout.
+     *
      * @param string|null          $token  The API token for authentication. If not provided, the token will be
      *                                     automatically resolved from MARKETDATA_TOKEN environment variable or .env file.
      *                                     An empty string is allowed for accessing free symbols like AAPL.
@@ -104,7 +116,11 @@ abstract class ClientBase
      */
     public function __construct(?string $token = null, ?LoggerInterface $logger = null)
     {
-        $this->guzzle = new GuzzleClient(['base_uri' => self::API_URL]);
+        $this->guzzle = new GuzzleClient([
+            'base_uri'        => self::API_URL,
+            'timeout'         => self::REQUEST_TIMEOUT,
+            'connect_timeout' => self::CONNECT_TIMEOUT,
+        ]);
         $this->token = Settings::getToken($token);
         $this->default_params = Settings::getDefaultParameters();
         $this->logger = $logger ?? LoggerFactory::getLogger();
@@ -113,6 +129,9 @@ abstract class ClientBase
 
     /**
      * Set a custom Guzzle client.
+     *
+     * The client is used as given, so its own timeout settings replace the default client's
+     * 99-second request timeout and 2-second connection timeout.
      *
      * @param GuzzleClient $guzzleClient The Guzzle client to use.
      */
