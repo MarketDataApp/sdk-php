@@ -218,7 +218,7 @@ class ClientBaseErrorHandlingTest extends TestCase
     public function testAsyncRequestErrorCatchBlock_serviceOffline_skipsRetries(): void
     {
         // Mock ApiStatusData to return OFFLINE status
-        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData = $this->createStub(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
         $mockApiStatusData->method('getApiStatus')
             ->willReturn(\MarketDataApp\Enums\ApiStatusResult::OFFLINE);
 
@@ -474,7 +474,7 @@ class ClientBaseErrorHandlingTest extends TestCase
     {
         // Create a mock response that throws an exception when getBody() is called
         // This tests the catch block in getErrorMessage
-        $response = $this->createMock(\Psr\Http\Message\ResponseInterface::class);
+        $response = $this->createStub(\Psr\Http\Message\ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(500);
         $response->method('getBody')->willThrowException(new \RuntimeException('Stream error'));
         
@@ -742,7 +742,7 @@ class ClientBaseErrorHandlingTest extends TestCase
     public function testShouldSkipRetryDueToOfflineService_withException_returnsFalse(): void
     {
         // Create a mock ApiStatusData that throws when getApiStatus is called
-        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData = $this->createStub(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
         $mockApiStatusData->method('getApiStatus')
             ->willThrowException(new \RuntimeException('Status check failed'));
 
@@ -878,7 +878,7 @@ class ClientBaseErrorHandlingTest extends TestCase
     public function testSyncExecute_withRequestErrorCatchBlock_serviceOffline_skipsRetries(): void
     {
         // Mock ApiStatusData to return OFFLINE status
-        $mockApiStatusData = $this->createMock(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
+        $mockApiStatusData = $this->createStub(\MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData::class);
         $mockApiStatusData->method('getApiStatus')
             ->willReturn(\MarketDataApp\Enums\ApiStatusResult::OFFLINE);
 
