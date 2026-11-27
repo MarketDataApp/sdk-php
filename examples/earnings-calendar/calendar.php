@@ -126,11 +126,15 @@ function getWeekLabel(\Carbon\Carbon $date): string
 /**
  * Format report timing
  */
-function formatReportTime(string $time): string
+function formatReportTime(?string $time): string
 {
+    if ($time === null) {
+        return 'TBD';
+    }
+
     return match (strtolower($time)) {
-        'before market open', 'bmo' => 'Before Open',
-        'after market close', 'amc' => 'After Close',
+        'before open', 'before market open', 'bmo' => 'Before Open',
+        'after close', 'after market close', 'amc' => 'After Close',
         'during market hours', 'dmh' => 'During Hours',
         default => $time,
     };
@@ -237,12 +241,12 @@ try {
             $estEps = $e->estimated_eps !== null ? sprintf('$%.2f', $e->estimated_eps) : 'N/A';
             $priorEps = $e->reported_eps !== null ? sprintf('$%.2f', $e->reported_eps) : 'N/A';
 
-            printf("  %-8s %-12s %-15s Q%-7d %-8d %-10s %s\n",
+            printf("  %-8s %-12s %-15s Q%-7s %-8s %-10s %s\n",
                 $e->symbol,
                 $e->report_date->format('M j, Y'),
                 formatReportTime($e->report_time),
-                $e->fiscal_quarter,
-                $e->fiscal_year,
+                $e->fiscal_quarter ?? '-',
+                $e->fiscal_year ?? '-',
                 $estEps,
                 $priorEps
             );
@@ -281,7 +285,7 @@ try {
         ]);
 
         foreach ($allEarnings as $e) {
-            $reportTime = strtolower($e->report_time);
+            $reportTime = strtolower($e->report_time ?? '');
             $startTime = '09:30 AM';
             $endTime = '10:00 AM';
 
@@ -294,11 +298,11 @@ try {
             }
 
             $description = sprintf(
-                "Q%d FY%d Earnings\nEstimated EPS: %s\nReport Time: %s",
-                $e->fiscal_quarter,
-                $e->fiscal_year,
+                "Q%s FY%s Earnings\nEstimated EPS: %s\nReport Time: %s",
+                $e->fiscal_quarter ?? '?',
+                $e->fiscal_year ?? '?',
                 $e->estimated_eps !== null ? sprintf('$%.2f', $e->estimated_eps) : 'N/A',
-                $e->report_time
+                formatReportTime($e->report_time)
             );
 
             fputcsv($fp, [

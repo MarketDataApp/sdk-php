@@ -18,14 +18,14 @@ class Earning
      * Constructs a new Earning object with detailed earnings information.
      *
      * @param string     $symbol           The symbol of the stock.
-     * @param int        $fiscal_year      The fiscal year of the earnings report. This may not always align with the
-     *                                     calendar year.
-     * @param int        $fiscal_quarter   The fiscal quarter of the earnings report. This may not always align with
-     *                                     the calendar quarter.
+     * @param int|null   $fiscal_year      The fiscal year of the earnings report. This may not always align with the
+     *                                     calendar year. May be null for an estimated upcoming report.
+     * @param int|null   $fiscal_quarter   The fiscal quarter of the earnings report. This may not always align with
+     *                                     the calendar quarter. May be null for an estimated upcoming report.
      * @param Carbon     $date             The last calendar day that corresponds to this earnings report.
      * @param Carbon     $report_date      The date the earnings report was released or is projected to be released.
-     * @param string     $report_time      The value will be either before market open, after market close, or during
-     *                                     market hours.
+     * @param string|null $report_time     `before open`, `after close` or `during market hours`. Null when the
+     *                                     source gives only the day of an upcoming report.
      * @param string|null $currency        The currency of the earnings report. May be null for future/estimated earnings reports.
      * @param float|null $reported_eps     The earnings per share reported by the company. Earnings reported are
      *                                     typically non-GAAP unless the company does not report non-GAAP earnings.
@@ -38,11 +38,11 @@ class Earning
      */
     public function __construct(
         public string $symbol,
-        public int $fiscal_year,
-        public int $fiscal_quarter,
+        public ?int $fiscal_year,
+        public ?int $fiscal_quarter,
         public Carbon $date,
         public Carbon $report_date,
-        public string $report_time,
+        public ?string $report_time,
         public string|null $currency,
         public float|null $reported_eps,
         public float|null $estimated_eps,
@@ -69,13 +69,15 @@ class Earning
         }
 
         $currency = $this->currency ?? 'N/A';
+        $period = trim(
+            ($this->fiscal_quarter !== null ? 'Q' . $this->fiscal_quarter : '') . ' ' . ($this->fiscal_year ?? '')
+        );
 
         $lines = [];
         $lines[] = sprintf(
-            "%s Q%d %d: EPS %s vs Est %s%s",
+            "%s %s: EPS %s vs Est %s%s",
             $this->symbol,
-            $this->fiscal_quarter,
-            $this->fiscal_year,
+            $period !== '' ? $period : 'N/A',
             $reported,
             $estimated,
             $surprise
@@ -84,7 +86,7 @@ class Earning
             "  Period End: %s  Report: %s (%s)",
             $this->formatDate($this->date),
             $this->formatDate($this->report_date),
-            $this->report_time
+            $this->report_time ?? 'N/A'
         );
         $lines[] = sprintf(
             "  Currency: %s  Updated: %s",

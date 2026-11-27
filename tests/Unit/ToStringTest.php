@@ -176,6 +176,50 @@ class ToStringTest extends TestCase
         $this->assertStringContainsString('Updated:', $output);          // updated label
     }
 
+    public function testEarning_toString_handlesNullReportTimeAndFiscalPeriod(): void
+    {
+        $earning = new Earning(
+            symbol: 'AAPL',
+            fiscal_year: null,
+            fiscal_quarter: null,
+            date: Carbon::parse('2026-12-31'),
+            report_date: Carbon::parse('2027-01-28'),
+            report_time: null,
+            currency: null,
+            reported_eps: null,
+            estimated_eps: 2.91,
+            surprise_eps: null,
+            surprise_eps_pct: null,
+            updated: Carbon::parse('2026-11-25')
+        );
+
+        $output = (string) $earning;
+
+        $this->assertStringContainsString('AAPL N/A: EPS N/A vs Est $2.91', $output);
+        $this->assertStringContainsString('(N/A)', $output);
+        $this->assertStringNotContainsString('Q0', $output);
+    }
+
+    public function testEarning_toString_handlesPartialFiscalPeriod(): void
+    {
+        $earning = new Earning(
+            symbol: 'AAPL',
+            fiscal_year: 2027,
+            fiscal_quarter: null,
+            date: Carbon::parse('2026-12-31'),
+            report_date: Carbon::parse('2027-01-28'),
+            report_time: 'after close',
+            currency: null,
+            reported_eps: null,
+            estimated_eps: 2.91,
+            surprise_eps: null,
+            surprise_eps_pct: null,
+            updated: Carbon::parse('2026-11-25')
+        );
+
+        $this->assertStringContainsString('AAPL 2027: EPS', (string) $earning);
+    }
+
     public function testEarning_toString_handlesNullEps(): void
     {
         $earning = new Earning(
