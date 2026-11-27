@@ -324,7 +324,7 @@ class EarningsTest extends StocksTestCase
     public function testEarnings_nullReportTimeAndFiscalPeriod_regularFormat(): void
     {
         // Mock response: NOT from real API output (real AAPL row captured on 2026-11-27, with reportTime,
-        // fiscalYear and fiscalQuarter set to null; no live row had a null reportTime on that day)
+        // fiscalYear and fiscalQuarter set to null)
         $mocked_response = [
             's'              => 'ok',
             'symbol'         => ['AAPL'],
