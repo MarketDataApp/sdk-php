@@ -2714,6 +2714,69 @@ class CandlesConcurrentTest extends StocksTestCase
     }
 
     /**
+     * A headerless error or no_data table on a 2xx, when the merge asked for headers=false.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     * The tables are the real headerless ones captured on 2026-11-27 on a 404 (options/quotes and
+     * stocks/quotes); here they arrive on a 2xx for a candles chunk.
+     */
+    public static function headerlessTableChunkProvider(): array
+    {
+        return [
+            'error row on a 200' => [200, 'error,' . self::CSV_ERRMSG . "\r\n"],
+            'error row on a 203' => [203, 'error,' . self::CSV_ERRMSG . "\r\n"],
+            'no_data row on a 200' => [200, "no_data,Symbol not found.\r\n"],
+            'no_data row on a 203' => [203, "no_data,Symbol not found.\r\n"],
+        ];
+    }
+
+    #[DataProvider('headerlessTableChunkProvider')]
+    public function testCandles_automaticConcurrent_csvFormatNoHeaders_headerlessTableChunkOnSuccess_addsNoRows(
+        int $status,
+        string $body
+    ): void {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses([
+            new Response($status, [], $body),
+            new Response(200, [], self::CSV_2023_NO_HEADERS),
+        ]);
+
+        $result = $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertSame(
+            ['1672756200,130.28,130.6999,129.44,129.84,3826842'],
+            $this->csvLines($result->getCsv())
+        );
+    }
+
+    public function testCandles_automaticConcurrent_csvFormatNoHeaders_allChunksHeaderlessErrorsOnSuccess_throwsApiException(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        // The real headerless error table of options/quotes (captured on 2026-11-27 on a 404), on a 200 and a 203.
+        $this->setMockResponses([
+            new Response(200, [], 'error,' . self::CSV_ERRMSG . "\r\n"),
+            new Response(203, [], 'error,' . self::CSV_ERRMSG . "\r\n"),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage(self::CSV_ERRMSG);
+
+        $this->client->stocks->candles(
+            symbol: 'AAPL',
+            from: '2022-01-01',
+            to: '2023-12-31',
+            resolution: '5',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+    }
+
+    /**
      * @return string[] The non-empty lines of a merged CSV body, without line endings.
      */
     private function csvLines(string $csv): array

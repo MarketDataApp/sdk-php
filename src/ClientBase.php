@@ -703,7 +703,7 @@ abstract class ClientBase
                 $content = (string)$response->getBody();
 
                 if ($format === 'csv') {
-                    $content = $this->readCsvBody($response, $content, $requestUrl);
+                    $content = $this->readCsvBody($response, $content, $arguments, $requestUrl);
                 }
 
                 // Check if content is a JSON error response (API returns JSON errors even for CSV/HTML requests)
@@ -787,13 +787,18 @@ abstract class ClientBase
      *
      * @param ResponseInterface $response   The HTTP response.
      * @param string            $content    The response body.
+     * @param array             $arguments  The request arguments, which are sent as the query.
      * @param string|null       $requestUrl The URL that was requested.
      *
      * @return string The body without a leading byte order mark, or an empty string when it holds no data.
      * @throws ApiException When the body is the API's error table with the status "error".
      */
-    private function readCsvBody(ResponseInterface $response, string $content, ?string $requestUrl): string
-    {
+    private function readCsvBody(
+        ResponseInterface $response,
+        string $content,
+        array $arguments,
+        ?string $requestUrl
+    ): string {
         $content = $this->withoutByteOrderMark($content);
 
         // The API answers a CSV request that has no data with this placeholder, on a 200.
@@ -801,8 +806,10 @@ abstract class ClientBase
             return '';
         }
 
-        // Without its header row the error table reads like a data row; only a 404 is known to carry no data.
-        $table = $this->parseCsvErrorTable($content, $response->getStatusCode() === 404);
+        // The API leaves out the error table's header row only when the request turned headers off;
+        // a 404 carries no data either way.
+        $headersOff = ($arguments['headers'] ?? null) === 'false';
+        $table = $this->parseCsvErrorTable($content, $headersOff || $response->getStatusCode() === 404);
         if ($table === null) {
             return $content;
         }

@@ -429,6 +429,141 @@ class CsvEmptyAnswerAndErrorTableTest extends TestCase
         ]);
     }
 
+    private const HEADERLESS_ERRMSG = 'No option found. No option was found for this strike and expiration.';
+
+    /**
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     * The bodies are the real headerless tables captured on 2026-11-27 on a 404; here they arrive on a 2xx.
+     */
+    public static function successStatusProvider(): array
+    {
+        return [
+            '200' => [200],
+            '203' => [203],
+        ];
+    }
+
+    #[DataProvider('successStatusProvider')]
+    public function testOptionQuote_headerlessErrorRowOnSuccess_withHeadersOff_throwsApiException(int $status): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses([new Response($status, self::CSV_HEADERS, 'error,' . self::HEADERLESS_ERRMSG . "\r\n")]);
+
+        $exception = $this->captureException(
+            fn() => $this->client->options->quotes(
+                'AAPL250117C09990000',
+                date: '2024-01-05',
+                parameters: new Parameters(format: Format::CSV, add_headers: false)
+            )
+        );
+
+        $this->assertSame(ApiException::class, get_class($exception));
+        $this->assertSame(self::HEADERLESS_ERRMSG, $exception->getMessage());
+        $this->assertSame($status, $exception->getResponse()->getStatusCode());
+    }
+
+    #[DataProvider('successStatusProvider')]
+    public function testQuote_headerlessNoDataRowOnSuccess_withHeadersOff_isTheEmptyResult(int $status): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses([new Response($status, self::CSV_HEADERS, "no_data,Symbol not found.\r\n")]);
+
+        $quote = $this->client->stocks->quote(
+            'ZZZZZZ',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertSame('', $quote->getCsv());
+    }
+
+    /**
+     * With headers on, the API sends the header row, so a single row on a 2xx is data.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     */
+    public static function headerlessRowWithHeadersOnProvider(): array
+    {
+        return [
+            'error row on a 200' => [200, "error,1.5\r\n"],
+            'error row on a 203' => [203, "error,1.5\r\n"],
+            'no_data row on a 200' => [200, "no_data,1.5\r\n"],
+            'no_data row on a 203' => [203, "no_data,1.5\r\n"],
+        ];
+    }
+
+    #[DataProvider('headerlessRowWithHeadersOnProvider')]
+    public function testQuote_headerlessRowOnSuccess_withHeadersOn_isData(int $status, string $body): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses([new Response($status, self::CSV_HEADERS, $body)]);
+
+        $quote = $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::CSV, add_headers: true));
+
+        $this->assertSame($body, $quote->getCsv());
+    }
+
+    public function testOptionQuote_headerlessErrorRowOn404_withHeadersOn_throwsApiException(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        // The real headerless 404 error table (captured on 2026-11-27 with headers=false), on a request with headers on.
+        $this->setMockResponses([new Response(404, self::CSV_HEADERS, 'error,' . self::HEADERLESS_ERRMSG . "\r\n")]);
+
+        $exception = $this->captureException(
+            fn() => $this->client->options->quotes(
+                'AAPL250117C09990000',
+                date: '2024-01-05',
+                parameters: new Parameters(format: Format::CSV, add_headers: true)
+            )
+        );
+
+        $this->assertSame(ApiException::class, get_class($exception));
+        $this->assertSame(self::HEADERLESS_ERRMSG, $exception->getMessage());
+    }
+
+    public function testQuote_headerlessRowWithThreeFields_withHeadersOff_isData(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $body = "error,1.5,2\r\n";
+        $this->setMockResponses([new Response(200, self::CSV_HEADERS, $body)]);
+
+        $quote = $this->client->stocks->quote('AAPL', parameters: new Parameters(format: Format::CSV, add_headers: false));
+
+        $this->assertSame($body, $quote->getCsv());
+    }
+
+    public function testExecuteInParallel_headerlessTablesOnSuccess_withHeadersOff_matchTheSyncPath(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        // The bodies are the real headerless tables captured on 2026-11-27 on a 404; here they arrive on a 2xx.
+        $this->setMockResponses([
+            new Response(200, self::CSV_HEADERS, 'error,' . self::HEADERLESS_ERRMSG . "\r\n"),
+            new Response(203, self::CSV_HEADERS, 'error,' . self::HEADERLESS_ERRMSG . "\r\n"),
+            new Response(200, self::CSV_HEADERS, "no_data,Symbol not found.\r\n"),
+            new Response(203, self::CSV_HEADERS, "no_data,Symbol not found.\r\n"),
+            new Response(200, self::CSV_HEADERS, "error,1.5\r\n"),
+        ]);
+        $headersOff = ['format' => 'csv', 'headers' => 'false'];
+
+        $failed = [];
+        $results = $this->client->execute_in_parallel([
+            ['v1/options/quotes/AAPL250117C09990000/', $headersOff],
+            ['v1/options/quotes/AAPL250117C09990000/', $headersOff],
+            ['v1/stocks/quotes/ZZZZZZ/', $headersOff],
+            ['v1/stocks/quotes/ZZZZZZ/', $headersOff],
+            ['v1/stocks/quotes/AAPL/', ['format' => 'csv', 'headers' => 'true']],
+        ], $failed);
+
+        $this->assertSame([0, 1], array_keys($failed));
+        foreach ($failed as $exception) {
+            $this->assertSame(ApiException::class, get_class($exception));
+            $this->assertSame(self::HEADERLESS_ERRMSG, $exception->getMessage());
+        }
+        $this->assertSame([2, 3, 4], array_keys($results));
+        $this->assertSame('', $results[2]->csv);
+        $this->assertSame('', $results[3]->csv);
+        $this->assertSame("error,1.5\r\n", $results[4]->csv);
+    }
+
     private function captureException(callable $call): \Throwable
     {
         try {
