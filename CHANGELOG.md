@@ -16,6 +16,14 @@
 - A request no longer waits forever when the API does not answer. The default HTTP client gives up after
   99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
   network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
+- A CSV request now ends as the same request in JSON does. With no data, the CSV and the `filename` file are
+  empty: the API's `0` / `""` placeholder and its `no_data` table are no longer returned as data. The API's
+  error table (`s,errmsg` with `error`) now throws `ApiException` with the API's message, as JSON does, and on
+  a 400 or another error status the exception carries that message instead of the raw table. In
+  `Stocks::candles()` split over more than a year and `Options::quotes()` for several symbols, a part with no
+  data or an error adds no rows, the header row is correct when the first part has no data, and a call where
+  every part has no data throws `ApiException` ("No data available ..."). A leading UTF-8 byte order mark is
+  removed from each CSV body.
 
 ## v1.1.0 (2026-02-21)
 
