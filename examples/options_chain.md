@@ -96,6 +96,27 @@ $otmPuts = $client->options->option_chain(
 );
 ```
 
+## Filter by Days to Expiration (dte)
+
+`dte` accepts a single value, a comma-separated list, a closed range, or a
+comparison operator:
+
+```php
+// A single value selects the expiration closest to it
+$closest = $client->options->option_chain(symbol: 'AAPL', dte: 30, side: Side::CALL, strike_limit: 5);
+
+// A comma-separated list selects one expiration per value, deduplicated
+$selected = $client->options->option_chain(symbol: 'AAPL', dte: '15,30,45', side: Side::CALL, strike_limit: 5);
+
+// A closed range selects every expiration within both endpoints, inclusive
+$inRange = $client->options->option_chain(symbol: 'AAPL', dte: '0-45', side: Side::CALL, strike_limit: 5);
+
+// A comparison operator selects every expiration on the open side of the
+// bound. `<` and `>` exclude the bound; `<=` and `>=` include it.
+$beyond = $client->options->option_chain(symbol: 'AAPL', dte: '>=30', side: Side::CALL, strike_limit: 5);
+$before = $client->options->option_chain(symbol: 'AAPL', dte: '<45', side: Side::CALL, strike_limit: 5);
+```
+
 ## Filter by Volume and Open Interest
 
 ```php
