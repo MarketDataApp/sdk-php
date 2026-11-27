@@ -1089,7 +1089,6 @@ abstract class ClientBase
             'v1/stocks/quotes' => '/v1/stocks/quotes/',
             'v1/stocks/candles' => '/v1/stocks/candles/',
             'v1/stocks/bulkcandles' => '/v1/stocks/bulkcandles/',
-            'v1/stocks/bulkquotes' => '/v1/stocks/bulkquotes/',
             'v1/stocks/earnings' => '/v1/stocks/earnings/',
             'v1/stocks/news' => '/v1/stocks/news/',
             'v1/options/chain' => '/v1/options/chain/',
