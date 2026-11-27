@@ -13,9 +13,6 @@
 
 - Option expirations are midnight America/New_York of their date, whatever PHP's default time zone.
   They were midnight in the server's zone, which on a UTC server is the evening before in New York.
-
-### Fixed
-
 - A request no longer waits forever when the API does not answer. The default HTTP client gives up after
   99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
   network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
