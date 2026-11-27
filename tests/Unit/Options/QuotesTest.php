@@ -1951,4 +1951,247 @@ class QuotesTest extends OptionsTestCase
             $params
         );
     }
+
+    // =========================================================================
+    // quotesMultipleCsv: the empty answer, the error table and a byte order
+    // mark (issue #101)
+    // =========================================================================
+
+    private const CSV_HEADER = 'optionSymbol,underlying,expiration,side,strike,firstTraded,dte,updated,bid,bidSize,mid,'
+        . 'ask,askSize,last,openInterest,volume,inTheMoney,intrinsicValue,extrinsicValue,underlyingPrice,iv,delta,'
+        . 'gamma,theta,vega';
+    private const CSV_ROW = 'AAPL250117C00200000,AAPL,1737147600,call,200,1662989400,378,1704488400,12.25,210,12.47,'
+        . '12.7,2,12.47,22857,1279,False,0,12.47,181.18,0.2222,0.4564,0.0097,-0.0305,0.7299';
+    private const CSV_ROW_205 = 'AAPL250117C00205000,AAPL,1737147600,call,205,1662989400,378,1704488400,10.10,210,'
+        . '10.30,10.5,2,10.30,12000,900,False,0,10.30,181.18,0.2200,0.4000,0.0090,-0.0290,0.7000';
+    private const CSV_EMPTY = "0\r\n\"\"\r\n";
+    private const CSV_ERRMSG = 'No option found. No option was found for this strike and expiration.';
+    private const BOM = "\xEF\xBB\xBF";
+
+    public function testQuotes_multipleSymbols_csvFormat_emptyLaterSymbol_addsNoRows(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-11-27)
+        // options/quotes/AAPL250117C00200000/?format=csv with date=2024-01-05 (data) and date=2024-01-06 (empty)
+        $this->setMockResponses([
+            new Response(200, [], self::CSV_HEADER . "\r\n" . self::CSV_ROW . "\r\n"),
+            new Response(200, [], self::CSV_EMPTY),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00200000', 'AAPL250117C00205000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertSame([self::CSV_HEADER, self::CSV_ROW], $this->csvLines($response->getCsv()));
+    }
+
+    public function testQuotes_multipleSymbols_csvFormat_emptyFirstSymbol_headerComesFromNextSymbol(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-11-27)
+        // options/quotes/AAPL250117C00200000/?format=csv with date=2024-01-06 (empty) and date=2024-01-05 (data)
+        $this->setMockResponses([
+            new Response(200, [], self::CSV_EMPTY),
+            new Response(200, [], self::CSV_HEADER . "\r\n" . self::CSV_ROW . "\r\n"),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00205000', 'AAPL250117C00200000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertSame([self::CSV_HEADER, self::CSV_ROW], $this->csvLines($response->getCsv()));
+    }
+
+    public function testQuotes_multipleSymbols_csvFormatNoHeaders_emptySymbol_addsNoRows(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        // The headerless empty answer is the real one of stocks/candles (captured on 2026-11-27), put on a quote.
+        $this->setMockResponses([
+            new Response(200, [], "\"\"\r\n"),
+            new Response(200, [], self::CSV_ROW . "\r\n"),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00205000', 'AAPL250117C00200000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertSame([self::CSV_ROW], $this->csvLines($response->getCsv()));
+    }
+
+    public function testQuotes_multipleSymbols_csvFormat_allSymbolsEmpty_throwsApiException(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-11-27)
+        // options/quotes/AAPL250117C00200000/?date=2024-01-06&format=csv, answered for both symbols
+        $this->setMockResponses([
+            new Response(200, [], self::CSV_EMPTY),
+            new Response(200, [], self::CSV_EMPTY),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage('No data available for the requested symbols');
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00200000', 'AAPL250117C00205000'],
+            date: '2024-01-06',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
+    public function testQuotes_multipleSymbols_csvFormat_errorTableSymbol_isTolerated(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-11-27)
+        // options/quotes/AAPL250117C00200000/ and options/quotes/AAPL250117C09990000/, ?date=2024-01-05&format=csv
+        $this->setMockResponses([
+            new Response(200, [], self::CSV_HEADER . "\r\n" . self::CSV_ROW . "\r\n"),
+            new Response(404, [], "s,errmsg\r\nerror," . self::CSV_ERRMSG . "\r\n"),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00200000', 'AAPL250117C09990000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV)
+        );
+
+        $this->assertSame([self::CSV_HEADER, self::CSV_ROW], $this->csvLines($response->getCsv()));
+    }
+
+    public function testQuotes_multipleSymbols_csvFormat_allSymbolsErrorTables_throwsApiException(): void
+    {
+        // Mock response: FROM real API output (captured on 2026-11-27)
+        // options/quotes/AAPL250117C09990000/?date=2024-01-05&format=csv, answered for both symbols
+        $this->setMockResponses([
+            new Response(404, [], "s,errmsg\r\nerror," . self::CSV_ERRMSG . "\r\n"),
+            new Response(404, [], "s,errmsg\r\nerror," . self::CSV_ERRMSG . "\r\n"),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage(self::CSV_ERRMSG);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C09990000', 'AAPL250117C09995000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV)
+        );
+    }
+
+    /**
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     * The API sends no byte order mark; one is added here in front of real bodies (captured on 2026-11-27).
+     * The AAPL250117C00205000 row is the real AAPL250117C00200000 row with its symbol and prices changed.
+     */
+    public static function csvByteOrderMarkProvider(): array
+    {
+        $body = self::CSV_HEADER . "\r\n" . self::CSV_ROW . "\r\n";
+        $body205 = self::CSV_HEADER . "\r\n" . self::CSV_ROW_205 . "\r\n";
+
+        return [
+            'mark on the later header' => [
+                null,
+                [$body, self::BOM . $body205],
+                [self::CSV_HEADER, self::CSV_ROW, self::CSV_ROW_205],
+            ],
+            'mark on the first header' => [
+                null,
+                [self::BOM . $body, $body205],
+                [self::CSV_HEADER, self::CSV_ROW, self::CSV_ROW_205],
+            ],
+            'mark on a later empty answer' => [
+                null,
+                [$body, self::BOM . self::CSV_EMPTY],
+                [self::CSV_HEADER, self::CSV_ROW],
+            ],
+            'mark on a later symbol without headers' => [
+                false,
+                [self::CSV_ROW . "\r\n", self::BOM . self::CSV_ROW_205 . "\r\n"],
+                [self::CSV_ROW, self::CSV_ROW_205],
+            ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('csvByteOrderMarkProvider')]
+    public function testQuotes_multipleSymbols_csvFormat_byteOrderMarkIsRemoved(
+        ?bool $addHeaders,
+        array $bodies,
+        array $expectedLines
+    ): void {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses(array_map(fn(string $body) => new Response(200, [], $body), $bodies));
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00200000', 'AAPL250117C00205000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV, add_headers: $addHeaders)
+        );
+
+        $this->assertSame($expectedLines, $this->csvLines($response->getCsv()));
+        $this->assertStringNotContainsString(self::BOM, $response->getCsv());
+    }
+
+    /**
+     * A headerless error or no_data table on a 2xx, when the merge asked for headers=false.
+     *
+     * Mock response: NOT from real API output (uses synthetic/test data)
+     * The tables are the real headerless ones captured on 2026-11-27 on a 404 (options/quotes and
+     * stocks/quotes); here they arrive on a 2xx for an option symbol.
+     */
+    public static function headerlessTableSymbolProvider(): array
+    {
+        return [
+            'error row on a 200' => [200, 'error,' . self::CSV_ERRMSG . "\r\n"],
+            'error row on a 203' => [203, 'error,' . self::CSV_ERRMSG . "\r\n"],
+            'no_data row on a 200' => [200, "no_data,Symbol not found.\r\n"],
+            'no_data row on a 203' => [203, "no_data,Symbol not found.\r\n"],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('headerlessTableSymbolProvider')]
+    public function testQuotes_multipleSymbols_csvFormatNoHeaders_headerlessTableSymbolOnSuccess_addsNoRows(
+        int $status,
+        string $body
+    ): void {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        $this->setMockResponses([
+            new Response(200, [], self::CSV_ROW . "\r\n"),
+            new Response($status, [], $body),
+        ]);
+
+        $response = $this->client->options->quotes(
+            option_symbols: ['AAPL250117C00200000', 'AAPL250117C09990000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+
+        $this->assertSame([self::CSV_ROW], $this->csvLines($response->getCsv()));
+    }
+
+    public function testQuotes_multipleSymbols_csvFormatNoHeaders_allSymbolsHeaderlessErrorsOnSuccess_throwsApiException(): void
+    {
+        // Mock response: NOT from real API output (uses synthetic/test data)
+        // The real headerless error table of options/quotes (captured on 2026-11-27 on a 404), on a 200 and a 203.
+        $this->setMockResponses([
+            new Response(200, [], 'error,' . self::CSV_ERRMSG . "\r\n"),
+            new Response(203, [], 'error,' . self::CSV_ERRMSG . "\r\n"),
+        ]);
+
+        $this->expectException(\MarketDataApp\Exceptions\ApiException::class);
+        $this->expectExceptionMessage(self::CSV_ERRMSG);
+
+        $this->client->options->quotes(
+            option_symbols: ['AAPL250117C09990000', 'AAPL250117C09995000'],
+            date: '2024-01-05',
+            parameters: new Parameters(format: Format::CSV, add_headers: false)
+        );
+    }
+
+    /**
+     * @return string[] The non-empty lines of a merged CSV body, without line endings.
+     */
+    private function csvLines(string $csv): array
+    {
+        return array_values(array_filter(preg_split('/\r?\n/', $csv), fn(string $line) => $line !== ''));
+    }
 }

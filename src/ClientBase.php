@@ -67,6 +67,11 @@ abstract class ClientBase
     private const CONNECT_TIMEOUT = 2;
 
     /**
+     * The UTF-8 byte order mark.
+     */
+    private const UTF8_BOM = "\xEF\xBB\xBF";
+
+    /**
      * @var GuzzleClient The Guzzle HTTP client instance.
      */
     protected GuzzleClient $guzzle;
@@ -697,6 +702,10 @@ abstract class ClientBase
             case 'html':
                 $content = (string)$response->getBody();
 
+                if ($format === 'csv') {
+                    $content = $this->readCsvBody($response, $content, $arguments, $requestUrl);
+                }
+
                 // Check if content is a JSON error response (API returns JSON errors even for CSV/HTML requests)
                 // Use ltrim() to handle responses with leading whitespace
                 if ($content !== '' && str_starts_with(ltrim($content), '{')) {
@@ -769,6 +778,91 @@ abstract class ClientBase
 
                 return $object_response;
         }
+    }
+
+    /**
+     * Read a CSV body as its JSON form is read.
+     *
+     * The empty answer and a "no_data" table give an empty body; an "error" table raises.
+     *
+     * @param ResponseInterface $response   The HTTP response.
+     * @param string            $content    The response body.
+     * @param array             $arguments  The request arguments, which are sent as the query.
+     * @param string|null       $requestUrl The URL that was requested.
+     *
+     * @return string The body without a leading byte order mark, or an empty string when it holds no data.
+     * @throws ApiException When the body is the API's error table with the status "error".
+     */
+    private function readCsvBody(
+        ResponseInterface $response,
+        string $content,
+        array $arguments,
+        ?string $requestUrl
+    ): string {
+        $content = $this->withoutByteOrderMark($content);
+
+        // The API answers a CSV request that has no data with this placeholder, on a 200.
+        if (in_array(rtrim($content, "\r\n"), ["0\r\n\"\"", "0\n\"\"", '""'], true)) {
+            return '';
+        }
+
+        // The API leaves out the error table's header row only when the request turned headers off;
+        // a 404 carries no data either way.
+        $headersOff = ($arguments['headers'] ?? null) === 'false';
+        $table = $this->parseCsvErrorTable($content, $headersOff || $response->getStatusCode() === 404);
+        if ($table === null) {
+            return $content;
+        }
+
+        if ($table['s'] === 'error') {
+            throw new ApiException(message: $table['errmsg'], response: $response, requestUrl: $requestUrl);
+        }
+
+        return '';
+    }
+
+    /**
+     * Parse the table the API sends on a CSV request in place of a JSON error object.
+     *
+     * @param string $content         The response body, without a byte order mark.
+     * @param bool   $allowHeaderless Whether a single row without the "s,errmsg" header row is accepted.
+     *
+     * @return array{s: string, errmsg: string}|null The status and the message, or null for any other body.
+     */
+    private function parseCsvErrorTable(string $content, bool $allowHeaderless): ?array
+    {
+        $content = rtrim($content, "\r\n");
+        if (substr_count($content, "\n") > 1) {
+            return null;
+        }
+
+        $lines = explode("\n", $content);
+        if (count($lines) === 2 && str_getcsv(rtrim($lines[0], "\r"), ',', '"', '\\') === ['s', 'errmsg']) {
+            $row = $lines[1];
+        } elseif ($allowHeaderless && count($lines) === 1) {
+            $row = $lines[0];
+        } else {
+            return null;
+        }
+
+        $fields = str_getcsv(rtrim($row, "\r"), ',', '"', '\\');
+        if (count($fields) !== 2 || !in_array($fields[0], ['error', 'no_data'], true)) {
+            return null;
+        }
+
+        return ['s' => $fields[0], 'errmsg' => $fields[1]];
+    }
+
+    /**
+     * Remove a leading UTF-8 byte order mark.
+     *
+     * @param string $content The response body.
+     *
+     * @return string The body without a leading byte order mark.
+     */
+    private function withoutByteOrderMark(string $content): string
+    {
+        return str_starts_with($content, self::UTF8_BOM) ? substr($content, strlen(self::UTF8_BOM)) : $content;
     }
 
     /**
@@ -866,6 +960,10 @@ abstract class ClientBase
             $data = json_decode($body, true);
             if (isset($data['errmsg'])) {
                 return $data['errmsg'];
+            }
+            $table = $this->parseCsvErrorTable($this->withoutByteOrderMark($body), true);
+            if ($table !== null) {
+                return $table['errmsg'];
             }
             return $body ?: "Request failed with status code: " . $response->getStatusCode();
         } catch (\Exception $e) {
