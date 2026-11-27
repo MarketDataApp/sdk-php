@@ -142,7 +142,10 @@ jobs:
 
   integration:
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.php != 'false'
+    # A run that Dependabot starts gets no Actions secrets, so MARKETDATA_TOKEN
+    # is empty and every contract fails. `github.actor` is who started the run,
+    # not the PR author: a person's push to a Dependabot branch still runs this.
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && needs.changes.outputs.php != 'false'
     name: Live API integration contracts
     runs-on: ubuntu-latest
     timeout-minutes: 10
