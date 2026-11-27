@@ -16,6 +16,9 @@
 - A request no longer waits forever when the API does not answer. The default HTTP client gives up after
   99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
   network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
+- `$client->stocks->earnings()` no longer throws `TypeError` when the API sends `reportTime: null` (an upcoming
+  report whose source gives only the day) or a null fiscal year or quarter. `Earning::$report_time`,
+  `$fiscal_year` and `$fiscal_quarter` are now nullable.
 
 ## v1.1.0 (2026-02-21)
 

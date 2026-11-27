@@ -317,6 +317,80 @@ class EarningsTest extends StocksTestCase
     }
 
     /**
+     * Test that an upcoming report with a null reportTime and null fiscal period decodes (#114).
+     *
+     * @return void
+     */
+    public function testEarnings_nullReportTimeAndFiscalPeriod_regularFormat(): void
+    {
+        // Mock response: NOT from real API output (real AAPL row captured on 2026-11-27, with reportTime,
+        // fiscalYear and fiscalQuarter set to null; no live row had a null reportTime on that day)
+        $mocked_response = [
+            's'              => 'ok',
+            'symbol'         => ['AAPL'],
+            'fiscalYear'     => [null],
+            'fiscalQuarter'  => [null],
+            'date'           => [1798693200],
+            'reportDate'     => [1801112400],
+            'reportTime'     => [null],
+            'currency'       => [null],
+            'reportedEPS'    => [null],
+            'estimatedEPS'   => [2.91],
+            'surpriseEPS'    => [null],
+            'surpriseEPSpct' => [null],
+            'updated'        => [1795496400]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(symbol: 'AAPL');
+
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->earnings);
+        $this->assertNull($response->earnings[0]->report_time);
+        $this->assertNull($response->earnings[0]->fiscal_year);
+        $this->assertNull($response->earnings[0]->fiscal_quarter);
+        $this->assertEquals(Carbon::parse(1801112400), $response->earnings[0]->report_date);
+        $this->assertEquals(2.91, $response->earnings[0]->estimated_eps);
+    }
+
+    /**
+     * Test that a human-readable upcoming report with a null Report Time and null fiscal period decodes (#114).
+     *
+     * @return void
+     */
+    public function testEarnings_nullReportTimeAndFiscalPeriod_humanReadable(): void
+    {
+        // Mock response: NOT from real API output (real AAPL human-readable row captured on 2026-11-27, with
+        // Report Time, Fiscal Year and Fiscal Quarter set to null)
+        $mocked_response = [
+            'Symbol'         => ['AAPL'],
+            'Fiscal Year'    => [null],
+            'Fiscal Quarter' => [null],
+            'Date'           => [1798693200],
+            'Report Date'    => [1801112400],
+            'Report Time'    => [null],
+            'Currency'       => [null],
+            'Reported EPS'   => [null],
+            'Estimated EPS'  => [2.91],
+            'Surprise EPS'   => [null],
+            'Surprise EPS %' => [null],
+            'Updated'        => [1795496400]
+        ];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->stocks->earnings(
+            symbol: 'AAPL',
+            parameters: new Parameters(use_human_readable: true)
+        );
+
+        $this->assertEquals('ok', $response->status);
+        $this->assertCount(1, $response->earnings);
+        $this->assertNull($response->earnings[0]->report_time);
+        $this->assertNull($response->earnings[0]->fiscal_year);
+        $this->assertNull($response->earnings[0]->fiscal_quarter);
+    }
+
+    /**
      * Test that earnings handles null EPS values in human-readable format (Issue #47 fix).
      *
      * When the API returns human-readable format with null EPS values (future earnings),
