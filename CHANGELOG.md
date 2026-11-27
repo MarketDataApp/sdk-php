@@ -16,6 +16,11 @@
 - A request no longer waits forever when the API does not answer. The default HTTP client gives up after
   99 seconds, or after 2 seconds when it cannot open a connection. A timeout is retried like any other
   network failure and then thrown as `RequestError`. A client passed to `setGuzzle()` keeps its own timeouts.
+- A client now has at most 50 requests in flight in total, the limit the API documents. Before, each parallel
+  call (multi-symbol option quotes, split intraday candles, `execute_in_parallel()`) had 50 of its own, so calls
+  that overlapped, and single requests beside them, could put more than 50 in flight. Every request of the
+  client now shares one pool of 50: a request that finds all 50 taken waits for one, and a retry waiting out
+  its backoff holds none. Each client instance has its own 50. A program that makes one call at a time sees no change.
 
 ## v1.1.0 (2026-02-21)
 

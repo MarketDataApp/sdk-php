@@ -372,18 +372,18 @@ class Settings
     }
 
     /**
-     * Maximum number of concurrent requests allowed for the entire API.
+     * Maximum number of requests one client has in flight at once.
      *
-     * This is a hard limit enforced across all parallel request operations,
-     * not just specific endpoints. The SDK uses Guzzle's EachPromise to maintain
-     * a sliding window of this many concurrent requests - as soon as one completes,
-     * the next one starts, maintaining optimal throughput.
+     * Every request of a client draws from one pool of this many slots, as a sliding
+     * window: as soon as one request completes, the next one starts. A request that finds
+     * every slot taken waits for one. Each client instance has a pool of its own.
      *
-     * This limit applies to:
-     * - Direct calls to execute_in_parallel()
+     * The pool is shared by:
+     * - Single requests, blocking or asynchronous
+     * - Direct calls to execute_in_parallel(), also when calls overlap
      * - Automatic date range splitting for intraday candles
-     * - Bulk quote requests via stocks->quotes()
-     * - Any other parallel request operations
+     * - Multi-symbol option quotes via options->quotes()
+     * - Retries, one slot for each attempt; a retry waiting out its backoff holds no slot
      *
      * @var int Maximum concurrent requests.
      */

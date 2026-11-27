@@ -180,10 +180,12 @@ class ApiStatusData
         
         $headersMethod = $reflection->getMethod('headers');
         $headers = $headersMethod->invoke($client, 'json');
-        
-        $this->refreshPromise = $guzzleClient->getAsync("status/", [
+
+        $limiter = (new \ReflectionMethod(ClientBase::class, 'concurrencyLimiter'))->invoke($client);
+
+        $this->refreshPromise = $limiter->async(static fn () => $guzzleClient->getAsync("status/", [
             'headers' => $headers,
-        ])->then(
+        ]))->then(
             function ($response) use ($client) {
                 try {
                     // Validate response status code

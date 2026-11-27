@@ -9,6 +9,7 @@ use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\PromiseInterface;
+use MarketDataApp\Concurrency\ConcurrencyLimiter;
 use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
 use MarketDataApp\Endpoints\Utilities;
@@ -100,6 +101,8 @@ abstract class ClientBase
      */
     public LoggerInterface $logger;
 
+    private ?ConcurrencyLimiter $concurrencyLimiter = null;
+
     /**
      * ClientBase constructor.
      *
@@ -184,9 +187,9 @@ abstract class ClientBase
     /**
      * Execute multiple API calls in parallel with concurrency limiting.
      *
-     * Uses Guzzle's EachPromise to maintain a sliding window of concurrent requests.
-     * Unlike batch processing, this approach starts new requests as soon as previous
-     * ones complete, maintaining optimal throughput up to MAX_CONCURRENT_REQUESTS (50).
+     * The calls draw from the client's pool of MAX_CONCURRENT_REQUESTS (50) slots, a sliding
+     * window that every request of the client shares: a new request starts as soon as one
+     * completes. Calls that overlap, and requests made outside this method, share the same 50.
      *
      * @param array      $calls           An array of method calls, each containing the method name and arguments.
      * @param array|null &$failedRequests Optional by-reference array to collect failed requests instead of throwing.
@@ -279,6 +282,9 @@ abstract class ClientBase
     /**
      * Perform an asynchronous API request with retry logic.
      *
+     * Each attempt takes a slot of the client's pool of MAX_CONCURRENT_REQUESTS and gives it back
+     * when the attempt settles. An attempt that finds every slot taken starts when one frees.
+     *
      * @param string $method    The API method to call.
      * @param array  $arguments The arguments for the API call.
      *
@@ -313,11 +319,13 @@ abstract class ClientBase
         $startTime = microtime(true);
 
         $makeRequest = function() use ($method, $format, $queryParams, &$startTime) {
-            $startTime = microtime(true);
-            return $this->guzzle->getAsync($method, [
-                'headers' => $this->headers($format),
-                'query'   => $queryParams,
-            ]);
+            return $this->concurrencyLimiter()->async(function () use ($method, $format, $queryParams, &$startTime) {
+                $startTime = microtime(true);
+                return $this->guzzle->getAsync($method, [
+                    'headers' => $this->headers($format),
+                    'query'   => $queryParams,
+                ]);
+            });
         };
 
         $retry = function($promise) use (&$attempt, $maxAttempts, $makeRequest, &$retry, $method, $fullUrl, $logLevel, &$startTime) {
@@ -491,6 +499,9 @@ abstract class ClientBase
     /**
      * Execute a single API request with retry logic.
      *
+     * Each attempt takes a slot of the client's pool of MAX_CONCURRENT_REQUESTS. When every slot
+     * is taken, the attempt waits for one and drives the requests in flight until one completes.
+     *
      * @param string $method    The API method to call.
      * @param array  $arguments The arguments for the API call.
      *
@@ -528,10 +539,13 @@ abstract class ClientBase
         while ($attempt < $maxAttempts) {
             $startTime = microtime(true);
             try {
-                $response = $this->guzzle->get($method, [
-                    'headers' => $this->headers($format),
-                    'query'   => $queryParams,
-                ]);
+                $response = $this->concurrencyLimiter()->sync(function () use ($method, $format, $queryParams, &$startTime) {
+                    $startTime = microtime(true);
+                    return $this->guzzle->get($method, [
+                        'headers' => $this->headers($format),
+                        'query'   => $queryParams,
+                    ]);
+                });
                 $durationMs = (microtime(true) - $startTime) * 1000;
 
                 // Log the request
@@ -1209,10 +1223,13 @@ abstract class ClientBase
 
         $startTime = microtime(true);
         try {
-            $response = $this->guzzle->get($method, [
-                'headers' => $this->headers('json'),
-                'query'   => $arguments,
-            ]);
+            $response = $this->concurrencyLimiter()->sync(function () use ($method, $arguments, &$startTime) {
+                $startTime = microtime(true);
+                return $this->guzzle->get($method, [
+                    'headers' => $this->headers('json'),
+                    'query'   => $arguments,
+                ]);
+            });
             $durationMs = (microtime(true) - $startTime) * 1000;
 
             // Internal requests logged at DEBUG level
@@ -1250,5 +1267,13 @@ abstract class ClientBase
             // Re-throw other ClientExceptions
             throw $e;
         }
+    }
+
+    /**
+     * The pool of MAX_CONCURRENT_REQUESTS slots that every request of this client draws from.
+     */
+    private function concurrencyLimiter(): ConcurrencyLimiter
+    {
+        return $this->concurrencyLimiter ??= new ConcurrencyLimiter(Settings::MAX_CONCURRENT_REQUESTS);
     }
 }
