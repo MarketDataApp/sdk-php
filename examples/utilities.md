@@ -14,6 +14,8 @@ php examples/utilities.php
 - Individual service status checks
 - Request header debugging
 - User rate limit information
+- Revoking the current API token (documented below only; the runnable example does not call it, since
+  that would destroy the token the example runs with)
 - Automatic rate limit tracking
 
 ## Check API Status
@@ -106,6 +108,23 @@ Daily Limit: 100,000 credits
 Remaining: 99,847 credits
 Consumed This Request: 0 credits
 Reset Time: 2024-01-10 2:30 PM UTC
+```
+
+## Revoke the API Token
+
+Revoke the token the client is currently authenticated with. Once revoked, the token can no longer
+authenticate requests; generate a replacement from the customer dashboard.
+
+**Caution:** this is destructive and cannot be undone. Do not call it with a token you still need.
+
+```php
+$result = $client->utilities->delete_token();
+echo "Status: {$result->status}\n";
+```
+
+Output:
+```
+Status: ok
 ```
 
 ## Automatic Rate Limit Tracking

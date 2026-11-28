@@ -496,8 +496,9 @@ abstract class ClientBase
     /**
      * Execute a single API request with retry logic.
      *
-     * @param string $method    The API method to call.
-     * @param array  $arguments The arguments for the API call.
+     * @param string $method     The API method to call.
+     * @param array  $arguments  The arguments for the API call.
+     * @param string $httpMethod The HTTP verb to use for the request. Defaults to GET.
      *
      * @return object The API response as an object.
      * @throws GuzzleException
@@ -507,7 +508,7 @@ abstract class ClientBase
      * @throws ForbiddenException
      * @throws UnauthorizedException
      */
-    public function execute($method, array $arguments = []): object
+    public function execute($method, array $arguments = [], string $httpMethod = 'GET'): object
     {
         $format = array_key_exists('format', $arguments) ? $arguments['format'] : 'json';
         // Convert Format enum to string value if needed
@@ -533,14 +534,14 @@ abstract class ClientBase
         while ($attempt < $maxAttempts) {
             $startTime = microtime(true);
             try {
-                $response = $this->guzzle->get($method, [
+                $response = $this->guzzle->request($httpMethod, $method, [
                     'headers' => $this->headers($format),
                     'query'   => $queryParams,
                 ]);
                 $durationMs = (microtime(true) - $startTime) * 1000;
 
                 // Log the request
-                $this->logRequest('GET', $response, $durationMs, $fullUrl, $logLevel);
+                $this->logRequest($httpMethod, $response, $durationMs, $fullUrl, $logLevel);
 
                 // Validate response status code
                 $this->validateResponseStatusCode($response, true, $fullUrl);
@@ -561,7 +562,7 @@ abstract class ClientBase
                 $statusCode = $e->getResponse()->getStatusCode();
 
                 // Log the failed request
-                $this->logRequest('GET', $e->getResponse(), $durationMs, $fullUrl, $logLevel);
+                $this->logRequest($httpMethod, $e->getResponse(), $durationMs, $fullUrl, $logLevel);
 
                 // 404 is handled specially (return response instead of throwing)
                 if ($statusCode === 404) {
@@ -607,7 +608,7 @@ abstract class ClientBase
                 $durationMs = (microtime(true) - $startTime) * 1000;
 
                 // Log the failed request
-                $this->logRequest('GET', $e->getResponse(), $durationMs, $fullUrl, $logLevel);
+                $this->logRequest($httpMethod, $e->getResponse(), $durationMs, $fullUrl, $logLevel);
 
                 // Server errors (5xx) - check if retryable
                 $statusCode = $e->getResponse()->getStatusCode();

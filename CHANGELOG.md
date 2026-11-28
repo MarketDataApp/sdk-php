@@ -8,6 +8,11 @@
 - Add `ForbiddenException` for 403 responses, exposing `X-API-Authorized-IP` through
   `$authorizedIp` and `getAuthorizedIp()` and including it in the error message.
 - `Options::option_chain()`: the `dte` parameter now accepts string forms (comma-separated list, closed range, comparison operators) in addition to single integer values (API release 2.0.0). An `int` works exactly as before.
+- `Options::option_chain()` and `Options::quotes()`: the API's new `model` parameter, specifying the pricing model for implied volatility and the greeks (API release 3.0.0). Accepts `Model::BSM`, `Model::BJS`, `Model::CRR`, or `Model::BAW`, or the equivalent string.
+- `Model` enum with cases `BSM`, `BJS`, `CRR`, and `BAW` for pricing models in options endpoints (API release 3.0.0).
+- `Utilities::delete_token()`: revokes the current API token and returns a `Token` response (API release 3.0.0).
+- `Token` response class, returned by `Utilities::delete_token()`.
+- `ClientBase::execute()`: the `$httpMethod` parameter, allowing callers to specify the HTTP verb (API release 3.0.0). Defaults to `'GET'`; existing calls are unaffected.
 
 ### Fixed
 

@@ -359,4 +359,146 @@ class QuotesTest extends OptionsTestCase
         // Should have error for the invalid symbol
         $this->assertArrayHasKey($invalidSymbol, $response->errors);
     }
+
+    // ========================================================================
+    // MODEL PARAMETER (API release 3.0.0)
+    //
+    // bsm (Black-Scholes-Merton) prices every contract without an
+    // early-exercise premium, while bjs, crr and baw price American contracts
+    // with one. AAPL230120P00150000 was a deep in-the-money American put on
+    // 2023-01-10 (AAPL traded near $130), so its early-exercise premium is
+    // not zero and bsm must price it differently from each American model.
+    // bjs is the documented default for American contracts, so it cannot be
+    // distinguished from the unfiltered (no `model`) call by its output; crr
+    // and baw are compared against both bsm and the unfiltered call, since a
+    // server that silently fell back to the default for either would still
+    // look different from bsm without actually implementing them.
+    // ========================================================================
+
+    /**
+     * Test quotes with model=bsm prices a deep ITM American put differently
+     * from model=crr.
+     *
+     * If the server ignored `model`, both calls would return the same
+     * (American-default) values and this assertion would fail.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testQuotes_withModelBsm_pricesDifferentlyFromAmericanModel(): void
+    {
+        $bsm = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'bsm');
+        $crr = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'crr');
+
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $crr->status);
+
+        $this->assertTrue(
+            $bsm->quotes[0]->implied_volatility !== $crr->quotes[0]->implied_volatility
+                || $bsm->quotes[0]->delta !== $crr->quotes[0]->delta,
+            'model=bsm and model=crr should price this deep ITM American put differently'
+        );
+    }
+
+    /**
+     * Test quotes with model=bjs prices a deep ITM American put differently
+     * from model=bsm.
+     *
+     * bjs is the documented default for American contracts, so this cannot
+     * also be compared against the unfiltered call: both would be expected
+     * to return the same values whether or not `model=bjs` was respected.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testQuotes_withModelBjs_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $bjs = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'bjs');
+        $bsm = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'bsm');
+
+        $this->assertEquals('ok', $bjs->status);
+        $this->assertEquals('ok', $bsm->status);
+
+        $this->assertTrue(
+            $bjs->quotes[0]->implied_volatility !== $bsm->quotes[0]->implied_volatility
+                || $bjs->quotes[0]->delta !== $bsm->quotes[0]->delta,
+            'model=bjs and model=bsm should price this deep ITM American put differently'
+        );
+    }
+
+    /**
+     * Test quotes with model=crr prices a deep ITM American put differently
+     * from both model=bsm and the unfiltered (no `model`) call.
+     *
+     * The second comparison catches a server that silently falls back to the
+     * default (bjs) for a value it does not actually implement: that would
+     * still differ from bsm, so the first comparison alone cannot tell crr
+     * apart from a no-op.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testQuotes_withModelCrr_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $crr = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'crr');
+        $bsm = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'bsm');
+        $default = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10');
+
+        $this->assertEquals('ok', $crr->status);
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $default->status);
+
+        $this->assertTrue(
+            $crr->quotes[0]->implied_volatility !== $bsm->quotes[0]->implied_volatility
+                || $crr->quotes[0]->delta !== $bsm->quotes[0]->delta,
+            'model=crr and model=bsm should price this deep ITM American put differently'
+        );
+        $this->assertTrue(
+            $crr->quotes[0]->implied_volatility !== $default->quotes[0]->implied_volatility
+                || $crr->quotes[0]->delta !== $default->quotes[0]->delta,
+            'model=crr must not silently fall back to the default (bjs) pricing'
+        );
+    }
+
+    /**
+     * Test quotes with model=baw prices a deep ITM American put differently
+     * from both model=bsm and the unfiltered (no `model`) call.
+     *
+     * The second comparison catches a server that silently falls back to the
+     * default (bjs) for a value it does not actually implement: that would
+     * still differ from bsm, so the first comparison alone cannot tell baw
+     * apart from a no-op.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testQuotes_withModelBaw_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $baw = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'baw');
+        $bsm = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10', model: 'bsm');
+        $default = $this->client->options->quotes(option_symbols: 'AAPL230120P00150000', date: '2023-01-10');
+
+        $this->assertEquals('ok', $baw->status);
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $default->status);
+
+        $this->assertTrue(
+            $baw->quotes[0]->implied_volatility !== $bsm->quotes[0]->implied_volatility
+                || $baw->quotes[0]->delta !== $bsm->quotes[0]->delta,
+            'model=baw and model=bsm should price this deep ITM American put differently'
+        );
+        $this->assertTrue(
+            $baw->quotes[0]->implied_volatility !== $default->quotes[0]->implied_volatility
+                || $baw->quotes[0]->delta !== $default->quotes[0]->delta,
+            'model=baw must not silently fall back to the default (bjs) pricing'
+        );
+    }
+
+    /**
+     * Test quotes with model but without date, from or to is rejected with a 400.
+     *
+     * Per the API: "Without date, from or to, the request is rejected with a 400."
+     * A real-time request without `model` succeeds (see testQuotes_success),
+     * so a server that ignored `model` here would not throw.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testQuotes_withModelWithoutDateFromTo_throws400(): void
+    {
+        $this->expectException(\MarketDataApp\Exceptions\BadStatusCodeError::class);
+        $this->expectExceptionCode(400);
+
+        $this->client->options->quotes(option_symbols: 'AAPL281215C00400000', model: 'bsm');
+    }
 }

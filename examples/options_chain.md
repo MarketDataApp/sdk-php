@@ -192,6 +192,30 @@ foreach ($chain->getAllQuotes() as $option) {
 }
 ```
 
+## Choose a Pricing Model
+
+Use `model` on `option_chain()` or `quotes()` to choose how `iv` and the Greeks are priced on a
+historical request (`date`, or `from`/`to` on `quotes()`):
+
+```php
+// bsm (Black-Scholes-Merton) prices every contract
+$bsm = $client->options->option_chain(symbol: 'AAPL', date: '2024-01-15', model: 'bsm');
+
+// bjs (Bjerksund-Stensland 2002), crr (Cox-Ross-Rubinstein binomial tree) and
+// baw (Barone-Adesi-Whaley) price the American contracts; European contracts
+// keep bsm regardless of the value chosen
+$crr = $client->options->quotes('AAPL250117C00200000', date: '2024-01-15', model: 'crr');
+
+// The Model enum works the same way as the string value
+use MarketDataApp\Enums\Model;
+
+$baw = $client->options->option_chain(symbol: 'AAPL', date: '2024-01-15', model: Model::BAW);
+```
+
+**Note:** `model` requires `date` (or `from`/`to` on `quotes()`); without it the request is rejected
+with a 400. If omitted, American contracts use `bjs` and European contracts use `bsm`, with broker
+conventions described in the API documentation.
+
 ## OptionQuote Properties
 
 | Property | Type | Description |
