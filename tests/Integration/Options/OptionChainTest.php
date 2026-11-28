@@ -454,4 +454,186 @@ class OptionChainTest extends OptionsTestCase
             $this->assertLessThan(40, $quote->dte);
         }
     }
+
+    // ========================================================================
+    // MODEL PARAMETER (API release 3.0.0)
+    //
+    // bsm (Black-Scholes-Merton) prices every contract without an
+    // early-exercise premium, while bjs, crr and baw price American contracts
+    // with one. The $150 AAPL put expiring 2023-01-20 was deep in-the-money
+    // on 2023-01-10 (AAPL traded near $130), so its early-exercise premium is
+    // not zero and bsm must price it differently from each American model.
+    // bjs is the documented default for American contracts, so it cannot be
+    // distinguished from the unfiltered (no `model`) call by its output; crr
+    // and baw are compared against both bsm and the unfiltered call, since a
+    // server that silently fell back to the default for either would still
+    // look different from bsm without actually implementing them.
+    // ========================================================================
+
+    /**
+     * Test option chain with model=bsm prices a deep ITM American put
+     * differently from model=crr.
+     *
+     * If the server ignored `model`, both calls would return the same
+     * (American-default) values and this assertion would fail.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_withModelBsm_pricesDifferentlyFromAmericanModel(): void
+    {
+        $bsm = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'bsm'
+        );
+        $crr = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'crr'
+        );
+
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $crr->status);
+
+        $bsmQuote = array_values($bsm->getAllQuotes())[0];
+        $crrQuote = array_values($crr->getAllQuotes())[0];
+        $this->assertSame($bsmQuote->option_symbol, $crrQuote->option_symbol);
+
+        $this->assertTrue(
+            $bsmQuote->implied_volatility !== $crrQuote->implied_volatility
+                || $bsmQuote->delta !== $crrQuote->delta,
+            'model=bsm and model=crr should price this deep ITM American put differently'
+        );
+    }
+
+    /**
+     * Test option chain with model=bjs prices a deep ITM American put
+     * differently from model=bsm.
+     *
+     * bjs is the documented default for American contracts, so this cannot
+     * also be compared against the unfiltered call: both would be expected
+     * to return the same values whether or not `model=bjs` was respected.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_withModelBjs_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $bjs = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'bjs'
+        );
+        $bsm = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'bsm'
+        );
+
+        $this->assertEquals('ok', $bjs->status);
+        $this->assertEquals('ok', $bsm->status);
+
+        $bjsQuote = array_values($bjs->getAllQuotes())[0];
+        $bsmQuote = array_values($bsm->getAllQuotes())[0];
+        $this->assertSame($bjsQuote->option_symbol, $bsmQuote->option_symbol);
+
+        $this->assertTrue(
+            $bjsQuote->implied_volatility !== $bsmQuote->implied_volatility
+                || $bjsQuote->delta !== $bsmQuote->delta,
+            'model=bjs and model=bsm should price this deep ITM American put differently'
+        );
+    }
+
+    /**
+     * Test option chain with model=crr prices a deep ITM American put
+     * differently from both model=bsm and the unfiltered (no `model`) call.
+     *
+     * The second comparison catches a server that silently falls back to the
+     * default (bjs) for a value it does not actually implement: that would
+     * still differ from bsm, so the first comparison alone cannot tell crr
+     * apart from a no-op.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_withModelCrr_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $crr = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'crr'
+        );
+        $bsm = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'bsm'
+        );
+        $default = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150'
+        );
+
+        $this->assertEquals('ok', $crr->status);
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $default->status);
+
+        $crrQuote = array_values($crr->getAllQuotes())[0];
+        $bsmQuote = array_values($bsm->getAllQuotes())[0];
+        $defaultQuote = array_values($default->getAllQuotes())[0];
+        $this->assertSame($crrQuote->option_symbol, $bsmQuote->option_symbol);
+        $this->assertSame($crrQuote->option_symbol, $defaultQuote->option_symbol);
+
+        $this->assertTrue(
+            $crrQuote->implied_volatility !== $bsmQuote->implied_volatility
+                || $crrQuote->delta !== $bsmQuote->delta,
+            'model=crr and model=bsm should price this deep ITM American put differently'
+        );
+        $this->assertTrue(
+            $crrQuote->implied_volatility !== $defaultQuote->implied_volatility
+                || $crrQuote->delta !== $defaultQuote->delta,
+            'model=crr must not silently fall back to the default (bjs) pricing'
+        );
+    }
+
+    /**
+     * Test option chain with model=baw prices a deep ITM American put
+     * differently from both model=bsm and the unfiltered (no `model`) call.
+     *
+     * The second comparison catches a server that silently falls back to the
+     * default (bjs) for a value it does not actually implement: that would
+     * still differ from bsm, so the first comparison alone cannot tell baw
+     * apart from a no-op.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_withModelBaw_pricesDifferentlyFromEuropeanModel(): void
+    {
+        $baw = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'baw'
+        );
+        $bsm = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150', model: 'bsm'
+        );
+        $default = $this->client->options->option_chain(
+            symbol: 'AAPL', date: '2023-01-10', expiration: '2023-01-20', side: Side::PUT, strike: '150'
+        );
+
+        $this->assertEquals('ok', $baw->status);
+        $this->assertEquals('ok', $bsm->status);
+        $this->assertEquals('ok', $default->status);
+
+        $bawQuote = array_values($baw->getAllQuotes())[0];
+        $bsmQuote = array_values($bsm->getAllQuotes())[0];
+        $defaultQuote = array_values($default->getAllQuotes())[0];
+        $this->assertSame($bawQuote->option_symbol, $bsmQuote->option_symbol);
+        $this->assertSame($bawQuote->option_symbol, $defaultQuote->option_symbol);
+
+        $this->assertTrue(
+            $bawQuote->implied_volatility !== $bsmQuote->implied_volatility
+                || $bawQuote->delta !== $bsmQuote->delta,
+            'model=baw and model=bsm should price this deep ITM American put differently'
+        );
+        $this->assertTrue(
+            $bawQuote->implied_volatility !== $defaultQuote->implied_volatility
+                || $bawQuote->delta !== $defaultQuote->delta,
+            'model=baw must not silently fall back to the default (bjs) pricing'
+        );
+    }
+
+    /**
+     * Test option chain with model but without date is rejected with a 400.
+     *
+     * Per the API: "Without the date parameter, the request is rejected with a 400."
+     * A real-time request without `model` succeeds (see testOptionChain_success),
+     * so a server that ignored `model` here would not throw.
+     */
+    #[\PHPUnit\Framework\Attributes\Group('ci')]
+    public function testOptionChain_withModelWithoutDate_throws400(): void
+    {
+        $this->expectException(\MarketDataApp\Exceptions\BadStatusCodeError::class);
+        $this->expectExceptionCode(400);
+
+        $this->client->options->option_chain(symbol: 'AAPL', model: 'bsm');
+    }
 }

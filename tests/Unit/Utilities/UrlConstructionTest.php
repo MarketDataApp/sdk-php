@@ -149,4 +149,25 @@ class UrlConstructionTest extends TestCase
         $this->assertCount(1, $this->history);
         $this->assertEquals('user/', $this->getLastRequestPath());
     }
+
+    // ========================================================================
+    // UTILITIES DELETE TOKEN ENDPOINT (API release 3.0.0)
+    // API: DELETE /v1/user/token/
+    // ========================================================================
+
+    /**
+     * Test delete_token sends a DELETE request to the correct URL.
+     */
+    public function testDeleteToken_basicRequest_correctPathFormat(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode(['s' => 'ok']))
+        ]);
+
+        $this->client->utilities->delete_token();
+
+        $this->assertCount(1, $this->history);
+        $this->assertEquals('DELETE', $this->history[0]['request']->getMethod());
+        $this->assertEquals('v1/user/token/', $this->getLastRequestPath());
+    }
 }

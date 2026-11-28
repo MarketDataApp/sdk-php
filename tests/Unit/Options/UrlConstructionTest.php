@@ -8,7 +8,10 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use MarketDataApp\Client;
+use MarketDataApp\Endpoints\Requests\Parameters;
 use MarketDataApp\Enums\Expiration;
+use MarketDataApp\Enums\Format;
+use MarketDataApp\Enums\Model;
 use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Tests\Traits\MockResponses;
@@ -1541,6 +1544,295 @@ class UrlConstructionTest extends TestCase
         $this->assertEquals('100', $query['minVolume']);
     }
 
+    /**
+     * Test option chain URL with model parameter (bsm).
+     *
+     * API release 3.0.0: `model` selects the pricing model used for `iv` and the greeks
+     * on a historical request.
+     */
+    public function testOptionChain_withModelBsm_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: 'bsm');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bsm', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter (bjs).
+     */
+    public function testOptionChain_withModelBjs_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: 'bjs');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bjs', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter (crr).
+     */
+    public function testOptionChain_withModelCrr_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: 'crr');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('crr', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter (baw).
+     */
+    public function testOptionChain_withModelBaw_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: 'baw');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('baw', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter as the Model enum (BSM).
+     */
+    public function testOptionChain_withModelEnumBsm_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode(['s' => 'ok', 'optionSymbol' => ['AAPL240119C00150000']]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: Model::BSM);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bsm', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter as the Model enum (BJS).
+     */
+    public function testOptionChain_withModelEnumBjs_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode(['s' => 'ok', 'optionSymbol' => ['AAPL240119C00150000']]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: Model::BJS);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bjs', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter as the Model enum (CRR).
+     */
+    public function testOptionChain_withModelEnumCrr_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode(['s' => 'ok', 'optionSymbol' => ['AAPL240119C00150000']]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: Model::CRR);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('crr', $query['model']);
+    }
+
+    /**
+     * Test option chain URL with model parameter as the Model enum (BAW).
+     */
+    public function testOptionChain_withModelEnumBaw_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode(['s' => 'ok', 'optionSymbol' => ['AAPL240119C00150000']]))
+        ]);
+
+        $this->client->options->option_chain('AAPL', date: '2024-01-15', model: Model::BAW);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('baw', $query['model']);
+    }
+
+    /**
+     * Test option chain URL omits model parameter when not specified.
+     *
+     * Regression: calling option_chain() without model keeps sending no model
+     * parameter, as it did before API release 3.0.0.
+     */
+    public function testOptionChain_withoutModel_omitsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->option_chain('AAPL');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('model', $query);
+    }
+
     // ========================================================================
     // QUOTES ENDPOINT
     // API: GET /v1/options/quotes/{optionSymbol}/
@@ -1682,6 +1974,407 @@ class UrlConstructionTest extends TestCase
     }
 
     /**
+     * Test quotes URL with model parameter (bsm).
+     *
+     * API release 3.0.0: `model` selects the pricing model used for `iv` and the greeks
+     * on a historical request (date, from or to).
+     */
+    public function testQuotes_withModelBsm_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: 'bsm');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bsm', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter (bjs).
+     */
+    public function testQuotes_withModelBjs_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: 'bjs');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bjs', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter (crr).
+     */
+    public function testQuotes_withModelCrr_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: 'crr');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('crr', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter (baw).
+     */
+    public function testQuotes_withModelBaw_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: 'baw');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('baw', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter as the Model enum (BSM).
+     */
+    public function testQuotes_withModelEnumBsm_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: Model::BSM);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bsm', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter as the Model enum (BJS).
+     */
+    public function testQuotes_withModelEnumBjs_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: Model::BJS);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('bjs', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter as the Model enum (CRR).
+     */
+    public function testQuotes_withModelEnumCrr_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: Model::CRR);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('crr', $query['model']);
+    }
+
+    /**
+     * Test quotes URL with model parameter as the Model enum (BAW).
+     */
+    public function testQuotes_withModelEnumBaw_addsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000', date: '2024-01-15', model: Model::BAW);
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayHasKey('model', $query);
+        $this->assertEquals('baw', $query['model']);
+    }
+
+    /**
+     * Test quotes URL omits model parameter when not specified.
+     *
+     * Regression: calling quotes() without model keeps sending no model
+     * parameter, as it did before API release 3.0.0.
+     */
+    public function testQuotes_withoutModel_omitsParameter(): void
+    {
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], json_encode([
+                's' => 'ok',
+                'optionSymbol' => ['AAPL240119C00150000'],
+                'underlying' => ['AAPL'],
+                'expiration' => [1705622400],
+                'side' => ['call'],
+                'strike' => [150.0],
+                'firstTraded' => [1234567890],
+                'dte' => [30],
+                'updated' => [1234567890],
+                'bid' => [5.0],
+                'bidSize' => [10],
+                'mid' => [5.5],
+                'ask' => [6.0],
+                'askSize' => [10],
+                'last' => [5.5],
+                'openInterest' => [1000],
+                'volume' => [500],
+                'inTheMoney' => [true],
+                'intrinsicValue' => [10.0],
+                'extrinsicValue' => [5.0],
+                'underlyingPrice' => [160.0],
+                'iv' => [0.25],
+                'delta' => [0.65],
+                'gamma' => [0.02],
+                'theta' => [-0.05],
+                'vega' => [0.15],
+                'rho' => [0.03]
+            ]))
+        ]);
+
+        $this->client->options->quotes('AAPL240119C00150000');
+
+        $query = $this->parseQuery($this->getLastRequestQuery());
+        $this->assertArrayNotHasKey('model', $query);
+    }
+
+    /**
      * Test quotes URL for multiple option symbols makes concurrent requests.
      */
     public function testQuotes_multipleSymbols_makesConcurrentRequests(): void
@@ -1730,6 +2423,91 @@ class UrlConstructionTest extends TestCase
         $paths = array_map(fn($h) => $h['request']->getUri()->getPath(), $this->history);
         $this->assertContains('v1/options/quotes/AAPL240119C00150000/', $paths);
         $this->assertContains('v1/options/quotes/AAPL240119P00150000/', $paths);
+    }
+
+    /**
+     * Test quotes URL for multiple option symbols (JSON fan-out) forwards
+     * model to every concurrent request.
+     */
+    public function testQuotes_multipleSymbols_withModel_forwardsParameterToEveryRequest(): void
+    {
+        $mockResponse = json_encode([
+            's' => 'ok',
+            'optionSymbol' => ['AAPL240119C00150000'],
+            'underlying' => ['AAPL'],
+            'expiration' => [1705622400],
+            'side' => ['call'],
+            'strike' => [150.0],
+            'firstTraded' => [1234567890],
+            'dte' => [30],
+            'updated' => [1234567890],
+            'bid' => [5.0],
+            'bidSize' => [10],
+            'mid' => [5.5],
+            'ask' => [6.0],
+            'askSize' => [10],
+            'last' => [5.5],
+            'openInterest' => [1000],
+            'volume' => [500],
+            'inTheMoney' => [true],
+            'intrinsicValue' => [10.0],
+            'extrinsicValue' => [5.0],
+            'underlyingPrice' => [160.0],
+            'iv' => [0.25],
+            'delta' => [0.65],
+            'gamma' => [0.02],
+            'theta' => [-0.05],
+            'vega' => [0.15],
+            'rho' => [0.03]
+        ]);
+
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $mockResponse),
+            new Response(200, [], $mockResponse),
+        ]);
+
+        $this->client->options->quotes(
+            ['AAPL240119C00150000', 'AAPL240119P00150000'],
+            date: '2024-01-15',
+            model: 'bsm'
+        );
+
+        $this->assertCount(2, $this->history);
+
+        foreach ($this->history as $call) {
+            $query = $this->parseQuery($call['request']->getUri()->getQuery());
+            $this->assertArrayHasKey('model', $query);
+            $this->assertEquals('bsm', $query['model']);
+        }
+    }
+
+    /**
+     * Test quotes URL for multiple option symbols (CSV format) forwards
+     * model to every request.
+     */
+    public function testQuotes_multipleSymbols_csvFormat_withModel_forwardsParameterToEveryRequest(): void
+    {
+        $mockResponse = "symbol,model\nAAPL240119C00150000,bsm\n";
+
+        $this->setMockResponsesWithHistory([
+            new Response(200, [], $mockResponse),
+            new Response(200, [], $mockResponse),
+        ]);
+
+        $this->client->options->quotes(
+            ['AAPL240119C00150000', 'AAPL240119P00150000'],
+            date: '2024-01-15',
+            parameters: new Parameters(format: Format::CSV),
+            model: 'bsm'
+        );
+
+        $this->assertCount(2, $this->history);
+
+        foreach ($this->history as $call) {
+            $query = $this->parseQuery($call['request']->getUri()->getQuery());
+            $this->assertArrayHasKey('model', $query);
+            $this->assertEquals('bsm', $query['model']);
+        }
     }
 
     // ========================================================================

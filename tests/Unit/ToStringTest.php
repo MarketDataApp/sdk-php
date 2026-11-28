@@ -26,6 +26,7 @@ use MarketDataApp\Endpoints\Responses\Stocks\Quotes;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
+use MarketDataApp\Endpoints\Responses\Utilities\Token;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
 use MarketDataApp\Enums\Format;
 use MarketDataApp\Enums\Mode;
@@ -385,6 +386,16 @@ class ToStringTest extends TestCase
 
         $this->assertStringContainsString('User:', $output);
         $this->assertStringContainsString('Rate Limits:', $output);
+    }
+
+    public function testToken_toString_returnsFormattedSummary(): void
+    {
+        $token = new Token((object) ['s' => 'ok']);
+
+        $output = (string) $token;
+
+        $this->assertStringContainsString('Token:', $output);
+        $this->assertStringContainsString('ok', $output);
     }
 
     // ========== Collection Classes ==========

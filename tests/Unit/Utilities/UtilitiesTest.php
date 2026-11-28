@@ -9,6 +9,7 @@ use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
 use MarketDataApp\Endpoints\Responses\Utilities\ServiceStatus;
+use MarketDataApp\Endpoints\Responses\Utilities\Token;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
 use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
@@ -621,6 +622,48 @@ class UtilitiesTest extends TestCase
         
         // Fresh cache should not be in refresh window
         $this->assertFalse($data->inRefreshWindow());
+    }
+
+    /**
+     * Test the delete token endpoint sends a DELETE request to the correct URL.
+     *
+     * API release 3.0.0: new endpoint DELETE /v1/user/token/.
+     *
+     * @return void
+     */
+    public function testDeleteToken_sendsDeleteRequest(): void
+    {
+        $history = [];
+        $this->setMockResponsesWithHistory(
+            [new Response(200, [], json_encode(['s' => 'ok']))],
+            $history
+        );
+
+        $this->client->utilities->delete_token();
+
+        $this->assertCount(1, $history);
+        $request = $history[0]['request'];
+        $this->assertEquals('DELETE', $request->getMethod());
+        $this->assertEquals('v1/user/token/', $request->getUri()->getPath());
+    }
+
+    /**
+     * Test the delete token endpoint for a successful response.
+     *
+     * API release 3.0.0: new endpoint DELETE /v1/user/token/.
+     *
+     * @return void
+     */
+    public function testDeleteToken_success(): void
+    {
+        // Mock response: NOT from real API output (synthetic/test data)
+        $mocked_response = ['s' => 'ok'];
+        $this->setMockResponses([new Response(200, [], json_encode($mocked_response))]);
+
+        $response = $this->client->utilities->delete_token();
+
+        $this->assertInstanceOf(Token::class, $response);
+        $this->assertEquals('ok', $response->status);
     }
 
     /**

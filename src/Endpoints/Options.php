@@ -11,6 +11,7 @@ use MarketDataApp\Endpoints\Responses\Options\OptionChains;
 use MarketDataApp\Endpoints\Responses\Options\Quotes;
 use MarketDataApp\Endpoints\Responses\Options\Strikes;
 use MarketDataApp\Enums\Expiration;
+use MarketDataApp\Enums\Model;
 use MarketDataApp\Enums\Range;
 use MarketDataApp\Enums\Side;
 use MarketDataApp\Exceptions\ApiException;
@@ -355,6 +356,23 @@ class Options
      *
      * @param Parameters|null   $parameters             Universal parameters for all methods (such as format).
      *
+     * @param string|Model|null $model                  The pricing model of iv and the greeks on a historical
+     *                                                  request (the date parameter). `bsm` (Black-Scholes-Merton)
+     *                                                  prices every contract. `bjs` (Bjerksund-Stensland 2002),
+     *                                                  `crr` (Cox-Ross-Rubinstein binomial tree) and `baw`
+     *                                                  (Barone-Adesi-Whaley) price the American contracts, and the
+     *                                                  European contracts keep `bsm`. If omitted, American contracts
+     *                                                  use `bjs` and European contracts use `bsm`, with broker
+     *                                                  conventions: a contract without a bid is priced from half its
+     *                                                  ask, a contract priced at or below the model's lowest price
+     *                                                  gets the greeks of an option without time value, a contract
+     *                                                  on its expiration day gets its greeks at expiration, and
+     *                                                  delta stays between -1 and 1. A named model returns its own
+     *                                                  output instead: those contracts get null values, and delta is
+     *                                                  the model's own. Without the date parameter, the request is
+     *                                                  rejected with a 400. Accepts the string value (e.g. 'bsm')
+     *                                                  or the Model enum (e.g. Model::BSM).
+     *
      * @return OptionChains
      *
      * @throws GuzzleException|ApiException
@@ -387,7 +405,8 @@ class Options
         ?int $min_volume = null,
         ?bool $am = null,
         ?bool $pm = null,
-        ?Parameters $parameters = null
+        ?Parameters $parameters = null,
+        string|Model|null $model = null
     ): OptionChains {
         // Validate inputs
         $this->validateNonEmptyString($symbol, 'symbol');
@@ -433,6 +452,7 @@ class Options
             'maxBidAskSpreadPct' => $max_bid_ask_spread_pct,
             'minOpenInterest'    => $min_open_interest,
             'minVolume'          => $min_volume,
+            'model'              => $model instanceof Model ? $model->value : $model,
         ];
 
         // am and pm are boolean filters for index options settlement type
@@ -503,6 +523,21 @@ class Options
      *
      * @param Parameters|null $parameters     Universal parameters for all methods (such as format).
      *
+     * @param string|Model|null $model        The pricing model of iv and the greeks on a historical request (date,
+     *                                        from or to). `bsm` (Black-Scholes-Merton) prices every contract. `bjs`
+     *                                        (Bjerksund-Stensland 2002), `crr` (Cox-Ross-Rubinstein binomial tree)
+     *                                        and `baw` (Barone-Adesi-Whaley) price the American contracts, and the
+     *                                        European contracts keep `bsm`. If omitted, American contracts use
+     *                                        `bjs` and European contracts use `bsm`, with broker conventions: a
+     *                                        contract without a bid is priced from half its ask, a contract priced
+     *                                        at or below the model's lowest price gets the greeks of an option
+     *                                        without time value, a contract on its expiration day gets its greeks
+     *                                        at expiration, and delta stays between -1 and 1. A named model
+     *                                        returns its own output instead: those contracts get null values, and
+     *                                        delta is the model's own. Without date, from or to, the request is
+     *                                        rejected with a 400. Accepts the string value (e.g. 'bsm') or the
+     *                                        Model enum (e.g. Model::BSM).
+     *
      * @return Quotes
      *
      * @throws ApiException|GuzzleException|\Throwable
@@ -512,10 +547,15 @@ class Options
         ?string $date = null,
         ?string $from = null,
         ?string $to = null,
-        ?Parameters $parameters = null
+        ?Parameters $parameters = null,
+        string|Model|null $model = null
     ): Quotes {
         // Validate date range
         $this->validateDateRange($from, $to);
+
+        // Normalize to the string value so it flows through compact() and the
+        // parallel-request plumbing as a plain string.
+        $model = $model instanceof Model ? $model->value : $model;
 
         // Handle single symbol (string) - existing behavior
         if (is_string($option_symbols)) {
@@ -523,11 +563,11 @@ class Options
             $option_symbols = trim($option_symbols);
 
             return new Quotes($this->execute("quotes/$option_symbols/",
-                compact('date', 'from', 'to'), $parameters));
+                compact('date', 'from', 'to', 'model'), $parameters));
         }
 
         // Handle multiple symbols (array)
-        return $this->quotesMultiple($option_symbols, $date, $from, $to, $parameters);
+        return $this->quotesMultiple($option_symbols, $date, $from, $to, $parameters, $model);
     }
 
     /**
@@ -541,6 +581,7 @@ class Options
      * @param string|null     $from           Start date for series of EOD quotes.
      * @param string|null     $to             End date for series of EOD quotes.
      * @param Parameters|null $parameters     Universal parameters.
+     * @param string|null     $model          The pricing model of iv and the greeks (see quotes()).
      *
      * @return Quotes Merged quotes from all symbols.
      * @throws \Throwable
@@ -550,7 +591,8 @@ class Options
         ?string $date,
         ?string $from,
         ?string $to,
-        ?Parameters $parameters
+        ?Parameters $parameters,
+        ?string $model = null
     ): Quotes {
         // Validate non-empty array with non-empty string elements
         if (empty($option_symbols)) {
@@ -571,7 +613,7 @@ class Options
         // If only one symbol after deduplication, delegate to single-symbol path
         if (count($symbols) === 1) {
             return new Quotes($this->execute("quotes/{$symbols[0]}/",
-                compact('date', 'from', 'to'), $parameters));
+                compact('date', 'from', 'to', 'model'), $parameters));
         }
 
         // Check format to handle CSV/HTML specially
@@ -588,7 +630,7 @@ class Options
 
         // CSV format requires special handling to combine responses
         if ($format === \MarketDataApp\Enums\Format::CSV) {
-            return $this->quotesMultipleCsv($symbols, $date, $from, $to, $parameters, $mergedParams);
+            return $this->quotesMultipleCsv($symbols, $date, $from, $to, $parameters, $mergedParams, $model);
         }
 
         // JSON format: existing behavior
@@ -597,7 +639,7 @@ class Options
         foreach ($symbols as $symbol) {
             $calls[] = [
                 "quotes/{$symbol}/",
-                compact('date', 'from', 'to'),
+                compact('date', 'from', 'to', 'model'),
             ];
         }
 
@@ -629,6 +671,7 @@ class Options
      * @param string|null     $to           End date for series of EOD quotes.
      * @param Parameters|null $parameters   Original parameters from caller.
      * @param Parameters      $mergedParams Merged parameters with defaults applied.
+     * @param string|null     $model        The pricing model of iv and the greeks (see quotes()).
      *
      * @return Quotes Quotes object containing combined CSV.
      * @throws \Throwable
@@ -639,7 +682,8 @@ class Options
         ?string $from,
         ?string $to,
         ?Parameters $parameters,
-        Parameters $mergedParams
+        Parameters $mergedParams,
+        ?string $model = null
     ): Quotes {
         // Validate that filename is not provided with multi-symbol requests
         if ($mergedParams->filename !== null) {
@@ -658,7 +702,7 @@ class Options
         // - If user wants headers: request headers=true on ALL calls, SDK strips duplicates
         $calls = [];
         foreach ($symbols as $symbol) {
-            $callArgs = compact('date', 'from', 'to');
+            $callArgs = compact('date', 'from', 'to', 'model');
             $callArgs['headers'] = $userRequestedNoHeaders ? 'false' : 'true';
 
             $calls[] = [

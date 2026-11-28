@@ -8,6 +8,7 @@ use MarketDataApp\Client;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatus;
 use MarketDataApp\Endpoints\Responses\Utilities\ApiStatusData;
 use MarketDataApp\Endpoints\Responses\Utilities\Headers;
+use MarketDataApp\Endpoints\Responses\Utilities\Token;
 use MarketDataApp\Endpoints\Responses\Utilities\User;
 use MarketDataApp\Enums\ApiStatusResult;
 use MarketDataApp\Exceptions\ApiException;
@@ -186,6 +187,24 @@ class Utilities
         }
         
         return new User($rateLimits);
+    }
+
+    /**
+     * Revoke the current API token.
+     *
+     * Once revoked, the token can no longer authenticate requests. Generate a replacement token from the
+     * customer dashboard.
+     *
+     * @api
+     * @example
+     * $client->utilities->delete_token();
+     *
+     * @return Token The result of revoking the current API token.
+     * @throws GuzzleException|ApiException
+     */
+    public function delete_token(): Token
+    {
+        return new Token($this->client->execute('v1/user/token/', [], 'DELETE'));
     }
 
     /**
